@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  paiperless-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: paiperless-dev
+    ports:
+      - "3002:3000"
+    volumes:
+      # Hot reload: mount source code
+      - ./app:/app/app
+      - ./components:/app/components
+      - ./lib:/app/lib
+      - ./hooks:/app/hooks
+      - ./messages:/app/messages
+      - ./public:/app/public
+      - ./prisma:/app/prisma
+
+      # Storage volumes
+      - ./storage/consume:/app/storage/consume
+      - ./storage/processing:/app/storage/processing
+      - ./storage/error:/app/storage/error
+      - ./storage/completed:/app/storage/completed
+      - ./storage/logs:/app/storage/logs
+      - db-data:/app/storage/database
+
+      # Persistent node_modules (don't overwrite)
+      - node_modules:/app/node_modules
+      - next:/app/.next
+    environment:
+      - DATABASE_URL=file:/app/storage/database/paiperless.db
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3002}
+      - NODE_ENV=development
+    restart: unless-stopped
+    command: npm run dev
+    networks:
+      - paiperless
+
+networks:
+  paiperless:
+    driver: bridge
+
+volumes:
+  db-data:
+    driver: local
+  node_modules:
+    driver: local
+  next:
+    driver: local

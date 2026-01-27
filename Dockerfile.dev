@@ -1,0 +1,49 @@
+FROM node:20-alpine
+
+# Install system dependencies (cached layer)
+RUN apk add --no-cache \
+    bash \
+    curl \
+    ghostscript \
+    qpdf \
+    tesseract-ocr \
+    tesseract-ocr-data-deu \
+    tesseract-ocr-data-eng \
+    python3 \
+    py3-pip \
+    procps \
+    openssl \
+    openssl-dev
+
+WORKDIR /app
+
+# Copy package files (cached if unchanged)
+COPY package.json package-lock.json ./
+
+# Install dependencies (cached if package.json unchanged)
+RUN npm ci
+
+# Copy Prisma schema (needed for generate)
+COPY prisma ./prisma
+
+# Generate Prisma client
+RUN npx prisma generate
+
+# Create storage directories
+RUN mkdir -p /app/storage/consume /app/storage/processing /app/storage/error \
+    /app/storage/completed /app/storage/database /app/storage/backups /app/storage/logs
+
+# Copy rest of application (will be overwritten by volume mount in dev)
+COPY . .
+
+EXPOSE 3000
+
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
+
+# Development entrypoint
+COPY entrypoint.dev.sh /app/entrypoint.dev.sh
+RUN chmod +x /app/entrypoint.dev.sh
+
+ENTRYPOINT ["/app/entrypoint.dev.sh"]
+CMD ["npm", "run", "dev"]

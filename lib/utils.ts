@@ -10,21 +10,6 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Calculate SHA-256 hash of a file
- */
-export async function calculateFileHash(filePath: string): Promise<string> {
-  const fs = await import('fs');
-  return new Promise((resolve, reject) => {
-    const hash = crypto.createHash('sha256');
-    const stream = fs.createReadStream(filePath);
-
-    stream.on('data', (data) => hash.update(data));
-    stream.on('end', () => resolve(hash.digest('hex')));
-    stream.on('error', reject);
-  });
-}
-
-/**
  * Format bytes to human-readable string
  */
 export function formatBytes(bytes: number, decimals = 2): string {
