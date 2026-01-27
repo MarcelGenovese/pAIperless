@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  paiperless:
+    build: .
+    container_name: paiperless
+    ports:
+      - "3002:3000"   # Map container port 3000 to host port 3002
+    volumes:
+      - ./storage/consume:/app/storage/consume
+      - ./storage/processing:/app/storage/processing
+      - ./storage/error:/app/storage/error
+      - ./storage/completed:/app/storage/completed
+      - ./storage/logs:/app/storage/logs
+      - db-data:/app/storage/database
+    environment:
+      - DATABASE_URL=file:/app/storage/database/paiperless.db
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3002}
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - paiperless
+
+networks:
+  paiperless:
+    driver: bridge
+
+volumes:
+  db-data:
+    driver: local
