@@ -1,0 +1,69 @@
+services:
+  docai-watcher:
+    build: .
+    container_name: docai-watcher
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    ports:
+      - "5000:5000"
+    environment:
+      - PYTHONUNBUFFERED=1
+
+      # SHA-256
+      - MY_SYNC_API_KEY=7cbebc49f0ccf9a9da8375ffb898a443e8038c6e9f9060622f563f528f3c89c7
+
+      # --- GCP ---
+      - GCP_PROJECT_ID=841608965746
+      - GCP_LOCATION=eu
+      - GCP_PROCESSOR_ID=7e5c6ef084f5281
+      - GCP_KEY_FILE=/app/keys/service-account.json
+      
+      # --- LIMITS ---
+      - MAX_PAGES=15
+      - MAX_SIZE_MB=20
+      
+      # --- EMAIL ---
+      - ENABLE_EMAIL=true
+      - SMTP_HOST=mail.your-server.de
+      - SMTP_PORT=587
+      - SMTP_USER=paperless@mgenovese.de
+      - SMTP_PASS=Hvh7BuyT24Dv1Z8y
+      - EMAIL_FROM=paperless@mgenovese.de
+      - EMAIL_TO=mgenovese@outlook.de
+
+      # --- GOOGLE SYNC ---
+      - PAPERLESS_URL=http://192.168.8.250:81
+      - PAPERLESS_TOKEN=6d1c4763cdc1c17e1704d2f3a94adcf0d062be2e
+      
+      # NAMEN statt IDs
+      - TAG_NAME_TRIGGER=Action_Required
+      - FIELD_NAME_ACTION=Action
+      - FIELD_NAME_DUE=Faelligkeitsdatum
+      
+      # Google
+      - GOOGLE_CALENDAR_ID=primary
+      - GOOGLE_TASK_LIST_Name=Paperless
+
+    volumes:
+      # 1. Input
+      - /home/marcel/documents-ai/consume:/app/in
+      
+      # 2. Output
+      - /home/marcel/paperless-ngx/consume:/app/out
+      
+      # 3. Error
+      - /home/marcel/documents-ai/error:/app/error
+      
+      # 4. Processing / TMP (NEU!)
+      # Hier liegen die Dateien während der Arbeit (und bei Absturz)
+      - /home/marcel/documents-ai/processing:/app/processing
+      
+      # 5. Configs & State
+      - ./keys:/app/keys
+      - ./state:/app/state
+      - ./logs:/app/logs
+      - ./templates:/app/templates

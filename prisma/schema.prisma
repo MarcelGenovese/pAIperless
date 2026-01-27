@@ -1,0 +1,77 @@
+// Prisma schema for pAIperless
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Configuration key-value store
+model Config {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String   // Encrypted for sensitive data
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Document processing tracking
+model Document {
+  id                Int       @id @default(autoincrement())
+  fileHash          String    @unique // SHA-256 hash for deduplication
+  originalFilename  String
+  filePath          String?
+  status            String    // PENDING, PREPROCESSING_COMPLETE, OCR_IN_PROGRESS, OCR_COMPLETE, UPLOADED_TO_PAPERLESS, COMPLETED, ERROR
+  errorMessage      String?
+  paperlessId       Int?      // Document ID in Paperless-NGX
+  googleTaskId      String?   // Google Task ID if action required
+  googleEventId     String?   // Google Calendar Event ID if action required
+  ocrPageCount      Int?      // Number of pages processed by Document AI
+  geminiTokensSent  Int?      // Tokens sent to Gemini for this document
+  geminiTokensRecv  Int?      // Tokens received from Gemini
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+// Background job queue (for future use)
+model Job {
+  id          Int      @id @default(autoincrement())
+  type        String   // CONSUME, ANALYZE, ACTION_CHECK
+  payload     String   // JSON string
+  status      String   // PENDING, IN_PROGRESS, COMPLETED, FAILED
+  attempts    Int      @default(0)
+  maxAttempts Int      @default(3)
+  errorMsg    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// System logs (for debugging and monitoring)
+model Log {
+  id        Int      @id @default(autoincrement())
+  level     String   // INFO, WARN, ERROR
+  message   String
+  meta      String?  // JSON metadata
+  createdAt DateTime @default(now())
+
+  @@index([level])
+  @@index([createdAt])
+}
+
+// Cost tracking for Google APIs
+model CostTracking {
+  id                      Int      @id @default(autoincrement())
+  month                   String   // Format: "2026-01" for grouping
+  documentAIPages         Int      @default(0)
+  documentAIPagesLimit    Int      @default(5000)
+  geminiTokensSent        Int      @default(0)
+  geminiTokensReceived    Int      @default(0)
+  estimatedCost           Float    @default(0.0) // USD
+  lastUpdated             DateTime @updatedAt
+  createdAt               DateTime @default(now())
+
+  @@unique([month])
+}

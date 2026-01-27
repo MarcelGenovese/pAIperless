@@ -1,0 +1,11 @@
+google-cloud-documentai
+watchdog
+pymupdf
+pytesseract
+Pillow
+requests
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
+flask

@@ -1,0 +1,16 @@
+{
+  "common": {
+    "next": "Weiter",
+    "back": "Zurück",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "continue": "Fortfahren",
+    "submit": "Absenden",
+    "test": "Testen",
+    "loading": "Lädt...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "required": "Erforderlich",
+    "optional": "Optional"
+  }
+}

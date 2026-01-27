@@ -1,0 +1,21 @@
+{
+    "MY_SYNC_API_KEY": "7cbebc49f0ccf9a9da8375ffb898a443e8038c6e9f9060622f563f528f3c89c7",
+    "WEB_PASSWORD_HASH": "scrypt:32768:8:1$b4YnTpiD9beLqsu0$5cad7b033641f67595d1c17081903d3766a2db23f2ecf88c9788150cfef8bb9f96920ef4833deccf8869e8af3bd40c70175dd6f76450fd6013111b3ff9993f41",
+    "PAPERLESS_URL": "http://192.168.8.250:81",
+    "PAPERLESS_TOKEN": "6d1c4763cdc1c17e1704d2f3a94adcf0d062be2e",
+    "GCP_PROJECT_ID": "841608965746",
+    "GCP_LOCATION": "eu",
+    "GCP_PROCESSOR_ID": "7e5c6ef084f5281",
+    "TAG_NAME_TRIGGER": "Action_Required",
+    "FIELD_NAME_ACTION": "Action",
+    "FIELD_NAME_DUE": "Faelligkeitsdatum",
+    "ENABLE_EMAIL": "true",
+    "SMTP_HOST": "mail.your-server.de",
+    "SMTP_PORT": "587",
+    "SMTP_USER": "paperless@mgenovese.de",
+    "SMTP_PASS": "Hvh7BuyT24Dv1Z8y",
+    "EMAIL_FROM": "paperless@mgenovese.de",
+    "EMAIL_TO": "mgenovese@outlook.de",
+    "GOOGLE_CALENDAR_ID": "primary",
+    "GOOGLE_TASK_LIST_NAME": "My Tasks"
+}
