@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/components/ui/use-toast';
-import { ArrowLeft, ArrowRight, Eye, EyeOff, CheckCircle2, XCircle, Copy } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft, faArrowRight, faEye, faEyeSlash, faCheckCircle, faTimesCircle, faCopy, faKey } from '@fortawesome/free-solid-svg-icons';
 
 interface Step1PaperlessProps {
   onNext: (data: Record<string, any>) => void;
@@ -195,7 +196,7 @@ export default function Step1Paperless({ onNext, onBack, data }: Step1PaperlessP
                 onClick={() => setShowToken(!showToken)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
-                {showToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showToken ? <FontAwesomeIcon icon={faEyeSlash} /> : <FontAwesomeIcon icon={faEye} />}
               </button>
             </div>
           </div>
@@ -212,14 +213,14 @@ export default function Step1Paperless({ onNext, onBack, data }: Step1PaperlessP
 
             {testResult === 'success' && (
               <div className="flex items-center gap-2 text-green-600">
-                <CheckCircle2 className="w-5 h-5" />
+                <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />
                 <span className="text-sm font-medium">Connected</span>
               </div>
             )}
 
             {testResult === 'error' && (
               <div className="flex items-center gap-2 text-red-600">
-                <XCircle className="w-5 h-5" />
+                <FontAwesomeIcon icon={faTimesCircle} className="text-red-600" />
                 <span className="text-sm font-medium">Failed</span>
               </div>
             )}
@@ -253,7 +254,7 @@ export default function Step1Paperless({ onNext, onBack, data }: Step1PaperlessP
                       variant="outline"
                       size="icon"
                     >
-                      <Copy className="w-4 h-4" />
+                      <FontAwesomeIcon icon={faCopy} />
                     </Button>
                   </div>
                 )}
@@ -274,7 +275,7 @@ export default function Step1Paperless({ onNext, onBack, data }: Step1PaperlessP
           {/* Navigation Buttons */}
           <div className="flex justify-between pt-6">
             <Button onClick={onBack} variant="outline">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
               {t('back')}
             </Button>
 
@@ -283,7 +284,7 @@ export default function Step1Paperless({ onNext, onBack, data }: Step1PaperlessP
               disabled={testResult !== 'success' || !webhookApiKey}
             >
               {t('next')}
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
             </Button>
           </div>
         </div>

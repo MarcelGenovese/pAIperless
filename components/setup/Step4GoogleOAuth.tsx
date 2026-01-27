@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, Loader2, ExternalLink, Calendar, ListTodo } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft, faArrowRight, faEye, faEyeSlash, faCheckCircle, faTimesCircle, faCopy, faKey, faSpinner, faUpload, faFileText, faExternalLinkAlt, faCalendar, faListUl, faEnvelope, faServer, faCog } from '@fortawesome/free-solid-svg-icons';
 
 interface StepProps {
   onNext: (data: Record<string, any>) => void;
@@ -219,7 +220,7 @@ export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
           {!isAuthorized ? (
             <div className="flex flex-col gap-2 p-4 border rounded-lg bg-muted/30">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <XCircle className="h-4 w-4 text-red-600" />
+                <FontAwesomeIcon icon={faTimesCircle} className="text-red-600" />
                 Not authorized yet
               </div>
               <Button
@@ -227,7 +228,7 @@ export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
                 disabled={!clientId || !clientSecret}
                 className="w-full"
               >
-                <ExternalLink className="mr-2 h-4 w-4" />
+                <FontAwesomeIcon icon={faExternalLinkAlt} />
                 Authorize with Google
               </Button>
               <p className="text-xs text-muted-foreground">
@@ -237,7 +238,7 @@ export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
           ) : (
             <div className="flex flex-col gap-2 p-4 border rounded-lg bg-green-50">
               <div className="flex items-center gap-2 text-sm text-green-700">
-                <CheckCircle2 className="h-4 w-4" />
+                <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />
                 Successfully authorized with Google
               </div>
             </div>
@@ -248,7 +249,7 @@ export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
             <>
               {isLoadingCalendars ? (
                 <div className="flex items-center justify-center p-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  <FontAwesomeIcon icon={faSpinner} spin />
                   <span className="ml-2">Loading calendars and task lists...</span>
                 </div>
               ) : (
@@ -256,7 +257,7 @@ export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
                   {/* Calendar Selection */}
                   <div className="space-y-2">
                     <Label htmlFor="calendar">
-                      <Calendar className="inline h-4 w-4 mr-2" />
+                      <FontAwesomeIcon icon={faCalendar} />
                       Select Calendar
                     </Label>
                     <Select value={selectedCalendar} onValueChange={setSelectedCalendar}>
@@ -279,7 +280,7 @@ export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
                   {/* Task List Selection */}
                   <div className="space-y-2">
                     <Label htmlFor="taskList">
-                      <ListTodo className="inline h-4 w-4 mr-2" />
+                      <FontAwesomeIcon icon={faListUl} />
                       Select Task List
                     </Label>
                     <Select value={selectedTaskList} onValueChange={setSelectedTaskList}>
@@ -306,12 +307,12 @@ export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
 
         <div className="flex justify-between pt-6">
           <Button onClick={onBack} variant="outline">
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
             Back
           </Button>
           <Button onClick={handleNext} disabled={!canProceed}>
             Next
-            <ArrowRight className="ml-2 h-4 w-4" />
+            <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
           </Button>
         </div>
       </div>

@@ -14,7 +14,8 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
-import { ArrowLeft, ArrowRight, Eye, EyeOff, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft, faArrowRight, faEye, faEyeSlash, faCheckCircle, faTimesCircle, faCopy, faKey, faSpinner, faUpload, faFileText, faExternalLinkAlt, faCalendar, faListUl, faEnvelope, faServer, faCog } from '@fortawesome/free-solid-svg-icons';
 
 interface Step2GeminiProps {
   onNext: (data: Record<string, any>) => void;
@@ -203,12 +204,12 @@ export default function Step2Gemini({ onNext, onBack, data }: Step2GeminiProps) 
                 onClick={() => setShowApiKey(!showApiKey)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
-                {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showApiKey ? <FontAwesomeIcon icon={faEyeSlash} /> : <FontAwesomeIcon icon={faEye} />}
               </button>
             </div>
             {loadingModels && (
               <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <Loader2 className="w-3 h-3 animate-spin" />
+                <FontAwesomeIcon icon={faSpinner} spin />
                 Loading available models...
               </p>
             )}
@@ -256,7 +257,7 @@ export default function Step2Gemini({ onNext, onBack, data }: Step2GeminiProps) 
             >
               {testing ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <FontAwesomeIcon icon={faSpinner} spin />
                   Testing...
                 </>
               ) : (
@@ -266,14 +267,14 @@ export default function Step2Gemini({ onNext, onBack, data }: Step2GeminiProps) 
 
             {testResult === 'success' && (
               <div className="flex items-center gap-2 text-green-600">
-                <CheckCircle2 className="w-5 h-5" />
+                <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />
                 <span className="text-sm font-medium">API Working</span>
               </div>
             )}
 
             {testResult === 'error' && (
               <div className="flex items-center gap-2 text-red-600">
-                <XCircle className="w-5 h-5" />
+                <FontAwesomeIcon icon={faTimesCircle} className="text-red-600" />
                 <span className="text-sm font-medium">Test Failed</span>
               </div>
             )}
@@ -317,7 +318,7 @@ export default function Step2Gemini({ onNext, onBack, data }: Step2GeminiProps) 
           {/* Navigation Buttons */}
           <div className="flex justify-between pt-6">
             <Button onClick={onBack} variant="outline">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
               {t('back')}
             </Button>
 
@@ -326,7 +327,7 @@ export default function Step2Gemini({ onNext, onBack, data }: Step2GeminiProps) 
               disabled={testResult !== 'success'}
             >
               {t('next')}
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
             </Button>
           </div>
         </div>

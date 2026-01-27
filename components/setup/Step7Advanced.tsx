@@ -1,7 +1,8 @@
 "use client"
 
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft, faArrowRight, faEye, faEyeSlash, faCheckCircle, faTimesCircle, faCopy, faKey, faSpinner, faUpload, faFileText, faExternalLinkAlt, faCalendar, faListUl, faEnvelope, faServer, faCog } from '@fortawesome/free-solid-svg-icons';
 
 interface StepProps {
   onNext: (data: Record<string, any>) => void;
@@ -24,12 +25,12 @@ export default function StepPlaceholder({ onNext, onBack }: StepProps) {
 
         <div className="flex justify-between pt-6">
           <Button onClick={onBack} variant="outline">
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
             Back
           </Button>
           <Button onClick={() => onNext({})}>
             Next
-            <ArrowRight className="ml-2 h-4 w-4" />
+            <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
           </Button>
         </div>
       </div>

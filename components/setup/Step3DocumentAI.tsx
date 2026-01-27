@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, ArrowRight, Upload, CheckCircle2, XCircle, Loader2, FileText } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft, faArrowRight, faEye, faEyeSlash, faCheckCircle, faTimesCircle, faCopy, faKey, faSpinner, faUpload, faFileText, faExternalLinkAlt, faCalendar, faListUl, faEnvelope, faServer, faCog } from '@fortawesome/free-solid-svg-icons';
 
 interface StepProps {
   onNext: (data: Record<string, any>) => void;
@@ -234,7 +235,7 @@ export default function Step3DocumentAI({ onNext, onBack, data }: StepProps) {
               />
               {serviceAccountFile && (
                 <div className="flex items-center gap-2 text-sm text-green-600">
-                  <CheckCircle2 className="h-4 w-4" />
+                  <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />
                   {serviceAccountFile.name}
                 </div>
               )}
@@ -311,9 +312,9 @@ export default function Step3DocumentAI({ onNext, onBack, data }: StepProps) {
               variant="outline"
               className="flex-1"
             >
-              {isTestingConnection && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {connectionStatus === 'success' && !isTestingConnection && <CheckCircle2 className="mr-2 h-4 w-4 text-green-600" />}
-              {connectionStatus === 'error' && !isTestingConnection && <XCircle className="mr-2 h-4 w-4 text-red-600" />}
+              {isTestingConnection && <FontAwesomeIcon icon={faSpinner} spin />}
+              {connectionStatus === 'success' && !isTestingConnection && <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />}
+              {connectionStatus === 'error' && !isTestingConnection && <FontAwesomeIcon icon={faTimesCircle} className="text-red-600" />}
               Test Connection
             </Button>
 
@@ -323,10 +324,10 @@ export default function Step3DocumentAI({ onNext, onBack, data }: StepProps) {
               variant="outline"
               className="flex-1"
             >
-              {isTestingOCR && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {ocrStatus === 'success' && !isTestingOCR && <CheckCircle2 className="mr-2 h-4 w-4 text-green-600" />}
-              {ocrStatus === 'error' && !isTestingOCR && <XCircle className="mr-2 h-4 w-4 text-red-600" />}
-              <FileText className="mr-2 h-4 w-4" />
+              {isTestingOCR && <FontAwesomeIcon icon={faSpinner} spin />}
+              {ocrStatus === 'success' && !isTestingOCR && <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />}
+              {ocrStatus === 'error' && !isTestingOCR && <FontAwesomeIcon icon={faTimesCircle} className="text-red-600" />}
+              <FontAwesomeIcon icon={faFileText} />
               Test OCR
             </Button>
           </div>
@@ -348,12 +349,12 @@ export default function Step3DocumentAI({ onNext, onBack, data }: StepProps) {
 
         <div className="flex justify-between pt-6">
           <Button onClick={onBack} variant="outline">
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
             Back
           </Button>
           <Button onClick={() => onNext({})} disabled={!canProceed}>
             Next
-            <ArrowRight className="ml-2 h-4 w-4" />
+            <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
           </Button>
         </div>
       </div>

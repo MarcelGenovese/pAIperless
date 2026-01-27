@@ -3,7 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle2 } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft, faArrowRight, faEye, faEyeSlash, faCheckCircle, faTimesCircle, faCopy, faKey, faSpinner, faUpload, faFileText, faExternalLinkAlt, faCalendar, faListUl, faEnvelope, faServer, faCog } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/components/ui/use-toast';
 
 interface Step9CompleteProps {
@@ -48,7 +49,7 @@ export default function Step9Complete({ data }: Step9CompleteProps) {
     <div className="max-w-2xl mx-auto text-center">
       <div className="mb-8">
         <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 mb-4">
-          <CheckCircle2 className="w-12 h-12 text-green-600" />
+          <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />
         </div>
         <h2 className="text-3xl font-bold text-primary mb-2">
           Setup Complete!
@@ -66,14 +67,14 @@ export default function Step9Complete({ data }: Step9CompleteProps) {
           <div className="flex justify-between items-center py-2 border-b">
             <span className="text-sm font-medium">Paperless-NGX</span>
             <span className="text-sm text-green-600 flex items-center gap-1">
-              <CheckCircle2 className="w-4 h-4" />
+              <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />
               Connected
             </span>
           </div>
           <div className="flex justify-between items-center py-2 border-b">
             <span className="text-sm font-medium">Gemini AI</span>
             <span className="text-sm text-green-600 flex items-center gap-1">
-              <CheckCircle2 className="w-4 h-4" />
+              <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />
               Configured
             </span>
           </div>
@@ -88,7 +89,7 @@ export default function Step9Complete({ data }: Step9CompleteProps) {
           <div className="flex justify-between items-center py-2">
             <span className="text-sm font-medium">Worker Status</span>
             <span className="text-sm text-green-600 flex items-center gap-1">
-              <CheckCircle2 className="w-4 h-4" />
+              <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />
               Ready
             </span>
           </div>
