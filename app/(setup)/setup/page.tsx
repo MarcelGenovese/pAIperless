@@ -91,10 +91,10 @@ export default function SetupPage() {
 
   return (
     <div className="w-full max-w-7xl">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
+      <div className="flex gap-0">
         {/* Left Column - Setup Form */}
-        <div className="lg:col-span-2">
-          <div className="bg-white shadow-lg">
+        <div className="flex-1 lg:w-2/3">
+          <div className="bg-white shadow-lg h-full">
             {/* Header with Logo */}
             <div className="bg-white border-b px-6 py-3">
               <div className="flex items-center justify-between">
@@ -133,22 +133,21 @@ export default function SetupPage() {
 
         {/* Right Column - Video & Info */}
         {currentStep > 0 && (
-          <div className="lg:col-span-1">
-            <div className="bg-white shadow-lg">
+          <div className="hidden lg:block lg:w-1/3">
+            <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 to-accent/5 shadow-lg">
               {/* Video Player */}
-              <div className="aspect-video bg-gray-900 flex items-center justify-center">
-                  {/* Placeholder for video */}
-                  <div className="text-white text-center p-4">
-                    <svg className="w-16 h-16 mx-auto mb-2 opacity-50" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
-                    </svg>
-                    <p className="text-sm">Tutorial Video</p>
-                    <p className="text-xs opacity-75 mt-1">Coming Soon</p>
-                  </div>
+              <div className="aspect-video bg-gray-900 flex items-center justify-center flex-shrink-0">
+                <div className="text-white text-center p-4">
+                  <svg className="w-16 h-16 mx-auto mb-2 opacity-50" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
+                  </svg>
+                  <p className="text-sm">Tutorial Video</p>
+                  <p className="text-xs opacity-75 mt-1">Coming Soon</p>
                 </div>
+              </div>
 
-              {/* Step Summary */}
-              <div className="border-t p-4">
+              {/* Step Summary - fills remaining space */}
+              <div className="flex-1 border-t p-4">
                 <h3 className="font-semibold text-gray-900 mb-2">What to do:</h3>
                 <p className="text-sm text-gray-600">
                   {videoInfo.summary}
