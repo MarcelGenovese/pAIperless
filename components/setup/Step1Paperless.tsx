@@ -276,14 +276,14 @@ export default function Step1Paperless({ onNext, onBack, data }: Step1PaperlessP
           <div className="flex justify-between pt-6">
             <Button onClick={onBack} variant="outline">
               <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
-              {t('back')}
+              Back
             </Button>
 
             <Button
               onClick={handleNext}
               disabled={testResult !== 'success' || !webhookApiKey}
             >
-              {t('next')}
+              Next
               <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
             </Button>
           </div>

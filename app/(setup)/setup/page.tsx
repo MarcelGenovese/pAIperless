@@ -90,20 +90,20 @@ export default function SetupPage() {
   const videoInfo = getVideoInfo(currentStep);
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="w-full max-w-7xl">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
         {/* Left Column - Setup Form */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="bg-white shadow-lg">
             {/* Header with Logo */}
-            <div className="bg-white border-b px-6 py-4">
+            <div className="bg-white border-b px-6 py-3">
               <div className="flex items-center justify-between">
                 <Image
                   src="/logo_compact.png"
                   alt="pAIperless"
-                  width={180}
-                  height={50}
-                  className="h-12 w-auto"
+                  width={150}
+                  height={40}
+                  className="h-10 w-auto"
                   priority
                 />
                 {currentStep > 0 && currentStep < totalSteps && (
@@ -125,7 +125,7 @@ export default function SetupPage() {
             )}
 
             {/* Step Content */}
-            <div className="p-6 md:p-8">
+            <div className="p-6">
               {renderStep()}
             </div>
           </div>
@@ -134,10 +134,9 @@ export default function SetupPage() {
         {/* Right Column - Video & Info */}
         {currentStep > 0 && (
           <div className="lg:col-span-1">
-            <div className="sticky top-8 space-y-4">
+            <div className="bg-white shadow-lg">
               {/* Video Player */}
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                <div className="aspect-video bg-gray-900 flex items-center justify-center">
+              <div className="aspect-video bg-gray-900 flex items-center justify-center">
                   {/* Placeholder for video */}
                   <div className="text-white text-center p-4">
                     <svg className="w-16 h-16 mx-auto mb-2 opacity-50" fill="currentColor" viewBox="0 0 20 20">
@@ -147,10 +146,9 @@ export default function SetupPage() {
                     <p className="text-xs opacity-75 mt-1">Coming Soon</p>
                   </div>
                 </div>
-              </div>
 
               {/* Step Summary */}
-              <div className="bg-white rounded-lg shadow p-4">
+              <div className="border-t p-4">
                 <h3 className="font-semibold text-gray-900 mb-2">What to do:</h3>
                 <p className="text-sm text-gray-600">
                   {videoInfo.summary}
