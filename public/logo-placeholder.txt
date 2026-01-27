@@ -1,0 +1,8 @@
+Logo Placeholder
+
+Please add your logo files here:
+- logo_complete.png (full logo with text, white background)
+- logo_compact.png (logo + AI text, white background)
+- logo_image_only.png (just image, white background)
+
+These should be copied from the images/ directory.
