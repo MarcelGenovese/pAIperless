@@ -12,6 +12,19 @@ export const runtime = 'nodejs';
 export async function POST(request: NextRequest) {
   console.log('[Upload] Starting upload process...');
 
+  // Check authentication via session cookie (not using getToken to avoid body consumption)
+  const sessionToken = request.cookies.get('next-auth.session-token')?.value;
+
+  if (!sessionToken) {
+    console.log('[Upload] Unauthorized - No session token cookie');
+    return NextResponse.json(
+      { error: 'Unauthorized - Please login again' },
+      { status: 401 }
+    );
+  }
+
+  console.log('[Upload] Session token found, proceeding with upload');
+
   try {
     const formData = await request.formData();
     console.log('[Upload] FormData received');

@@ -44,8 +44,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/auth/login', request.url));
   }
 
-  // Check authentication for protected routes
-  if (!pathname.startsWith('/auth/login') && !pathname.startsWith('/login') && !pathname.startsWith('/about')) {
+  // Skip auth check for routes that use FormData (to avoid body consumption)
+  // These routes will handle auth internally
+  const skipAuthRoutes = [
+    '/auth/login',
+    '/login',
+    '/about',
+    '/api/documents/upload', // Skip in middleware, check in route
+  ];
+
+  if (!skipAuthRoutes.some(route => pathname.startsWith(route))) {
     const cookies = request.cookies.getAll();
     console.log(`[Middleware] Path: ${pathname}`);
     console.log(`[Middleware] Cookies:`, cookies.map(c => c.name).join(', '));
@@ -72,6 +80,8 @@ export async function middleware(request: NextRequest) {
       console.log(`[Middleware] Redirecting to login`);
       return NextResponse.redirect(new URL('/auth/login', request.url));
     }
+  } else if (pathname === '/api/documents/upload') {
+    console.log(`[Middleware] Skipping auth for upload (checked in route)`);
   }
 
   return NextResponse.next();
