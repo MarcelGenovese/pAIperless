@@ -42,12 +42,20 @@ export default function Footer() {
               Kontakt
             </a>
             <a
-              href="https://github.com/anthropics/claude-code"
+              href="https://github.com/MarcelGenovese"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-primary transition-colors"
             >
               GitHub
+            </a>
+            <a
+              href="https://paypal.me/mg3n0"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-primary transition-colors"
+            >
+              Spenden
             </a>
           </div>
         </div>
