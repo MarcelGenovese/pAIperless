@@ -306,4 +306,5 @@ class FTPServerService {
 const ftpServerService = new FTPServerService();
 
 export default ftpServerService;
-export { FTPServerService, FTPServerStatus };
+export { FTPServerService };
+export type { FTPServerStatus };

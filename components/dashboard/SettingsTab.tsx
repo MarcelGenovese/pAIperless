@@ -18,6 +18,8 @@ import {
   faEyeSlash
 } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
+import FTPSettingsCard from './FTPSettingsCard';
+import EmailSettingsCard from './EmailSettingsCard';
 
 interface SettingsTabProps {
   initialData?: Record<string, any>;
@@ -725,6 +727,32 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
           </Button>
         </CardContent>
       </Card>
+
+      {/* FTP Server Section */}
+      <FTPSettingsCard
+        initialData={{
+          enabled: ftpData.enabled,
+          username: ftpData.username,
+          password: ftpData.password,
+          port: ftpData.port,
+          enableTls: ftpData.enableTls,
+        }}
+        onServiceRestart={restartServices}
+      />
+
+      {/* Email Notifications Section */}
+      <EmailSettingsCard
+        initialData={{
+          enabled: emailData.enabled,
+          smtpServer: emailData.smtpServer,
+          smtpPort: emailData.smtpPort,
+          smtpEncryption: emailData.smtpEncryption,
+          smtpUser: emailData.smtpUser,
+          smtpPassword: emailData.smtpPassword,
+          emailSender: emailData.emailSender,
+          emailRecipients: emailData.emailRecipients,
+        }}
+      />
 
       {/* Advanced Settings Section */}
       <Card>

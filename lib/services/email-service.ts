@@ -380,4 +380,5 @@ class EmailService {
 const emailService = new EmailService();
 
 export default emailService;
-export { EmailService, EmailServiceStatus, SendEmailOptions };
+export { EmailService };
+export type { EmailServiceStatus, SendEmailOptions };
