@@ -20,8 +20,7 @@ async function auditLog(action, details, user = 'cli') {
       data: {
         level: 'INFO',
         message: `[AUDIT] ${action}`,
-        metadata: JSON.stringify({ action, details, user, timestamp: new Date().toISOString() }),
-        timestamp: new Date(),
+        meta: JSON.stringify({ action, details, user, timestamp: new Date().toISOString() }),
       },
     });
     console.log(`✅ Audit log: ${action}`);
@@ -229,7 +228,7 @@ async function showSystemInfo() {
 async function showLogs(limit = 50) {
   try {
     const logs = await prisma.log.findMany({
-      orderBy: { timestamp: 'desc' },
+      orderBy: { createdAt: 'desc' },
       take: limit,
     });
 
@@ -241,14 +240,14 @@ async function showLogs(limit = 50) {
     console.log(`\n📜 Recent Logs (showing ${logs.length}):\n`);
 
     for (const log of logs) {
-      const timestamp = log.timestamp.toISOString();
+      const timestamp = log.createdAt.toISOString();
       console.log(`[${timestamp}] ${log.level}: ${log.message}`);
-      if (log.metadata) {
+      if (log.meta) {
         try {
-          const metadata = JSON.parse(log.metadata);
-          console.log(`  Metadata: ${JSON.stringify(metadata, null, 2)}`);
+          const metadata = JSON.parse(log.meta);
+          console.log(`  Meta: ${JSON.stringify(metadata, null, 2)}`);
         } catch {
-          console.log(`  Metadata: ${log.metadata}`);
+          console.log(`  Meta: ${log.meta}`);
         }
       }
     }
