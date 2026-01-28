@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,6 +35,31 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [serverStatus, setServerStatus] = useState<{
+    running: boolean;
+    message: string;
+  } | null>(null);
+
+  // Load FTP server status on mount
+  useEffect(() => {
+    loadStatus();
+  }, []);
+
+  const loadStatus = async () => {
+    try {
+      const response = await fetch('/api/services/status');
+      const data = await response.json();
+
+      if (data.ftp) {
+        setServerStatus({
+          running: data.ftp.running,
+          message: data.ftp.message,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load FTP status:', error);
+    }
+  };
 
   const testFtp = async () => {
     toast({
@@ -46,17 +71,20 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
       const response = await fetch('/api/services/status');
       const data = await response.json();
 
-      if (data.ftp?.status === 'connected') {
+      // Update status
+      await loadStatus();
+
+      if (data.ftp?.running) {
         toast({
           title: 'FTP-Server läuft',
-          description: `Port: ${ftpData.port}`,
+          description: `Port: ${ftpData.port} - ${data.ftp.message}`,
           variant: 'success',
         });
         setFtpData({ ...ftpData, tested: true });
       } else {
         toast({
-          title: 'FTP-Server nicht erreichbar',
-          description: data.ftp?.message || 'Fehler',
+          title: 'FTP-Server nicht aktiv',
+          description: data.ftp?.message || 'Server ist gestoppt oder deaktiviert',
           variant: 'destructive',
         });
       }
@@ -73,6 +101,7 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
     setIsSaving(true);
 
     try {
+      // Save configuration
       await fetch('/api/setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -90,7 +119,7 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
 
       toast({
         title: 'Gespeichert',
-        description: 'FTP-Server Einstellungen gespeichert',
+        description: 'FTP-Server Einstellungen werden übernommen...',
         variant: 'success',
       });
 
@@ -98,6 +127,9 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
       if (onServiceRestart) {
         await onServiceRestart('ftp');
       }
+
+      // Reload status after restart
+      setTimeout(() => loadStatus(), 2000);
 
       setFtpData({ ...ftpData, tested: false });
     } catch (error) {
@@ -118,6 +150,27 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
         <CardDescription>Dokumente via FTP hochladen (optional)</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Status Display */}
+        {serverStatus && (
+          <div className={cn(
+            "flex items-center justify-between p-3 rounded-lg border",
+            serverStatus.running ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-200"
+          )}>
+            <div className="flex items-center gap-2">
+              <div className={cn(
+                "w-2 h-2 rounded-full",
+                serverStatus.running ? "bg-green-500 animate-pulse" : "bg-gray-400"
+              )} />
+              <span className="text-sm font-medium">
+                {serverStatus.running ? 'Server läuft' : 'Server gestoppt'}
+              </span>
+            </div>
+            <span className="text-xs text-muted-foreground">
+              {serverStatus.message}
+            </span>
+          </div>
+        )}
+
         <div className="flex items-center justify-between p-4 border rounded-lg">
           <div className="space-y-0.5">
             <Label htmlFor="ftp-enabled" className="text-base">

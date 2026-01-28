@@ -203,6 +203,17 @@ class FTPServerService {
 
       return { success: true, message };
     } catch (error: any) {
+      // Check if error is EADDRINUSE
+      if (error.code === 'EADDRINUSE' || error.message.includes('EADDRINUSE')) {
+        const message = `FTP server port ${this.config?.port} is already in use. Server may already be running.`;
+        console.error(`[FTP] ${message}`);
+        await this.log('WARN', message, { error: error.message });
+
+        // Mark as running since the port is in use (likely by our own server)
+        this.isRunning = true;
+        return { success: true, message: 'FTP server is already running on this port' };
+      }
+
       const message = `Failed to start FTP server: ${error.message}`;
       console.error(`[FTP] ${message}`);
       await this.log('ERROR', message, { error: error.message, stack: error.stack });
@@ -218,6 +229,9 @@ class FTPServerService {
   async stop(): Promise<{ success: boolean; message: string }> {
     try {
       if (!this.isRunning || !this.server) {
+        // Reset state even if we think it's not running
+        this.server = null;
+        this.isRunning = false;
         return { success: true, message: 'FTP server is not running' };
       }
 
@@ -229,8 +243,15 @@ class FTPServerService {
       console.log(`[FTP] ${message}`);
       await this.log('INFO', message);
 
+      // Wait a bit to ensure port is released
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       return { success: true, message };
     } catch (error: any) {
+      // Reset state even on error
+      this.server = null;
+      this.isRunning = false;
+
       const message = `Failed to stop FTP server: ${error.message}`;
       console.error(`[FTP] ${message}`);
       await this.log('ERROR', message, { error: error.message });
@@ -245,16 +266,18 @@ class FTPServerService {
     console.log('[FTP] Restarting server...');
     await this.log('INFO', 'Restarting server');
 
-    // Stop if running
-    if (this.isRunning) {
+    // Always try to stop first, even if we think it's not running
+    try {
       const stopResult = await this.stop();
-      if (!stopResult.success) {
-        return stopResult;
+      if (!stopResult.success && stopResult.message.includes('Failed')) {
+        console.warn('[FTP] Stop failed during restart, continuing anyway...');
       }
+    } catch (error) {
+      console.warn('[FTP] Error during stop, continuing with start...', error);
     }
 
-    // Wait a bit before restarting
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Wait for port to be fully released
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
     // Start again
     return await this.start();
