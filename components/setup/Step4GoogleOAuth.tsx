@@ -29,6 +29,49 @@ export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
 
   const canProceed = clientId && clientSecret && isAuthorized && selectedCalendar && selectedTaskList;
 
+  // Load saved OAuth config on mount
+  useEffect(() => {
+    const loadOAuthConfig = async () => {
+      try {
+        const response = await fetch('/api/setup/oauth-config');
+        if (response.ok) {
+          const config = await response.json();
+          console.log('Loaded OAuth config:', config);
+          if (config.clientId) setClientId(config.clientId);
+          if (config.clientSecret) setClientSecret(config.clientSecret);
+          if (config.calendarId) setSelectedCalendar(config.calendarId);
+          if (config.taskListId) setSelectedTaskList(config.taskListId);
+
+          // Check if already authorized by trying to fetch resources
+          if (config.clientId && config.clientSecret) {
+            const resourcesResponse = await fetch('/api/auth/google/resources');
+            if (resourcesResponse.ok) {
+              setIsAuthorized(true);
+              const resources = await resourcesResponse.json();
+              if (resources.calendars) setCalendars(resources.calendars);
+              if (resources.taskLists) setTaskLists(resources.taskLists);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load OAuth config:', error);
+      }
+    };
+    loadOAuthConfig();
+  }, []);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('Step4 canProceed check:', {
+      clientId: !!clientId,
+      clientSecret: !!clientSecret,
+      isAuthorized,
+      selectedCalendar,
+      selectedTaskList,
+      canProceed
+    });
+  }, [clientId, clientSecret, isAuthorized, selectedCalendar, selectedTaskList, canProceed]);
+
   useEffect(() => {
     // Check if we're returning from OAuth callback
     const params = new URLSearchParams(window.location.search);
@@ -79,11 +122,15 @@ export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
         }),
       });
 
-      // Get OAuth URL
+      // Get OAuth URL with state parameter for step tracking
       const response = await fetch('/api/auth/google/url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clientId, clientSecret }),
+        body: JSON.stringify({
+          clientId,
+          clientSecret,
+          state: '4' // Current step
+        }),
       });
 
       const result = await response.json();
@@ -109,23 +156,33 @@ export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
 
   const loadCalendarsAndTasks = async () => {
     setIsLoadingCalendars(true);
+    console.log('Loading calendars and tasks...');
     try {
       const response = await fetch('/api/auth/google/resources');
+      console.log('Resources response status:', response.status);
       const result = await response.json();
+      console.log('Resources result:', result);
 
       if (response.ok) {
         setCalendars(result.calendars || []);
         setTaskLists(result.taskLists || []);
+        console.log('Calendars loaded:', result.calendars?.length || 0);
+        console.log('Task lists loaded:', result.taskLists?.length || 0);
 
         // Auto-select primary calendar and first task list
-        if (result.calendars && result.calendars.length > 0 && !selectedCalendar) {
+        if (result.calendars && result.calendars.length > 0) {
           const primary = result.calendars.find((cal: any) => cal.primary);
-          setSelectedCalendar(primary?.id || result.calendars[0].id);
+          const selectedId = primary?.id || result.calendars[0].id;
+          console.log('Auto-selecting calendar:', selectedId);
+          setSelectedCalendar(selectedId);
         }
-        if (result.taskLists && result.taskLists.length > 0 && !selectedTaskList) {
-          setSelectedTaskList(result.taskLists[0].id);
+        if (result.taskLists && result.taskLists.length > 0) {
+          const selectedId = result.taskLists[0].id;
+          console.log('Auto-selecting task list:', selectedId);
+          setSelectedTaskList(selectedId);
         }
       } else {
+        console.error('Failed to load resources:', result.error);
         toast({
           title: "Failed to Load Resources",
           description: result.error || "Could not load calendars and task lists.",
@@ -133,6 +190,7 @@ export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
         });
       }
     } catch (error) {
+      console.error('Error loading resources:', error);
       toast({
         title: "Error",
         description: "An error occurred while loading resources.",
@@ -175,7 +233,7 @@ export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
     <div className="max-w-4xl mx-auto">
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-primary mb-2">
+          <h2 className="text-2xl font-bold text-accent mb-2">
             Step 4: Google Calendar & Tasks
           </h2>
           <p className="text-muted-foreground">
@@ -216,6 +274,47 @@ export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
             </p>
           </div>
 
+          {/* Redirect URI Info */}
+          <div className="space-y-2 p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
+            <Label className="text-blue-900 dark:text-blue-100">
+              <FontAwesomeIcon icon={faExternalLinkAlt} className="mr-2" />
+              Autorisierte Weiterleitungs-URI
+            </Label>
+            <div className="flex gap-2">
+              <Input
+                value={typeof window !== 'undefined' ? `${window.location.origin}/api/auth/google/callback` : ''}
+                readOnly
+                className="font-mono text-sm bg-white dark:bg-gray-800"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  if (typeof window !== 'undefined') {
+                    try {
+                      await navigator.clipboard.writeText(`${window.location.origin}/api/auth/google/callback`);
+                      toast({
+                        title: "Kopiert!",
+                        description: "Redirect URI wurde in die Zwischenablage kopiert.",
+                      });
+                    } catch (error) {
+                      toast({
+                        title: "Fehler",
+                        description: "Kopieren fehlgeschlagen. Bitte manuell kopieren.",
+                        variant: "destructive",
+                      });
+                    }
+                  }
+                }}
+              >
+                <FontAwesomeIcon icon={faCopy} />
+              </Button>
+            </div>
+            <p className="text-xs text-blue-700 dark:text-blue-300">
+              Diese URL muss in der Google Cloud Console unter <strong>APIs & Dienste → Anmeldedaten → OAuth 2.0-Client-IDs</strong> bei den <strong>Autorisierten Weiterleitungs-URIs</strong> eingetragen werden.
+            </p>
+          </div>
+
           {/* OAuth Button */}
           {!isAuthorized ? (
             <div className="flex flex-col gap-2 p-4 border rounded-lg bg-muted/30">
@@ -232,7 +331,7 @@ export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
                 Authorize with Google
               </Button>
               <p className="text-xs text-muted-foreground">
-                You'll be redirected to Google to grant access to Calendar and Tasks.
+                You will be redirected to Google to grant access to Calendar and Tasks.
               </p>
             </div>
           ) : (

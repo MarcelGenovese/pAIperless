@@ -7,7 +7,7 @@ export const runtime = 'nodejs';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { clientId, clientSecret } = body;
+    const { clientId, clientSecret, state } = body;
 
     if (!clientId || !clientSecret) {
       return NextResponse.json(
@@ -16,9 +16,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get base URL from config
-    const baseUrl = await getConfig(CONFIG_KEYS.BASE_URL);
+    // Get base URL from request headers (handles proxies correctly)
+    const host = request.headers.get('host');
+    const protocol = request.headers.get('x-forwarded-proto') || 'http';
+    const baseUrl = `${protocol}://${host}`;
     const redirectUri = `${baseUrl}/api/auth/google/callback`;
+
+    console.log('OAuth redirect URI:', redirectUri);
 
     const oauth2Client = new google.auth.OAuth2(
       clientId,
@@ -35,6 +39,7 @@ export async function POST(request: NextRequest) {
       access_type: 'offline',
       scope: scopes,
       prompt: 'consent', // Force consent to get refresh token
+      state: state || '4', // Pass step number to preserve navigation
     });
 
     return NextResponse.json({ url });

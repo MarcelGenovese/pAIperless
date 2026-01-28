@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faArrowRight, faEye, faEyeSlash, faCheckCircle, faTimesCircle, faCopy, faKey, faSpinner, faUpload, faFileText, faExternalLinkAlt, faCalendar, faListUl, faEnvelope, faServer, faCog } from '@fortawesome/free-solid-svg-icons';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface Step9CompleteProps {
   data: Record<string, any>;
@@ -51,7 +51,7 @@ export default function Step9Complete({ data }: Step9CompleteProps) {
         <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 mb-4">
           <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />
         </div>
-        <h2 className="text-3xl font-bold text-primary mb-2">
+        <h2 className="text-3xl font-bold text-accent mb-2">
           Setup Complete!
         </h2>
         <p className="text-lg text-muted-foreground">

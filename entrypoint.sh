@@ -13,7 +13,7 @@ echo "📁 Storage directory ready"
 
 # Run Prisma migrations
 echo "🔄 Running database migrations..."
-npx prisma migrate deploy || echo "⚠️  Migration warning (this is normal on first run)"
+node /app/node_modules/prisma/build/index.js migrate deploy || echo "⚠️  Migration warning (this is normal on first run)"
 
 echo "✅ Database ready"
 

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { setConfig, setConfigSecure, getConfig, CONFIG_KEYS } from '@/lib/config';
+import { generateSecureToken } from '@/lib/utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -61,6 +63,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Save configuration
+    await setConfig(CONFIG_KEYS.PAPERLESS_URL, paperlessUrl);
+    await setConfigSecure(CONFIG_KEYS.PAPERLESS_TOKEN, paperlessToken);
+
+    // Generate or retrieve webhook API key
+    let webhookApiKey = await getConfig(CONFIG_KEYS.WEBHOOK_API_KEY);
+    if (!webhookApiKey) {
+      webhookApiKey = generateSecureToken(32);
+      await setConfig(CONFIG_KEYS.WEBHOOK_API_KEY, webhookApiKey);
+      console.log('Generated new webhook API key');
+    } else {
+      console.log('Using existing webhook API key');
+    }
+
     return NextResponse.json({
       success: true,
       message: workflowsExist
@@ -68,6 +84,7 @@ export async function POST(request: NextRequest) {
         : 'Connection successful! Please create the required workflows.',
       workflowsExist,
       missingWorkflows,
+      webhookApiKey,
     });
   } catch (error: any) {
     console.error('Paperless connection test failed:', error);

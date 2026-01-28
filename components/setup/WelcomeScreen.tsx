@@ -50,87 +50,87 @@ export default function WelcomeScreen({ onNext }: WelcomeScreenProps) {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white shadow-lg">
-      {/* Header */}
-      <div className="text-center border-b px-6 py-4">
+    <div className="w-full max-w-md mx-auto space-y-6">
+      {/* Logo */}
+      <div className="text-center">
         <Image
           src="/logo_complete.png"
           alt="pAIperless"
           width={300}
           height={80}
-          className="h-16 w-auto mx-auto mb-3"
+          className="h-16 w-auto mx-auto mb-4"
           priority
         />
-        <h1 className="text-2xl font-bold text-primary mb-2">
-          Welcome to pAIperless
-        </h1>
-        <p className="text-sm text-gray-600">
+        <h2 className="text-2xl font-bold text-accent mb-2">
+          Willkommen
+        </h2>
+        <p className="text-gray-600">
           AI-powered document processing for Paperless-NGX
         </p>
       </div>
 
-      {/* Content */}
-      <div className="p-6 space-y-4">
-        {/* Language Selector */}
-        <div className="space-y-2">
-          <Label htmlFor="language" className="flex items-center gap-2 text-base">
-            <FontAwesomeIcon icon={faGlobe} className="text-primary" />
-            Select Language
-          </Label>
-          <Select value={locale} onValueChange={setLocale}>
-            <SelectTrigger id="language">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="en">English</SelectItem>
-              <SelectItem value="de">Deutsch</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      {/* Language Selector */}
+      <div className="space-y-2">
+        <Label htmlFor="language" className="flex items-center gap-2">
+          <FontAwesomeIcon icon={faGlobe} className="text-accent" />
+          Select Language
+        </Label>
+        <Select value={locale} onValueChange={setLocale}>
+          <SelectTrigger id="language">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="en">English</SelectItem>
+            <SelectItem value="de">Deutsch</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-        {/* Base URL */}
-        <div className="space-y-2">
-          <Label htmlFor="baseUrl" className="text-base">Application URL</Label>
-          <Input
-            id="baseUrl"
-            type="url"
-            value={baseUrl}
-            onChange={(e) => setBaseUrl(e.target.value)}
-            placeholder="https://your-domain.com"
-          />
-          <p className="text-sm text-gray-500">
-            This URL will be used for OAuth callbacks and webhooks.
-          </p>
-        </div>
+      {/* Base URL */}
+      <div className="space-y-2">
+        <Label htmlFor="baseUrl">Application URL</Label>
+        <Input
+          id="baseUrl"
+          type="url"
+          value={baseUrl}
+          onChange={(e) => setBaseUrl(e.target.value)}
+          placeholder="https://your-domain.com"
+        />
+        <p className="text-sm text-gray-500">
+          This URL will be used for OAuth callbacks and webhooks.
+        </p>
+      </div>
 
-        {/* Features Preview */}
-        <div className="pt-4 border-t">
-          <h3 className="font-semibold text-gray-900 mb-3 text-sm">What you'll configure:</h3>
-          <ul className="space-y-2 text-xs text-gray-600">
-            <li className="flex items-start gap-2">
-              <span className="text-primary mt-0.5">•</span>
-              <span><strong>Paperless-NGX</strong> connection</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary mt-0.5">•</span>
-              <span><strong>Gemini AI</strong> for document tagging</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary mt-0.5">•</span>
-              <span><strong>Document AI</strong> for OCR</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary mt-0.5">•</span>
-              <span><strong>Calendar & Tasks</strong> integration</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary mt-0.5">•</span>
-              <span>Optional: Email & FTP</span>
-            </li>
-          </ul>
-        </div>
+      {/* Features Preview */}
+      <div className="space-y-2">
+        <h3 className="font-semibold text-accent">What you will configure:</h3>
+        <ul className="space-y-2 text-sm text-gray-600">
+          <li className="flex items-start gap-2">
+            <span className="text-accent mt-0.5">•</span>
+            <span><strong>Paperless-NGX</strong> connection</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-accent mt-0.5">•</span>
+            <span><strong>Gemini AI</strong> for document tagging</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-accent mt-0.5">•</span>
+            <span><strong>Document AI</strong> for OCR</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-accent mt-0.5">•</span>
+            <span><strong>Calendar & Tasks</strong> integration</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-accent mt-0.5">•</span>
+            <span>Optional: Email & FTP</span>
+          </li>
+        </ul>
+      </div>
 
-        <Button onClick={handleContinue} className="w-full mt-4">
+      {/* Continue Button */}
+      <div className="flex justify-end pt-4">
+        <Button onClick={handleContinue}>
           Start Setup
           <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
         </Button>

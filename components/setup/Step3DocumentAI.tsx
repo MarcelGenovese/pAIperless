@@ -20,7 +20,7 @@ export default function Step3DocumentAI({ onNext, onBack, data }: StepProps) {
 
   const [projectId, setProjectId] = useState(data.googleCloudProjectId || '');
   const [processorId, setProcessorId] = useState(data.documentAIProcessorId || '');
-  const [location, setLocation] = useState(data.documentAILocation || 'us');
+  const [location, setLocation] = useState(data.documentAILocation || 'eu');
   const [serviceAccountFile, setServiceAccountFile] = useState<File | null>(null);
   const [serviceAccountJson, setServiceAccountJson] = useState<string>(data.googleCloudCredentials || '');
 
@@ -93,23 +93,82 @@ export default function Step3DocumentAI({ onNext, onBack, data }: StepProps) {
       return;
     }
 
+    console.log('Testing Document AI connection with:', {
+      projectId,
+      processorId,
+      location,
+      hasCredentials: !!serviceAccountJson,
+      credentialsLength: serviceAccountJson.length
+    });
+
+    // Validate credentials before sending
+    console.log('=== FRONTEND VALIDATION START ===');
+    console.log('serviceAccountJson exists:', !!serviceAccountJson);
+    console.log('serviceAccountJson length:', serviceAccountJson?.length || 0);
+    console.log('serviceAccountJson first 100 chars:', serviceAccountJson?.substring(0, 100));
+
+    if (!serviceAccountJson || serviceAccountJson.trim() === '') {
+      console.error('ERROR: serviceAccountJson is empty!');
+      toast({
+        title: "Missing Credentials",
+        description: "Please upload a Service Account JSON file first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const credCheck = JSON.parse(serviceAccountJson);
+      console.log('Credentials validation - has client_email:', !!credCheck.client_email);
+      console.log('Credentials validation - client_email value:', credCheck.client_email);
+      console.log('Credentials validation - has private_key:', !!credCheck.private_key);
+      console.log('Credentials validation - type:', credCheck.type);
+      console.log('Credentials validation - project_id:', credCheck.project_id);
+      console.log('=== FRONTEND VALIDATION SUCCESS ===');
+    } catch (e) {
+      console.error('Failed to validate credentials JSON:', e);
+      toast({
+        title: "Invalid Credentials",
+        description: "Service Account JSON is not valid JSON format.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsTestingConnection(true);
     setConnectionStatus('idle');
 
     try {
+      const requestBody = {
+        projectId,
+        processorId,
+        location,
+        credentials: serviceAccountJson,
+        testType: 'connection'
+      };
+      console.log('Sending request with body keys:', Object.keys(requestBody));
+      console.log('Request body credentials length:', requestBody.credentials.length);
+
       const response = await fetch('/api/setup/test-document-ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          projectId,
-          processorId,
-          location,
-          credentials: serviceAccountJson,
-          testType: 'connection'
-        }),
+        body: JSON.stringify(requestBody),
       });
 
-      const result = await response.json();
+      console.log('Document AI response status:', response.status);
+      console.log('Document AI response headers:', response.headers.get('content-type'));
+
+      const responseText = await response.text();
+      console.log('Document AI raw response body:', responseText);
+
+      let result;
+      try {
+        result = JSON.parse(responseText);
+        console.log('Document AI parsed result:', result);
+      } catch (e) {
+        console.error('Failed to parse Document AI response:', e);
+        result = { error: 'Invalid server response: ' + responseText };
+      }
 
       if (response.ok) {
         setConnectionStatus('success');
@@ -119,17 +178,21 @@ export default function Step3DocumentAI({ onNext, onBack, data }: StepProps) {
         });
       } else {
         setConnectionStatus('error');
+        const errorMsg = result?.error || "Failed to connect to Document AI. Please check your credentials.";
+        console.error('Document AI connection error - showing to user:', errorMsg);
+
         toast({
           title: "Connection Failed",
-          description: result.error || "Failed to connect to Document AI. Please check your credentials.",
+          description: errorMsg,
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       setConnectionStatus('error');
+      console.error('Document AI connection exception:', error);
       toast({
         title: "Connection Error",
-        description: "An error occurred while testing the connection.",
+        description: error.message || "An error occurred while testing the connection.",
         variant: "destructive",
       });
     } finally {
@@ -146,6 +209,8 @@ export default function Step3DocumentAI({ onNext, onBack, data }: StepProps) {
       });
       return;
     }
+
+    console.log('Testing Document AI OCR...');
 
     setIsTestingOCR(true);
     setOcrStatus('idle');
@@ -164,7 +229,20 @@ export default function Step3DocumentAI({ onNext, onBack, data }: StepProps) {
         }),
       });
 
-      const result = await response.json();
+      console.log('Document AI OCR response status:', response.status);
+      console.log('Document AI OCR response headers:', response.headers.get('content-type'));
+
+      const responseText = await response.text();
+      console.log('Document AI OCR raw response body (first 500 chars):', responseText.substring(0, 500));
+
+      let result;
+      try {
+        result = JSON.parse(responseText);
+        console.log('Document AI OCR parsed result:', result);
+      } catch (e) {
+        console.error('Failed to parse OCR response:', e);
+        result = { error: 'Invalid server response: ' + responseText };
+      }
 
       if (response.ok) {
         setOcrStatus('success');
@@ -191,17 +269,21 @@ export default function Step3DocumentAI({ onNext, onBack, data }: StepProps) {
         });
       } else {
         setOcrStatus('error');
+        const errorMsg = result?.error || "Failed to process test PDF. Please check your configuration.";
+        console.error('Document AI OCR error - showing to user:', errorMsg);
+
         toast({
           title: "OCR Test Failed",
-          description: result.error || "Failed to process test PDF. Please check your configuration.",
+          description: errorMsg,
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       setOcrStatus('error');
+      console.error('Document AI OCR exception:', error);
       toast({
         title: "OCR Error",
-        description: "An error occurred during OCR testing.",
+        description: error.message || "An error occurred during OCR testing.",
         variant: "destructive",
       });
     } finally {
@@ -213,7 +295,7 @@ export default function Step3DocumentAI({ onNext, onBack, data }: StepProps) {
     <div className="max-w-4xl mx-auto">
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-primary mb-2">
+          <h2 className="text-2xl font-bold text-accent mb-2">
             Step 3: Google Cloud Document AI
           </h2>
           <p className="text-muted-foreground">

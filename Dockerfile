@@ -1,17 +1,19 @@
-FROM node:20-alpine AS base
+FROM node:20-bookworm-slim AS base
 
 # Install system dependencies
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y \
     bash \
     curl \
     ghostscript \
     qpdf \
     tesseract-ocr \
-    tesseract-ocr-data-deu \
-    tesseract-ocr-data-eng \
+    tesseract-ocr-deu \
+    tesseract-ocr-eng \
     python3 \
-    py3-pip \
-    procps
+    python3-pip \
+    procps \
+    openssl \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -44,14 +46,19 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+# Create home directory for nextjs user to fix npx
+RUN mkdir -p /home/nextjs && chown -R nextjs:nodejs /home/nextjs
+ENV HOME=/home/nextjs
+
 # Copy built application
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy Prisma files
+# Copy Prisma files and CLI
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/prisma ./prisma
 
 # Create storage directories

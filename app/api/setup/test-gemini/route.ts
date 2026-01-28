@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
+  console.log('Gemini test endpoint called');
   try {
     const { apiKey, model } = await request.json();
+    console.log('Gemini test request:', {
+      hasApiKey: !!apiKey,
+      apiKeyLength: apiKey?.length,
+      model: model
+    });
 
     if (!apiKey || !model) {
+      console.error('Missing fields:', { hasApiKey: !!apiKey, hasModel: !!model });
       return NextResponse.json(
         { error: 'Missing API key or model' },
         { status: 400 }
@@ -19,6 +26,9 @@ Document: "Invoice from TechCorp dated January 27, 2026. Total amount: $150.00. 
 Provide a JSON response with: { "summary": "...", "actionRequired": true/false }`;
 
     // Send test request to Gemini API
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey.substring(0, 10)}...`;
+    console.log('Calling Gemini API:', geminiUrl);
+
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
       {
@@ -45,19 +55,33 @@ Provide a JSON response with: { "summary": "...", "actionRequired": true/false }
       }
     );
 
+    console.log('Gemini API response status:', response.status);
+
     if (!response.ok) {
-      const error = await response.json();
-      return NextResponse.json(
-        {
-          error:
-            error.error?.message ||
-            `API returned ${response.status}: ${response.statusText}`,
-        },
-        { status: response.status }
-      );
+      const errorText = await response.text();
+      console.error('Gemini API error response:', errorText);
+
+      let errorMessage = `API returned ${response.status}: ${response.statusText}`;
+
+      try {
+        const error = JSON.parse(errorText);
+        if (error.error?.message) {
+          errorMessage = error.error.message;
+        }
+        console.error('Parsed error message:', errorMessage);
+      } catch (e) {
+        errorMessage = errorText.substring(0, 300);
+        console.error('Failed to parse error, using raw text:', errorMessage);
+      }
+
+      const errorResponse = { error: errorMessage };
+      console.error('Sending error response:', JSON.stringify(errorResponse));
+
+      return NextResponse.json(errorResponse, { status: response.status });
     }
 
     const data = await response.json();
+    console.log('Gemini API success, tokens used:', data.usageMetadata?.totalTokenCount);
 
     // Extract response text
     const responseText =
@@ -74,18 +98,19 @@ Provide a JSON response with: { "summary": "...", "actionRequired": true/false }
       message: 'Gemini API is working correctly',
     });
   } catch (error: any) {
-    console.error('Gemini test failed:', error);
+    console.error('Gemini test exception:', error);
+    console.error('Exception details:', error.message, error.name);
 
-    if (error.name === 'AbortError' || error.name === 'TimeoutError') {
-      return NextResponse.json(
-        { error: 'Request timeout. Please check your API key and network.' },
-        { status: 408 }
-      );
-    }
+    const errorMessage = error.name === 'AbortError' || error.name === 'TimeoutError'
+      ? 'Request timeout. Please check your API key and network.'
+      : (error.message || 'Failed to test Gemini API');
+
+    const errorResponse = { error: errorMessage };
+    console.error('Sending exception response:', JSON.stringify(errorResponse));
 
     return NextResponse.json(
-      { error: error.message || 'Failed to test Gemini API' },
-      { status: 500 }
+      errorResponse,
+      { status: error.name === 'AbortError' || error.name === 'TimeoutError' ? 408 : 500 }
     );
   }
 }

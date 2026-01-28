@@ -39,18 +39,37 @@ export async function POST(request: NextRequest) {
         model.supportedGenerationMethods?.includes('generateContent') &&
         (model.name.includes('gemini') || model.name.includes('flash'))
       )
-      .map((model: any) => ({
-        name: model.name.replace('models/', ''),
-        displayName: model.displayName || model.name.replace('models/', ''),
-        description: model.description,
-      }));
+      .map((model: any) => {
+        const modelId = model.name.replace('models/', '');
+        return {
+          id: modelId,
+          name: model.displayName || modelId,
+        };
+      });
+
+    // Sort to prioritize flash models with gemini-3-flash-preview first
+    generationModels.sort((a: any, b: any) => {
+      // Prioritize gemini-3-flash-preview first
+      if (a.id === 'gemini-3-flash-preview') return -1;
+      if (b.id === 'gemini-3-flash-preview') return 1;
+
+      // Then gemini-2.0-flash-exp
+      if (a.id === 'gemini-2.0-flash-exp') return -1;
+      if (b.id === 'gemini-2.0-flash-exp') return 1;
+
+      // Then other flash models
+      if (a.id.includes('flash') && !b.id.includes('flash')) return -1;
+      if (!a.id.includes('flash') && b.id.includes('flash')) return 1;
+
+      // Alphabetical for rest
+      return a.id.localeCompare(b.id);
+    });
 
     // Add recommended default if API doesn't return it
     if (generationModels.length === 0) {
       generationModels.push({
-        name: 'gemini-2.0-flash-exp',
-        displayName: 'Gemini 2.0 Flash (Experimental)',
-        description: 'Latest Flash model with best price-performance',
+        id: 'gemini-2.0-flash-exp',
+        name: 'Gemini 2.0 Flash (Experimental)',
       });
     }
 

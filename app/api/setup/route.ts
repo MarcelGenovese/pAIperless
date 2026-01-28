@@ -13,13 +13,20 @@ export async function POST(request: NextRequest) {
         break;
 
       case 1: // Paperless
-        await setConfig(CONFIG_KEYS.PAPERLESS_URL, data.paperlessUrl);
-        await setConfigSecure(CONFIG_KEYS.PAPERLESS_TOKEN, data.paperlessToken);
+        if (data.paperlessUrl) {
+          await setConfig(CONFIG_KEYS.PAPERLESS_URL, data.paperlessUrl);
+        }
+        if (data.paperlessToken) {
+          await setConfigSecure(CONFIG_KEYS.PAPERLESS_TOKEN, data.paperlessToken);
+        }
 
-        // Generate webhook API key if not exists
+        // Generate webhook API key if requested
         if (data.generateWebhookKey) {
+          console.log('Generating webhook API key...');
           const webhookKey = generateSecureToken(32);
+          console.log('Generated webhook key:', webhookKey);
           await setConfig(CONFIG_KEYS.WEBHOOK_API_KEY, webhookKey);
+          console.log('Webhook key saved to database');
           return NextResponse.json({ webhookApiKey: webhookKey });
         }
         break;

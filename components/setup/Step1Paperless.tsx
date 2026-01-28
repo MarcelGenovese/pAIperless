@@ -1,14 +1,14 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faArrowRight, faEye, faEyeSlash, faCheckCircle, faTimesCircle, faCopy, faKey } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faArrowRight, faEye, faEyeSlash, faCheckCircle, faTimesCircle, faCopy, faKey, faLink } from '@fortawesome/free-solid-svg-icons';
 
 interface Step1PaperlessProps {
   onNext: (data: Record<string, any>) => void;
@@ -24,13 +24,30 @@ export default function Step1Paperless({ onNext, onBack, data }: Step1PaperlessP
   const [paperlessToken, setPaperlessToken] = useState(data.paperlessToken || '');
   const [showToken, setShowToken] = useState(false);
   const [webhookApiKey, setWebhookApiKey] = useState(data.webhookApiKey || '');
+  const [baseUrl, setBaseUrl] = useState('');
+
   const [testing, setTesting] = useState(false);
-  const [testResult, setTestResult] = useState<'success' | 'error' | null>(null);
-  const [generating, setGenerating] = useState(false);
+  const [connectionSuccess, setConnectionSuccess] = useState(false);
+  const [testingWebhooks, setTestingWebhooks] = useState(false);
+  const [webhooksExist, setWebhooksExist] = useState<boolean | null>(null);
+  const [generatingKey, setGeneratingKey] = useState(false);
+
+  useEffect(() => {
+    // Auto-detect base URL for webhook instructions
+    if (typeof window !== 'undefined') {
+      const detectedUrl = `${window.location.protocol}//${window.location.host}`;
+      setBaseUrl(detectedUrl);
+    }
+
+    // Check if already connected (from previous session)
+    if (paperlessUrl && paperlessToken && webhookApiKey) {
+      setConnectionSuccess(true);
+    }
+  }, []);
 
   const handleTestConnection = async () => {
     setTesting(true);
-    setTestResult(null);
+    setConnectionSuccess(false);
 
     try {
       const response = await fetch('/api/setup/test-paperless', {
@@ -40,27 +57,37 @@ export default function Step1Paperless({ onNext, onBack, data }: Step1PaperlessP
       });
 
       const result = await response.json();
+      console.log('Paperless connection test result:', result);
 
       if (response.ok) {
-        setTestResult('success');
+        setConnectionSuccess(true);
+
+        // Set webhook API key from response
+        if (result.webhookApiKey) {
+          setWebhookApiKey(result.webhookApiKey);
+          console.log('Webhook API key received:', result.webhookApiKey);
+        }
+
         toast({
-          title: t('connectionSuccess'),
-          description: result.message,
-          variant: 'success',
+          title: 'Connection Successful',
+          description: result.message || 'Successfully connected to Paperless-NGX',
         });
       } else {
-        setTestResult('error');
+        console.error('Paperless connection error:', result);
+        const errorMsg = result.error || 'Failed to connect to Paperless-NGX';
+        const statusInfo = response.status ? ` (HTTP ${response.status})` : '';
+
         toast({
-          title: t('connectionFailed'),
-          description: result.error,
+          title: 'Connection Failed',
+          description: errorMsg + statusInfo,
           variant: 'destructive',
         });
       }
-    } catch (error) {
-      setTestResult('error');
+    } catch (error: any) {
+      console.error('Paperless connection exception:', error);
       toast({
-        title: t('connectionFailed'),
-        description: 'Network error',
+        title: 'Connection Error',
+        description: error.message || 'An error occurred while testing the connection',
         variant: 'destructive',
       });
     } finally {
@@ -68,242 +95,375 @@ export default function Step1Paperless({ onNext, onBack, data }: Step1PaperlessP
     }
   };
 
-  const handleGenerateWebhookKey = async () => {
-    setGenerating(true);
-
+  const generateWebhookKey = async () => {
+    setGeneratingKey(true);
     try {
       const response = await fetch('/api/setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           step: 1,
-          data: { generateWebhookKey: true }
-        })
+          data: {
+            generateWebhookKey: true,
+          }
+        }),
       });
 
       const result = await response.json();
+      console.log('Webhook key generation response:', result);
 
-      if (response.ok) {
+      if (response.ok && result.webhookApiKey) {
         setWebhookApiKey(result.webhookApiKey);
+        console.log('Webhook key set:', result.webhookApiKey);
+      } else {
+        console.error('Webhook key generation failed:', result);
         toast({
-          title: 'Webhook API Key Generated',
-          description: 'Copy this key for your Paperless workflows',
+          title: 'Key Generation Failed',
+          description: result.error || 'Failed to generate webhook API key',
+          variant: 'destructive',
         });
       }
     } catch (error) {
+      console.error('Failed to generate webhook key:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to generate webhook key',
+        title: 'Key Generation Error',
+        description: 'An error occurred while generating the webhook key',
         variant: 'destructive',
       });
     } finally {
-      setGenerating(false);
+      setGeneratingKey(false);
     }
   };
 
-  const handleCopyKey = () => {
-    navigator.clipboard.writeText(webhookApiKey);
+  const handleTestWebhooks = async () => {
+    setTestingWebhooks(true);
+    setWebhooksExist(null);
+
+    try {
+      const response = await fetch('/api/setup/test-webhooks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paperlessUrl, paperlessToken })
+      });
+
+      const result = await response.json();
+      console.log('Webhooks test result:', result);
+
+      if (response.ok && result.webhooksExist) {
+        setWebhooksExist(true);
+        toast({
+          title: 'Webhooks Found',
+          description: 'Required webhooks are configured correctly',
+        });
+      } else {
+        setWebhooksExist(false);
+        console.error('Webhooks test error:', result);
+        const errorMsg = result.message || 'Please create the required webhooks in Paperless-NGX';
+        const missingInfo = result.missingWebhooks?.length ? ` Missing: ${result.missingWebhooks.join(', ')}` : '';
+
+        toast({
+          title: 'Webhooks Not Found',
+          description: errorMsg + missingInfo,
+          variant: 'destructive',
+        });
+      }
+    } catch (error: any) {
+      setWebhooksExist(false);
+      console.error('Webhooks test exception:', error);
+      toast({
+        title: 'Test Error',
+        description: error.message || 'An error occurred while checking webhooks',
+        variant: 'destructive',
+      });
+    } finally {
+      setTestingWebhooks(false);
+    }
+  };
+
+  const handleCopyWebhookKey = () => {
+    if (webhookApiKey) {
+      navigator.clipboard.writeText(webhookApiKey);
+      toast({
+        title: 'Copied',
+        description: 'Webhook API key copied to clipboard',
+      });
+    }
+  };
+
+  const handleCopyWebhookUrl = (type: 'added' | 'updated') => {
+    const url = `${baseUrl}/api/webhook/paperless-${type}`;
+    navigator.clipboard.writeText(url);
     toast({
-      title: 'Copied!',
-      description: 'Webhook API key copied to clipboard',
+      title: 'Copied',
+      description: 'Webhook URL copied to clipboard',
     });
   };
 
-  const handleNext = async () => {
-    if (!paperlessUrl || !paperlessToken) {
+  const handleNext = () => {
+    if (!connectionSuccess) {
       toast({
-        title: 'Missing Information',
-        description: 'Please fill in all required fields',
+        title: 'Connection Required',
+        description: 'Please test the Paperless-NGX connection first',
         variant: 'destructive',
       });
       return;
     }
 
-    if (testResult !== 'success') {
+    if (!webhookApiKey) {
       toast({
-        title: 'Connection Not Tested',
-        description: 'Please test the connection before continuing',
+        title: 'Webhook Key Missing',
+        description: 'Webhook API key is required. Please try refreshing the page.',
         variant: 'destructive',
       });
       return;
     }
 
-    // Save to database
-    try {
-      await fetch('/api/setup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          step: 1,
-          data: { paperlessUrl, paperlessToken }
-        })
-      });
-
-      onNext({ paperlessUrl, paperlessToken, webhookApiKey });
-    } catch (error) {
+    if (webhooksExist !== true) {
       toast({
-        title: 'Error',
-        description: 'Failed to save configuration',
+        title: 'Webhooks Required',
+        description: 'Please configure and verify the webhooks in Paperless-NGX',
         variant: 'destructive',
       });
+      return;
     }
+
+    onNext({ paperlessUrl, paperlessToken, webhookApiKey });
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="grid md:grid-cols-[2fr,1fr] gap-8">
-        {/* Left Column: Form */}
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-2xl font-bold text-primary mb-2">
-              {t('step1Title')}
-            </h2>
-            <p className="text-muted-foreground">
-              {t('step1Description')}
-            </p>
-          </div>
+    <div className="max-w-3xl mx-auto space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold text-accent mb-2">
+          Step 1: Paperless-NGX Connection
+        </h2>
+        <p className="text-gray-600">
+          Connect to your Paperless-NGX instance to enable document processing.
+        </p>
+      </div>
 
+      {/* Connection Form - only show if not connected yet */}
+      {!connectionSuccess && (
+        <>
           {/* Paperless URL */}
           <div className="space-y-2">
             <Label htmlFor="paperlessUrl">
-              {t('paperlessUrl')} <span className="text-red-500">*</span>
+              Paperless-NGX URL <span className="text-red-500">*</span>
             </Label>
             <Input
               id="paperlessUrl"
               type="url"
+              placeholder="https://paperless.example.com"
               value={paperlessUrl}
               onChange={(e) => setPaperlessUrl(e.target.value)}
-              placeholder="https://paperless.example.com"
             />
+            <p className="text-sm text-gray-500">
+              The URL of your Paperless-NGX installation
+            </p>
           </div>
 
           {/* Paperless Token */}
           <div className="space-y-2">
             <Label htmlFor="paperlessToken">
-              {t('paperlessToken')} <span className="text-red-500">*</span>
+              Admin API Token <span className="text-red-500">*</span>
             </Label>
             <div className="relative">
               <Input
                 id="paperlessToken"
                 type={showToken ? 'text' : 'password'}
+                placeholder="••••••••••••••••••••"
                 value={paperlessToken}
                 onChange={(e) => setPaperlessToken(e.target.value)}
-                placeholder="abc123..."
-                className="pr-10"
               />
               <button
                 type="button"
                 onClick={() => setShowToken(!showToken)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
               >
-                {showToken ? <FontAwesomeIcon icon={faEyeSlash} /> : <FontAwesomeIcon icon={faEye} />}
+                <FontAwesomeIcon icon={showToken ? faEyeSlash : faEye} />
               </button>
             </div>
+            <p className="text-sm text-gray-500">
+              Your Paperless-NGX admin API token (Settings → API)
+            </p>
           </div>
 
           {/* Test Connection */}
-          <div className="flex items-center gap-3">
+          <div className="flex gap-4">
             <Button
               onClick={handleTestConnection}
-              variant="outline"
               disabled={!paperlessUrl || !paperlessToken || testing}
+              variant="outline"
+              className="flex-1"
             >
-              {testing ? 'Testing...' : t('testConnection')}
+              {testing ? 'Testing...' : 'Test Connection'}
             </Button>
-
-            {testResult === 'success' && (
-              <div className="flex items-center gap-2 text-green-600">
-                <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />
-                <span className="text-sm font-medium">Connected</span>
-              </div>
-            )}
-
-            {testResult === 'error' && (
-              <div className="flex items-center gap-2 text-red-600">
-                <FontAwesomeIcon icon={faTimesCircle} className="text-red-600" />
-                <span className="text-sm font-medium">Failed</span>
-              </div>
-            )}
           </div>
+        </>
+      )}
 
-          {/* Webhook API Key */}
-          {testResult === 'success' && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">{t('webhookApiKey')}</CardTitle>
-                <CardDescription>{t('webhookApiKeyDescription')}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {!webhookApiKey ? (
-                  <Button
-                    onClick={handleGenerateWebhookKey}
-                    variant="outline"
-                    disabled={generating}
-                  >
-                    {generating ? 'Generating...' : 'Generate Webhook Key'}
-                  </Button>
-                ) : (
-                  <div className="flex items-center gap-2">
+      {/* Connection Success Summary */}
+      {connectionSuccess && (
+        <Card className="p-4 bg-green-50 border-green-200">
+          <div className="flex items-center gap-3">
+            <FontAwesomeIcon icon={faCheckCircle} className="text-green-600 text-xl" />
+            <div>
+              <h3 className="font-semibold text-green-900">Connected to Paperless-NGX</h3>
+              <p className="text-sm text-green-700">{paperlessUrl}</p>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Webhook Setup Instructions - only show after connection success */}
+      {connectionSuccess && (
+        <>
+          <Card className="p-4 bg-accent/5 border-accent/20">
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold text-accent mb-2 flex items-center gap-2">
+                  <FontAwesomeIcon icon={faKey} />
+                  Webhook API Key
+                </h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  Use this key to authenticate webhook calls from Paperless to pAIperless.
+                </p>
+                {generatingKey ? (
+                  <div className="text-sm text-gray-500">Generating API key...</div>
+                ) : webhookApiKey ? (
+                  <div className="flex gap-2">
                     <Input
+                      type="text"
                       value={webhookApiKey}
                       readOnly
                       className="font-mono text-sm"
                     />
                     <Button
-                      onClick={handleCopyKey}
+                      onClick={handleCopyWebhookKey}
+                      size="sm"
                       variant="outline"
-                      size="icon"
                     >
                       <FontAwesomeIcon icon={faCopy} />
                     </Button>
                   </div>
+                ) : (
+                  <div className="text-sm text-red-600">Failed to generate API key</div>
                 )}
+              </div>
+            </div>
+          </Card>
 
-                {webhookApiKey && (
-                  <div className="text-sm text-muted-foreground space-y-2">
-                    <p className="font-medium">{t('webhookInstructions')}</p>
-                    <ul className="list-disc list-inside space-y-1 ml-2">
-                      <li className="text-xs">{t('webhookWorkflow1')}</li>
-                      <li className="text-xs">{t('webhookWorkflow2')}</li>
-                    </ul>
+          {webhookApiKey && (
+            <>
+              <Card className="p-4 bg-blue-50 border-blue-200">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                      <FontAwesomeIcon icon={faLink} />
+                      Configure Webhooks in Paperless-NGX
+                    </h3>
+                    <p className="text-sm text-blue-800 mb-3">
+                      You need to create two webhooks in Paperless-NGX (Settings → Workflows):
+                    </p>
+                  </div>
+
+                  {/* Webhook 1 */}
+                  <div className="bg-white p-3 rounded border border-blue-200">
+                    <h4 className="font-semibold text-sm mb-2">1. Document Added Webhook</h4>
+                    <div className="space-y-2 text-sm">
+                      <div>
+                        <span className="text-gray-600">Name:</span> <code className="bg-gray-100 px-2 py-1 rounded">paiperless_document_added</code>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Trigger:</span> Document added
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-600">URL:</span>
+                        <code className="bg-gray-100 px-2 py-1 rounded flex-1 text-xs">{baseUrl}/api/webhook/paperless-added</code>
+                        <Button
+                          onClick={() => handleCopyWebhookUrl('added')}
+                          size="sm"
+                          variant="ghost"
+                        >
+                          <FontAwesomeIcon icon={faCopy} />
+                        </Button>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Header:</span> <code className="bg-gray-100 px-2 py-1 rounded">x-api-key: {webhookApiKey.substring(0, 16)}...</code>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Webhook 2 */}
+                  <div className="bg-white p-3 rounded border border-blue-200">
+                    <h4 className="font-semibold text-sm mb-2">2. Document Updated Webhook</h4>
+                    <div className="space-y-2 text-sm">
+                      <div>
+                        <span className="text-gray-600">Name:</span> <code className="bg-gray-100 px-2 py-1 rounded">paiperless_document_updated</code>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Trigger:</span> Document updated
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-600">URL:</span>
+                        <code className="bg-gray-100 px-2 py-1 rounded flex-1 text-xs">{baseUrl}/api/webhook/paperless-updated</code>
+                        <Button
+                          onClick={() => handleCopyWebhookUrl('updated')}
+                          size="sm"
+                          variant="ghost"
+                        >
+                          <FontAwesomeIcon icon={faCopy} />
+                        </Button>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Header:</span> <code className="bg-gray-100 px-2 py-1 rounded">x-api-key: {webhookApiKey.substring(0, 16)}...</code>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Test Webhooks */}
+              <div className="flex gap-4">
+                <Button
+                  onClick={handleTestWebhooks}
+                  disabled={testingWebhooks}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  {testingWebhooks ? 'Testing...' : 'Verify Webhooks'}
+                </Button>
+                {webhooksExist === true && (
+                  <div className="flex items-center gap-2 text-green-600">
+                    <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />
+                    <span className="text-sm">Configured</span>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+                {webhooksExist === false && (
+                  <div className="flex items-center gap-2 text-red-600">
+                    <FontAwesomeIcon icon={faTimesCircle} className="text-red-600" />
+                    <span className="text-sm">Not Found</span>
+                  </div>
+                )}
+              </div>
+            </>
           )}
+        </>
+      )}
 
-          {/* Navigation Buttons */}
-          <div className="flex justify-between pt-6">
-            <Button onClick={onBack} variant="outline">
-              <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
-              Back
-            </Button>
+      {/* Navigation Buttons */}
+      <div className="flex justify-between pt-6">
+        <Button onClick={onBack} variant="outline">
+          <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
+          Back
+        </Button>
 
-            <Button
-              onClick={handleNext}
-              disabled={testResult !== 'success' || !webhookApiKey}
-            >
-              Next
-              <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Right Column: Video & Description */}
-        <div className="space-y-4">
-          <div className="rounded-lg bg-gray-100 aspect-video flex items-center justify-center">
-            <p className="text-sm text-muted-foreground">Video Tutorial</p>
-          </div>
-          <div className="text-sm text-muted-foreground">
-            <p className="font-medium mb-2">How to get your Paperless API token:</p>
-            <ol className="list-decimal list-inside space-y-1">
-              <li>Log into Paperless-NGX</li>
-              <li>Go to Settings → API</li>
-              <li>Create or copy your admin token</li>
-              <li>Paste it here</li>
-            </ol>
-          </div>
-        </div>
+        <Button
+          onClick={handleNext}
+          disabled={!connectionSuccess || !webhookApiKey || webhooksExist !== true}
+        >
+          Next
+          <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
+        </Button>
       </div>
     </div>
   );
