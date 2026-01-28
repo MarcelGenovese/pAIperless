@@ -33,7 +33,7 @@ export default function SetupPage() {
       .catch(console.error);
   }, [router]);
 
-  // Load saved config data for current step
+  // Load config when step changes (e.g., URL parameter on mount)
   useEffect(() => {
     if (currentStep > 0 && currentStep < 9) {
       fetch(`/api/setup/load-config?step=${currentStep}`)
@@ -47,13 +47,43 @@ export default function SetupPage() {
     }
   }, [currentStep]);
 
-  const handleNext = (data: Record<string, any>) => {
+  const handleNext = async (data: Record<string, any>) => {
     setSetupData(prev => ({ ...prev, ...data }));
-    setCurrentStep(prev => prev + 1);
+    const nextStep = currentStep + 1;
+
+    // Pre-load config for next step
+    if (nextStep > 0 && nextStep < 9) {
+      try {
+        const res = await fetch(`/api/setup/load-config?step=${nextStep}`);
+        const loadedData = await res.json();
+        if (!loadedData.error) {
+          setSetupData(prev => ({ ...prev, ...loadedData }));
+        }
+      } catch (error) {
+        console.error('Failed to pre-load config:', error);
+      }
+    }
+
+    setCurrentStep(nextStep);
   };
 
-  const handleBack = () => {
-    setCurrentStep(prev => Math.max(0, prev - 1));
+  const handleBack = async () => {
+    const prevStep = Math.max(0, currentStep - 1);
+
+    // Pre-load config for previous step
+    if (prevStep > 0 && prevStep < 9) {
+      try {
+        const res = await fetch(`/api/setup/load-config?step=${prevStep}`);
+        const loadedData = await res.json();
+        if (!loadedData.error) {
+          setSetupData(prev => ({ ...prev, ...loadedData }));
+        }
+      } catch (error) {
+        console.error('Failed to pre-load config:', error);
+      }
+    }
+
+    setCurrentStep(prevStep);
   };
 
   const totalSteps = 9;
@@ -75,29 +105,30 @@ export default function SetupPage() {
   };
 
   const renderStep = () => {
+    // Use key prop to force remount when step changes - this ensures useState gets fresh data
     switch (currentStep) {
       case 0:
-        return <WelcomeScreen onNext={handleNext} />;
+        return <WelcomeScreen key={`step-${currentStep}`} onNext={handleNext} />;
       case 1:
-        return <Step1Paperless onNext={handleNext} onBack={handleBack} data={setupData} />;
+        return <Step1Paperless key={`step-${currentStep}`} onNext={handleNext} onBack={handleBack} data={setupData} />;
       case 2:
-        return <Step2Gemini onNext={handleNext} onBack={handleBack} data={setupData} />;
+        return <Step2Gemini key={`step-${currentStep}`} onNext={handleNext} onBack={handleBack} data={setupData} />;
       case 3:
-        return <Step3DocumentAI onNext={handleNext} onBack={handleBack} data={setupData} />;
+        return <Step3DocumentAI key={`step-${currentStep}`} onNext={handleNext} onBack={handleBack} data={setupData} />;
       case 4:
-        return <Step4GoogleOAuth onNext={handleNext} onBack={handleBack} data={setupData} />;
+        return <Step4GoogleOAuth key={`step-${currentStep}`} onNext={handleNext} onBack={handleBack} data={setupData} />;
       case 5:
-        return <Step5Email onNext={handleNext} onBack={handleBack} data={setupData} />;
+        return <Step5Email key={`step-${currentStep}`} onNext={handleNext} onBack={handleBack} data={setupData} />;
       case 6:
-        return <Step6PaperlessIntegration onNext={handleNext} onBack={handleBack} data={setupData} />;
+        return <Step6PaperlessIntegration key={`step-${currentStep}`} onNext={handleNext} onBack={handleBack} data={setupData} />;
       case 7:
-        return <Step7Advanced onNext={handleNext} onBack={handleBack} data={setupData} />;
+        return <Step7Advanced key={`step-${currentStep}`} onNext={handleNext} onBack={handleBack} data={setupData} />;
       case 8:
-        return <Step8FTP onNext={handleNext} onBack={handleBack} data={setupData} />;
+        return <Step8FTP key={`step-${currentStep}`} onNext={handleNext} onBack={handleBack} data={setupData} />;
       case 9:
-        return <Step9Complete data={setupData} />;
+        return <Step9Complete key={`step-${currentStep}`} data={setupData} />;
       default:
-        return <WelcomeScreen onNext={handleNext} />;
+        return <WelcomeScreen key={`step-${currentStep}`} onNext={handleNext} />;
     }
   };
 
