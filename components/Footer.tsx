@@ -36,7 +36,7 @@ export default function Footer() {
               Info
             </Link>
             <a
-              href="mailto:paiperless@mgenovese.de"
+              href="mailto:info@paiperless.de"
               className="hover:text-primary transition-colors"
             >
               Kontakt

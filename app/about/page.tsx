@@ -125,11 +125,11 @@ export default function AboutPage() {
                 {/* Contact Links */}
                 <div className="grid grid-cols-1 gap-2 pt-2">
                   <a
-                    href="mailto:paiperless@mgenovese.de"
+                    href="mailto:info@paiperless.de"
                     className="flex items-center gap-3 p-2 rounded border hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors text-sm"
                   >
                     <FontAwesomeIcon icon={faEnvelope} className="text-primary w-5" />
-                    <span>paiperless@mgenovese.de</span>
+                    <span>info@paiperless.de</span>
                   </a>
                   <a
                     href="https://github.com/MarcelGenovese"

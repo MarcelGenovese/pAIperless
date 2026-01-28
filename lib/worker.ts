@@ -6,16 +6,37 @@ import { prisma } from './prisma';
 import { processWithDocumentAI } from './google';
 import { getPaperlessClient } from './paperless';
 
-const CONSUME_DIR = process.env.CONSUME_DIR || '/app/storage/consume';
-const PROCESSING_DIR = process.env.PROCESSING_DIR || '/app/storage/processing';
-const ERROR_DIR = process.env.ERROR_DIR || '/app/storage/error';
-
-// Ensure directories exist
-[CONSUME_DIR, PROCESSING_DIR, ERROR_DIR].forEach(dir => {
-  if (!existsSync(dir)) {
-    mkdirSync(dir, { recursive: true });
+// Determine directories based on environment
+function getDirectories() {
+  // Check if we're in development mode (not in Docker)
+  if (!existsSync('/app/storage') && existsSync('./test-consume')) {
+    return {
+      consume: './test-consume',
+      processing: './test-consume/processing',
+      error: './test-consume/error',
+    };
   }
-});
+
+  return {
+    consume: process.env.CONSUME_DIR || '/app/storage/consume',
+    processing: process.env.PROCESSING_DIR || '/app/storage/processing',
+    error: process.env.ERROR_DIR || '/app/storage/error',
+  };
+}
+
+const dirs = getDirectories();
+const CONSUME_DIR = dirs.consume;
+const PROCESSING_DIR = dirs.processing;
+const ERROR_DIR = dirs.error;
+
+// Ensure directories exist (called at runtime)
+function ensureDirectories() {
+  [CONSUME_DIR, PROCESSING_DIR, ERROR_DIR].forEach(dir => {
+    if (!existsSync(dir)) {
+      mkdirSync(dir, { recursive: true });
+    }
+  });
+}
 
 function calculateFileHash(filePath: string): string {
   const buffer = readFileSync(filePath);
@@ -55,19 +76,9 @@ async function processFile(filePath: string) {
       },
     });
 
-    // Process with Document AI
-    console.log(`Running OCR on ${fileName}...`);
-    await prisma.document.update({
-      where: { id: document.id },
-      data: { status: 'OCR_IN_PROGRESS' },
-    });
-
-    const ocrText = await processWithDocumentAI(processingPath);
-
-    await prisma.document.update({
-      where: { id: document.id },
-      data: { status: 'OCR_COMPLETE' },
-    });
+    // TODO: Pre-processing (rotation detection, OCR layer stripping)
+    // TODO: Document AI OCR processing
+    console.log(`Skipping OCR, uploading directly to Paperless: ${fileName}`);
 
     // Upload to Paperless
     console.log(`Uploading ${fileName} to Paperless...`);
@@ -105,6 +116,9 @@ export function startWorker() {
     console.log('Worker already running');
     return;
   }
+
+  // Ensure directories exist
+  ensureDirectories();
 
   console.log(`Starting worker, watching: ${CONSUME_DIR}`);
 

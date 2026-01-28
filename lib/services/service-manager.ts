@@ -8,6 +8,7 @@
  */
 
 import ftpServerService, { FTPServerStatus } from './ftp-server';
+import { startWorker, stopWorker } from '@/lib/worker';
 import { prisma } from '@/lib/prisma';
 
 export type ServiceName = 'ftp' | 'worker' | 'all';
@@ -80,29 +81,47 @@ class ServiceManager {
   }
 
   /**
-   * Start worker (placeholder - will be implemented later)
+   * Start worker
    */
   private async startWorker(): Promise<ServiceControlResult> {
-    console.log('[ServiceManager] Worker start requested (not yet implemented)');
-    // TODO: Implement worker start when worker service is ready
-    this.workerRunning = true;
-    return {
-      success: true,
-      message: 'Worker service is not yet implemented',
-    };
+    console.log('[ServiceManager] Starting worker...');
+    try {
+      startWorker();
+      this.workerRunning = true;
+      await this.log('INFO', 'Worker started successfully');
+      return {
+        success: true,
+        message: 'Worker started successfully',
+      };
+    } catch (error: any) {
+      await this.log('ERROR', `Failed to start worker: ${error.message}`);
+      return {
+        success: false,
+        message: `Failed to start worker: ${error.message}`,
+      };
+    }
   }
 
   /**
-   * Stop worker (placeholder - will be implemented later)
+   * Stop worker
    */
   private async stopWorker(): Promise<ServiceControlResult> {
-    console.log('[ServiceManager] Worker stop requested (not yet implemented)');
-    // TODO: Implement worker stop when worker service is ready
-    this.workerRunning = false;
-    return {
-      success: true,
-      message: 'Worker service is not yet implemented',
-    };
+    console.log('[ServiceManager] Stopping worker...');
+    try {
+      stopWorker();
+      this.workerRunning = false;
+      await this.log('INFO', 'Worker stopped successfully');
+      return {
+        success: true,
+        message: 'Worker stopped successfully',
+      };
+    } catch (error: any) {
+      await this.log('ERROR', `Failed to stop worker: ${error.message}`);
+      return {
+        success: false,
+        message: `Failed to stop worker: ${error.message}`,
+      };
+    }
   }
 
   /**
@@ -222,13 +241,13 @@ class ServiceManager {
       details: ftpStatus,
     };
 
-    // Worker Status (placeholder)
+    // Worker Status
     const worker: ServiceStatus = {
       name: 'Worker',
       running: this.workerRunning,
       enabled: true,
-      message: 'Nicht implementiert',
-      details: null,
+      message: this.workerRunning ? 'Läuft' : 'Gestoppt',
+      details: { watchingDirectory: '/app/storage/consume' },
     };
 
     return {
