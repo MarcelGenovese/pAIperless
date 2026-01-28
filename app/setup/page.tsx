@@ -33,6 +33,20 @@ export default function SetupPage() {
       .catch(console.error);
   }, [router]);
 
+  // Load saved config data for current step
+  useEffect(() => {
+    if (currentStep > 0 && currentStep < 9) {
+      fetch(`/api/setup/load-config?step=${currentStep}`)
+        .then(res => res.json())
+        .then(data => {
+          if (!data.error) {
+            setSetupData(prev => ({ ...prev, ...data }));
+          }
+        })
+        .catch(console.error);
+    }
+  }, [currentStep]);
+
   const handleNext = (data: Record<string, any>) => {
     setSetupData(prev => ({ ...prev, ...data }));
     setCurrentStep(prev => prev + 1);
@@ -90,42 +104,44 @@ export default function SetupPage() {
   const videoInfo = getVideoInfo(currentStep);
 
   return (
-    <div className="w-full max-w-7xl">
-      <div className="flex gap-0">
+    <div className={currentStep === 0 ? "w-full max-w-2xl" : "w-full max-w-6xl"}>
+      <div className="flex gap-0 h-[calc(100vh-8rem)] max-h-[900px]">
         {/* Left Column - Setup Form */}
-        <div className="flex-1 lg:w-2/3">
-          <div className="bg-white shadow-lg h-full">
-            {/* Header with Logo */}
-            <div className="bg-white border-b px-6 py-3">
-              <div className="flex items-center justify-between">
-                <Image
-                  src="/logo_compact.png"
-                  alt="pAIperless"
-                  width={150}
-                  height={40}
-                  className="h-10 w-auto"
-                  priority
-                />
-                {currentStep > 0 && currentStep < totalSteps && (
-                  <span className="text-sm text-gray-500">
-                    Step {currentStep} / {totalSteps - 1}
-                  </span>
-                )}
+        <div className={currentStep === 0 ? "w-full" : "flex-1 lg:w-1/2"}>
+          <div className="bg-white shadow-lg h-full flex flex-col">
+            {/* Header with Logo - only for steps > 0 */}
+            {currentStep > 0 && (
+              <div className="bg-white border-b px-6 py-4 flex-shrink-0">
+                <div className="flex items-center justify-between">
+                  <Image
+                    src="/logo_complete.png"
+                    alt="pAIperless"
+                    width={300}
+                    height={75}
+                    className="h-16 w-auto"
+                    priority
+                  />
+                  {currentStep < totalSteps && (
+                    <span className="text-sm text-gray-500">
+                      Step {currentStep} / {totalSteps - 1}
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Progress Bar */}
             {currentStep > 0 && (
-              <div className="h-1 bg-gray-200">
+              <div className="h-1 bg-gray-200 flex-shrink-0">
                 <div
-                  className="h-full bg-primary transition-all duration-300"
+                  className="h-full bg-accent transition-all duration-300"
                   style={{ width: `${(currentStep / totalSteps) * 100}%` }}
                 />
               </div>
             )}
 
-            {/* Step Content */}
-            <div className="p-6">
+            {/* Step Content - Scrollable */}
+            <div className="p-6 overflow-y-auto flex-1">
               {renderStep()}
             </div>
           </div>
@@ -133,7 +149,7 @@ export default function SetupPage() {
 
         {/* Right Column - Video & Info */}
         {currentStep > 0 && (
-          <div className="hidden lg:block lg:w-1/3">
+          <div className="hidden lg:block lg:w-1/2">
             <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 to-accent/5 shadow-lg">
               {/* Video Player */}
               <div className="aspect-video bg-gray-900 flex items-center justify-center flex-shrink-0">

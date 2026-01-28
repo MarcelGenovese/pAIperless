@@ -31,9 +31,13 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
+        const errorMessage = result.error.includes('Admin-Rechte')
+          ? 'Login fehlgeschlagen: Admin-Rechte erforderlich'
+          : 'Ungültiger Benutzername oder Passwort';
+
         toast({
-          title: 'Login Failed',
-          description: 'Invalid username or password',
+          title: 'Anmeldung fehlgeschlagen',
+          description: errorMessage,
           variant: 'destructive',
         });
       } else {

@@ -40,6 +40,24 @@ export const authOptions: NextAuthOptions = {
 
           const data = await response.json();
 
+          // Check if user is admin/superuser
+          const userResponse = await fetch(`${paperlessUrl}/api/users/`, {
+            headers: {
+              'Authorization': `Token ${data.token}`,
+            },
+          });
+
+          if (userResponse.ok) {
+            const users = await userResponse.json();
+            const currentUser = users.results?.find(
+              (u: any) => u.username === credentials.username
+            );
+
+            if (!currentUser?.is_superuser) {
+              throw new Error('Admin-Rechte erforderlich');
+            }
+          }
+
           return {
             id: credentials.username,
             name: credentials.username,

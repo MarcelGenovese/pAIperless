@@ -1,10 +1,11 @@
 "use client"
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faArrowRight, faEye, faEyeSlash, faCheckCircle, faTimesCircle, faCopy, faKey, faSpinner, faUpload, faFileText, faExternalLinkAlt, faCalendar, faListUl, faEnvelope, faServer, faCog } from '@fortawesome/free-solid-svg-icons';
+import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/hooks/use-toast';
 
 interface Step9CompleteProps {
@@ -14,6 +15,30 @@ interface Step9CompleteProps {
 export default function Step9Complete({ data }: Step9CompleteProps) {
   const router = useRouter();
   const { toast } = useToast();
+  const [hasDocumentAI, setHasDocumentAI] = useState(false);
+  const [hasOAuth, setHasOAuth] = useState(false);
+
+  useEffect(() => {
+    // Check Document AI config
+    fetch('/api/setup/load-config?step=3')
+      .then(res => res.json())
+      .then(data => {
+        if (data.projectId && data.processorId) {
+          setHasDocumentAI(true);
+        }
+      })
+      .catch(console.error);
+
+    // Check OAuth config
+    fetch('/api/setup/load-config?step=4')
+      .then(res => res.json())
+      .then(data => {
+        if (data.clientId && data.clientSecret) {
+          setHasOAuth(true);
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   const handleComplete = async () => {
     try {
@@ -80,11 +105,25 @@ export default function Step9Complete({ data }: Step9CompleteProps) {
           </div>
           <div className="flex justify-between items-center py-2 border-b">
             <span className="text-sm font-medium">Document AI</span>
-            <span className="text-sm text-muted-foreground">Pending</span>
+            {hasDocumentAI ? (
+              <span className="text-sm text-green-600 flex items-center gap-1">
+                <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />
+                Configured
+              </span>
+            ) : (
+              <span className="text-sm text-muted-foreground">Pending</span>
+            )}
           </div>
           <div className="flex justify-between items-center py-2 border-b">
             <span className="text-sm font-medium">Google OAuth</span>
-            <span className="text-sm text-muted-foreground">Pending</span>
+            {hasOAuth ? (
+              <span className="text-sm text-green-600 flex items-center gap-1">
+                <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />
+                Configured
+              </span>
+            ) : (
+              <span className="text-sm text-muted-foreground">Pending</span>
+            )}
           </div>
           <div className="flex justify-between items-center py-2">
             <span className="text-sm font-medium">Worker Status</span>
