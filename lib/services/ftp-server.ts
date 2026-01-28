@@ -10,6 +10,7 @@ import { getConfig, getConfigSecure, CONFIG_KEYS } from '@/lib/config';
 import { prisma } from '@/lib/prisma';
 import fs from 'fs';
 import path from 'path';
+import { networkInterfaces } from 'os';
 
 interface FTPServerStatus {
   running: boolean;
@@ -125,7 +126,6 @@ class FTPServerService {
    */
   private getServerIpForClient(clientIp: string): string {
     try {
-      const { networkInterfaces } = require('os');
       const nets = networkInterfaces();
 
       // If client is localhost, return localhost
