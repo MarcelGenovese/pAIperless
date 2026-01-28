@@ -47,15 +47,24 @@ export const authOptions: NextAuthOptions = {
             },
           });
 
-          if (userResponse.ok) {
-            const users = await userResponse.json();
-            const currentUser = users.results?.find(
-              (u: any) => u.username === credentials.username
-            );
+          if (!userResponse.ok) {
+            console.error('Failed to fetch user list from Paperless');
+            return null;
+          }
 
-            if (!currentUser?.is_superuser) {
-              throw new Error('Admin-Rechte erforderlich');
-            }
+          const users = await userResponse.json();
+          const currentUser = users.results?.find(
+            (u: any) => u.username === credentials.username
+          );
+
+          if (!currentUser) {
+            console.error('User not found in Paperless user list');
+            return null;
+          }
+
+          if (!currentUser.is_superuser) {
+            console.error('User is not a superuser:', credentials.username);
+            return null;
           }
 
           return {

@@ -2,6 +2,60 @@
 
 ## High Priority
 
+### Dashboard Redesign mit Tabs
+**Status**: 🔴 Nicht implementiert
+**Priorität**: Hoch
+
+**Anforderungen**:
+- Single-Page Dashboard mit Tabbed Interface
+- Tabs: Overview, Documents, Settings, System Status
+- Alle Einstellungen direkt im Dashboard editierbar
+- Einstellungen nur nach erfolgreichen Tests persistierbar
+- Service-Status in Echtzeit anzeigen (Paperless, Document AI, Gemini, OAuth)
+- Optional: Sidebar-Navigation statt Tabs
+
+**Settings Tab Features**:
+- Alle Setup-Schritte als Sections
+- Test-Buttons für jede Integration
+- "Save" nur aktiv nach erfolgreichem Test
+- Inline-Bearbeitung ohne separaten Wizard
+
+### Service Restart nach Konfigurationsänderungen
+**Status**: 🔴 Nicht implementiert
+**Priorität**: Hoch
+
+**Problem**:
+Änderungen an Konfigurationen (FTP, Worker, etc.) werden nicht übernommen, bis Container neugestartet wird.
+
+**Lösung**:
+Service-Management-Funktionen implementieren:
+
+**Betroffene Services**:
+1. **FTP Server** - Neustart nach Konfigurationsänderung
+   - Port, Credentials, TLS-Einstellungen
+   - API Endpoint: `/api/services/restart/ftp`
+
+2. **Worker** - Neustart nach Polling-Intervall-Änderungen
+   - Consume, Action, AI Todo Polling
+   - API Endpoint: `/api/services/restart/worker`
+
+3. **OAuth Token Refresh** - Nach OAuth-Neuautorisierung
+   - Tokens aktualisieren ohne Container-Restart
+   - API Endpoint: `/api/services/refresh/oauth`
+
+**Implementierung**:
+```typescript
+// Beispiel: API für Service-Restart
+POST /api/services/restart
+Body: { service: 'ftp' | 'worker' | 'all' }
+Response: { success: boolean, message: string }
+```
+
+**Technische Details**:
+- FTP Server: Prozess-Management mit PM2 oder supervisord
+- Worker: Graceful restart mit Signal-Handling
+- Config-Reload ohne Container-Neustart
+
 ### Management Script für Docker-Befehle
 **Status**: 🔴 Nicht implementiert
 **Priorität**: Hoch (Sicherheitskritisch)
