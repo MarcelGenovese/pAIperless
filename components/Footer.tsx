@@ -16,7 +16,7 @@ export default function Footer() {
                 alt="Marcel Genovese"
                 width={40}
                 height={24}
-                className="h-6 w-auto"
+                className="h-6 w-auto invert dark:invert-0"
               />
             </Link>
             <div className="text-sm text-muted-foreground">
@@ -26,7 +26,7 @@ export default function Footer() {
                   Marcel Genovese
                 </Link>
               </p>
-              <p className="text-xs">pAIperless - AI-powered document management</p>
+              <p className="text-xs">pAIperless</p>
             </div>
           </div>
 

@@ -45,22 +45,30 @@ export async function middleware(request: NextRequest) {
 
   // Check authentication for protected routes
   if (!pathname.startsWith('/auth/login') && !pathname.startsWith('/login') && !pathname.startsWith('/about')) {
+    const cookies = request.cookies.getAll();
+    console.log(`[Middleware] Path: ${pathname}`);
+    console.log(`[Middleware] Cookies:`, cookies.map(c => c.name).join(', '));
+
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
     });
 
-    console.log(`[Middleware] Path: ${pathname}, Token: ${token ? 'Present' : 'Missing'}`);
+    console.log(`[Middleware] Token: ${token ? 'Present' : 'Missing'}`);
+    if (token) {
+      console.log(`[Middleware] Token user:`, token.name);
+    }
 
     if (!token) {
       // For API routes, return 401 instead of redirecting
       if (pathname.startsWith('/api/')) {
-        console.log(`[Middleware] Returning 401 for ${pathname}`);
+        console.log(`[Middleware] Returning 401 for ${pathname} - No valid session`);
         return NextResponse.json(
-          { error: 'Unauthorized - Please login again' },
+          { error: 'Unauthorized - Please login again', detail: 'No valid session found' },
           { status: 401 }
         );
       }
+      console.log(`[Middleware] Redirecting to login`);
       return NextResponse.redirect(new URL('/auth/login', request.url));
     }
   }

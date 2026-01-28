@@ -7,7 +7,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faEnvelope,
   faArrowLeft,
-  faHeart
+  faHeart,
+  faFileAlt,
+  faRobot,
+  faBolt
 } from '@fortawesome/free-solid-svg-icons';
 import { faGithub, faPaypal } from '@fortawesome/free-brands-svg-icons';
 import Image from 'next/image';
@@ -40,11 +43,11 @@ export default function AboutPage() {
               Zurück
             </Button>
             <Image
-              src="/logo_complete.png"
+              src="/logo_small.png"
               alt="pAIperless"
-              width={200}
-              height={50}
-              className="h-10 w-auto"
+              width={120}
+              height={40}
+              className="h-8 w-auto"
               priority
             />
           </div>
@@ -58,13 +61,12 @@ export default function AboutPage() {
             {/* Hero Section */}
             <div className="text-center mb-8">
               <Image
-                src="/mg.svg"
-                alt="Marcel Genovese"
-                width={80}
-                height={48}
-                className="h-12 w-auto mx-auto mb-4 opacity-70"
+                src="/logo_complete.png"
+                alt="pAIperless"
+                width={300}
+                height={80}
+                className="h-20 w-auto mx-auto mb-4"
               />
-              <h1 className="text-3xl font-bold mb-2">pAIperless</h1>
               <p className="text-lg text-muted-foreground">
                 AI-powered document management für Paperless-NGX
               </p>
@@ -82,15 +84,15 @@ export default function AboutPage() {
                 </p>
                 <div className="grid grid-cols-3 gap-3 pt-2">
                   <div className="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded">
-                    <div className="text-2xl mb-1">📄</div>
+                    <FontAwesomeIcon icon={faFileAlt} className="text-2xl mb-1 text-blue-600" />
                     <p className="text-xs font-medium">Document AI OCR</p>
                   </div>
                   <div className="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded">
-                    <div className="text-2xl mb-1">🤖</div>
+                    <FontAwesomeIcon icon={faRobot} className="text-2xl mb-1 text-blue-600" />
                     <p className="text-xs font-medium">Gemini Tagging</p>
                   </div>
                   <div className="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded">
-                    <div className="text-2xl mb-1">⚡</div>
+                    <FontAwesomeIcon icon={faBolt} className="text-2xl mb-1 text-blue-600" />
                     <p className="text-xs font-medium">Automatisierung</p>
                   </div>
                 </div>
@@ -102,7 +104,7 @@ export default function AboutPage() {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   Entwickler
-                  <FontAwesomeIcon icon={faHeart} className="text-red-500 text-sm" />
+                  <FontAwesomeIcon icon={faHeart} className="text-[#27417A] text-sm" />
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -112,7 +114,7 @@ export default function AboutPage() {
                     alt="Marcel Genovese"
                     width={60}
                     height={36}
-                    className="h-10 w-auto opacity-70"
+                    className="h-10 w-auto invert dark:invert-0"
                   />
                   <div>
                     <h3 className="text-xl font-bold">Marcel Genovese</h3>
@@ -157,7 +159,6 @@ export default function AboutPage() {
                 <div className="text-center text-sm text-muted-foreground">
                   <p className="font-mono">Version: {version}</p>
                   <p className="mt-2">© {new Date().getFullYear()} Marcel Genovese</p>
-                  <p className="text-xs mt-1">Built with Next.js & Claude Code</p>
                 </div>
               </CardContent>
             </Card>
