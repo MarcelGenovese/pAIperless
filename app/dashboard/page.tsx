@@ -16,6 +16,7 @@ import GoogleSettingsTab from '@/components/dashboard/GoogleSettingsTab';
 import FTPSettingsCard from '@/components/dashboard/FTPSettingsCard';
 import EmailSettingsCard from '@/components/dashboard/EmailSettingsCard';
 import AdvancedSettingsTab from '@/components/dashboard/AdvancedSettingsTab';
+import Footer from '@/components/Footer';
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -194,6 +195,7 @@ export default function DashboardPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {renderTabContent()}
           </div>
+          <Footer />
         </main>
       </div>
     </div>

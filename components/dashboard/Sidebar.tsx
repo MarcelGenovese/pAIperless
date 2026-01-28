@@ -10,8 +10,10 @@ import {
   faGlobe,
   faSlidersH,
   faTerminal,
+  faInfoCircle,
 } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 interface SidebarProps {
   activeTab: string;
@@ -90,6 +92,17 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
               <span>{item.label}</span>
             </button>
           ))}
+        </div>
+
+        {/* Info Section */}
+        <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+          <Link
+            href="/about"
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            <FontAwesomeIcon icon={faInfoCircle} className="w-4 h-4" />
+            <span>Info & Kontakt</span>
+          </Link>
         </div>
       </nav>
     </div>
