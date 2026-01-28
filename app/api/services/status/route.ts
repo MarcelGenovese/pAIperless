@@ -113,17 +113,24 @@ export async function GET() {
       statuses.ftp = {
         status: ftpStatus.running ? 'connected' : ftpStatus.enabled ? 'error' : 'not_configured',
         message: ftpStatus.message,
+        running: ftpStatus.running,
+        enabled: ftpStatus.enabled,
+        details: ftpStatus.details,
       };
     } else {
       statuses.ftp = {
         status: 'error',
         message: 'Fehler beim Abrufen des FTP-Status',
+        running: false,
+        enabled: false,
       };
     }
   } catch (error: any) {
     statuses.ftp = {
       status: 'error',
       message: error.message || 'Fehler',
+      running: false,
+      enabled: false,
     };
   }
 
