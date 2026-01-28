@@ -98,12 +98,12 @@ class FTPServerService {
    * Ensure consume directory exists
    */
   private ensureConsumeDirectory() {
-    // Use environment variable or default to /app/consume
+    // Use environment variable or default to /app/storage/consume
     // For local development, use ./test-consume
-    let consumeDir = process.env.CONSUME_DIR || '/app/consume';
+    let consumeDir = process.env.CONSUME_DIR || '/app/storage/consume';
 
     // Check if we're in development mode (not in Docker)
-    if (!fs.existsSync('/app') && fs.existsSync('./test-consume')) {
+    if (!fs.existsSync('/app/storage') && fs.existsSync('./test-consume')) {
       consumeDir = './test-consume';
     }
 

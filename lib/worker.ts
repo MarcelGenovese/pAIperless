@@ -6,9 +6,9 @@ import { prisma } from './prisma';
 import { processWithDocumentAI } from './google';
 import { getPaperlessClient } from './paperless';
 
-const CONSUME_DIR = process.env.CONSUME_DIR || '/app/consume';
-const PROCESSING_DIR = process.env.PROCESSING_DIR || '/app/processing';
-const ERROR_DIR = process.env.ERROR_DIR || '/app/error';
+const CONSUME_DIR = process.env.CONSUME_DIR || '/app/storage/consume';
+const PROCESSING_DIR = process.env.PROCESSING_DIR || '/app/storage/processing';
+const ERROR_DIR = process.env.ERROR_DIR || '/app/storage/error';
 
 // Ensure directories exist
 [CONSUME_DIR, PROCESSING_DIR, ERROR_DIR].forEach(dir => {
