@@ -152,6 +152,7 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
       const response = await fetch('/api/documents/upload', {
         method: 'POST',
         body: formData,
+        credentials: 'include', // WICHTIG: Sendet Cookies mit!
       });
 
       console.log('[Upload] Response status:', response.status);
