@@ -223,7 +223,7 @@ export default function LogsTab() {
       <Card>
         <CardContent className="p-0">
           <div
-            className="bg-gray-950 text-gray-100 font-mono text-xs h-[600px] overflow-y-auto p-4 space-y-1"
+            className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono text-xs h-[600px] overflow-y-auto p-4 space-y-1 border-t"
             style={{ fontFamily: 'ui-monospace, monospace' }}
           >
             {filteredLogs.length === 0 ? (
@@ -232,7 +232,7 @@ export default function LogsTab() {
               </div>
             ) : (
               filteredLogs.map((log, index) => (
-                <div key={index} className="flex gap-2 hover:bg-gray-900 px-2 py-1 rounded">
+                <div key={index} className="flex gap-2 hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1 rounded">
                   <span className="text-gray-500 shrink-0">{log.timestamp}</span>
                   <span className={cn('font-semibold shrink-0 w-16', getLogLevelColor(log.level))}>
                     [{log.level}]
@@ -240,7 +240,7 @@ export default function LogsTab() {
                   <span className={cn('px-2 py-0.5 rounded text-xs shrink-0', getSourceColor(log.source))}>
                     {log.source}
                   </span>
-                  <span className="text-gray-300">{log.message}</span>
+                  <span className="text-gray-800 dark:text-gray-300">{log.message}</span>
                 </div>
               ))
             )}

@@ -134,6 +134,35 @@ export async function GET() {
     };
   }
 
+  // Check Email
+  try {
+    const emailEnabled = (await getConfig(CONFIG_KEYS.EMAIL_ENABLED)) === 'true';
+    const smtpServer = await getConfig(CONFIG_KEYS.SMTP_SERVER);
+    const smtpUser = await getConfig(CONFIG_KEYS.SMTP_USER);
+
+    if (emailEnabled && smtpServer && smtpUser) {
+      statuses.email = {
+        status: 'connected',
+        message: 'Konfiguriert',
+      };
+    } else if (emailEnabled) {
+      statuses.email = {
+        status: 'error',
+        message: 'Unvollständige Konfiguration',
+      };
+    } else {
+      statuses.email = {
+        status: 'not_configured',
+        message: 'Deaktiviert',
+      };
+    }
+  } catch (error: any) {
+    statuses.email = {
+      status: 'error',
+      message: error.message || 'Fehler',
+    };
+  }
+
   // Check Worker
   try {
     const workerStatus = await serviceManager.getStatus('worker');

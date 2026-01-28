@@ -18,6 +18,7 @@ interface UploadFile {
   file: File;
   status: 'pending' | 'uploading' | 'success' | 'error';
   error?: string;
+  progress?: number;
 }
 
 interface DocumentUploadProps {
@@ -93,6 +94,13 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
       }));
 
     setFiles(prev => [...prev, ...uploadFiles]);
+
+    // Auto-upload after adding files
+    if (uploadFiles.length > 0) {
+      setTimeout(() => {
+        uploadFilesAuto(uploadFiles);
+      }, 100);
+    }
   };
 
   const removeFile = (index: number) => {
@@ -103,31 +111,57 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
     setFiles([]);
   };
 
-  const uploadFiles = async () => {
-    if (files.length === 0) return;
+  const uploadFilesAuto = async (filesToUpload?: UploadFile[]) => {
+    const targetFiles = filesToUpload || files.filter(f => f.status === 'pending');
+    if (targetFiles.length === 0) return;
 
     setIsUploading(true);
 
+    // Mark files as uploading
+    setFiles(prev =>
+      prev.map(f =>
+        targetFiles.find(tf => tf.file.name === f.file.name)
+          ? { ...f, status: 'uploading' as const, progress: 0 }
+          : f
+      )
+    );
+
     const formData = new FormData();
-    files.forEach(({ file }) => {
+    targetFiles.forEach(({ file }) => {
       formData.append('files', file);
     });
 
     try {
+      // Simulate progress updates
+      const progressInterval = setInterval(() => {
+        setFiles(prev =>
+          prev.map(f => {
+            if (f.status === 'uploading' && (f.progress || 0) < 90) {
+              return { ...f, progress: (f.progress || 0) + 10 };
+            }
+            return f;
+          })
+        );
+      }, 200);
+
       const response = await fetch('/api/documents/upload', {
         method: 'POST',
         body: formData,
       });
 
+      clearInterval(progressInterval);
+
       const result = await response.json();
 
       if (response.ok) {
-        // Mark all as success
+        // Mark all as success with 100% progress
         setFiles(prev =>
-          prev.map(f => ({
-            ...f,
-            status: 'success' as const,
-          }))
+          prev.map(f => {
+            const uploaded = targetFiles.find(tf => tf.file.name === f.file.name);
+            return uploaded
+              ? { ...f, status: 'success' as const, progress: 100 }
+              : f;
+          })
         );
 
         toast({
@@ -157,10 +191,13 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
           setFiles(prev =>
             prev.map(f => {
               const error = result.errors.find((e: any) => e.filename === f.file.name);
+              const uploaded = targetFiles.find(tf => tf.file.name === f.file.name);
+              if (!uploaded) return f;
               return {
                 ...f,
                 status: error ? 'error' : 'success',
                 error: error?.error,
+                progress: error ? undefined : 100,
               } as UploadFile;
             })
           );
@@ -171,11 +208,12 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
     } catch (error: any) {
       console.error('Upload error:', error);
       setFiles(prev =>
-        prev.map(f => ({
-          ...f,
-          status: 'error' as const,
-          error: error.message,
-        }))
+        prev.map(f => {
+          const uploaded = targetFiles.find(tf => tf.file.name === f.file.name);
+          return uploaded
+            ? { ...f, status: 'error' as const, error: error.message }
+            : f;
+        })
       );
 
       toast({
@@ -217,7 +255,7 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
           Dokumente hochladen
         </CardTitle>
         <CardDescription>
-          Laden Sie PDF-Dateien hoch, um sie automatisch zu verarbeiten
+          Laden Sie PDF-Dateien hoch - Upload startet automatisch
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -267,16 +305,16 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold">
-                {files.length} Datei(en) ausgewählt
+                {files.length} Datei(en) {isUploading ? 'werden hochgeladen' : 'ausgewählt'}
               </h3>
-              {!isUploading && (
+              {!isUploading && files.some(f => f.status === 'success' || f.status === 'error') && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={clearAll}
                 >
                   <FontAwesomeIcon icon={faTrash} className="mr-2" />
-                  Alle entfernen
+                  Liste leeren
                 </Button>
               )}
             </div>
@@ -285,55 +323,47 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
               {files.map((uploadFile, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-3 border rounded-lg"
+                  className="p-3 border rounded-lg space-y-2"
                 >
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    {getStatusIcon(uploadFile.status)}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
-                        {uploadFile.file.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatFileSize(uploadFile.file.size)}
-                      </p>
-                      {uploadFile.error && (
-                        <p className="text-xs text-red-600 mt-1">
-                          {uploadFile.error}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      {getStatusIcon(uploadFile.status)}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">
+                          {uploadFile.file.name}
                         </p>
-                      )}
+                        <p className="text-xs text-muted-foreground">
+                          {formatFileSize(uploadFile.file.size)}
+                        </p>
+                        {uploadFile.error && (
+                          <p className="text-xs text-red-600 mt-1">
+                            {uploadFile.error}
+                          </p>
+                        )}
+                      </div>
                     </div>
+                    {!isUploading && uploadFile.status === 'pending' && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeFile(index)}
+                      >
+                        <FontAwesomeIcon icon={faTrash} />
+                      </Button>
+                    )}
                   </div>
-                  {!isUploading && uploadFile.status === 'pending' && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeFile(index)}
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                    </Button>
+                  {/* Progress Bar */}
+                  {uploadFile.status === 'uploading' && uploadFile.progress !== undefined && (
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                      <div
+                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${uploadFile.progress}%` }}
+                      />
+                    </div>
                   )}
                 </div>
               ))}
             </div>
-
-            {/* Upload Button */}
-            <Button
-              onClick={uploadFiles}
-              disabled={isUploading || files.every(f => f.status !== 'pending')}
-              className="w-full"
-            >
-              {isUploading ? (
-                <>
-                  <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
-                  Wird hochgeladen...
-                </>
-              ) : (
-                <>
-                  <FontAwesomeIcon icon={faUpload} className="mr-2" />
-                  {files.length} Datei(en) hochladen
-                </>
-              )}
-            </Button>
           </div>
         )}
       </CardContent>

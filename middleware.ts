@@ -44,6 +44,13 @@ export async function middleware(request: NextRequest) {
     });
 
     if (!token) {
+      // For API routes, return 401 instead of redirecting
+      if (pathname.startsWith('/api/')) {
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401 }
+        );
+      }
       return NextResponse.redirect(new URL('/auth/login', request.url));
     }
   }
