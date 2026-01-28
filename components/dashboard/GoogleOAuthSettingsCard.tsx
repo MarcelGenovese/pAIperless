@@ -34,6 +34,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
   const [isSaving, setIsSaving] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoadingResources, setIsLoadingResources] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
   const [calendars, setCalendars] = useState<Array<{ id: string; name: string }>>([]);
   const [taskLists, setTaskLists] = useState<Array<{ id: string; name: string }>>([]);
 
@@ -127,6 +128,54 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
       });
     } finally {
       setIsLoadingResources(false);
+    }
+  };
+
+  const testOAuth = async () => {
+    if (!oauthData.calendarId || !oauthData.taskListId) {
+      toast({
+        title: 'Fehler',
+        description: 'Bitte Kalender und Aufgabenliste auswählen',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsTesting(true);
+    try {
+      const response = await fetch('/api/auth/google/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          calendarId: oauthData.calendarId,
+          taskListId: oauthData.taskListId,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setOAuthData({ ...oauthData, tested: true });
+        toast({
+          title: 'Test erfolgreich! 🎉',
+          description: 'Test-Eintrag in Kalender und Aufgaben erstellt. Diese bleiben als Erfolgserlebnis bestehen!',
+          variant: 'success',
+        });
+      } else {
+        toast({
+          title: 'Test teilweise erfolgreich',
+          description: result.message || 'Einige Tests sind fehlgeschlagen',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Test fehlgeschlagen',
+        description: 'Netzwerkfehler beim Testen',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsTesting(false);
     }
   };
 
@@ -307,10 +356,20 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
 
         <div className="flex gap-2">
           {isAuthorized && (
-            <Button onClick={loadResources} variant="outline" disabled={isLoadingResources}>
-              <FontAwesomeIcon icon={faCheckCircle} className="mr-2" />
-              Neu laden
-            </Button>
+            <>
+              <Button onClick={loadResources} variant="outline" disabled={isLoadingResources}>
+                <FontAwesomeIcon icon={faCheckCircle} className="mr-2" />
+                Neu laden
+              </Button>
+              <Button
+                onClick={testOAuth}
+                variant="outline"
+                disabled={!oauthData.calendarId || !oauthData.taskListId || isTesting}
+              >
+                <FontAwesomeIcon icon={faCheckCircle} className="mr-2" />
+                {isTesting ? 'Teste...' : 'Test-Eintrag erstellen'}
+              </Button>
+            </>
           )}
           <Button
             onClick={saveSettings}
