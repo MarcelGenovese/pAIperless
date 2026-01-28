@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getConfig, getConfigSecure, CONFIG_KEYS } from '@/lib/config';
 import { PaperlessClient } from '@/lib/paperless';
+import serviceManager from '@/lib/services/service-manager';
 
 export const runtime = 'nodejs';
 
@@ -107,18 +108,16 @@ export async function GET() {
 
   // Check FTP Server
   try {
-    const ftpEnabled = await getConfig(CONFIG_KEYS.FTP_ENABLED) === 'true';
-
-    if (ftpEnabled) {
-      // FTP server not implemented yet, so just check config
+    const ftpStatus = await serviceManager.getStatus('ftp');
+    if (ftpStatus) {
       statuses.ftp = {
-        status: 'not_configured',
-        message: 'Nicht implementiert',
+        status: ftpStatus.running ? 'connected' : ftpStatus.enabled ? 'error' : 'not_configured',
+        message: ftpStatus.message,
       };
     } else {
       statuses.ftp = {
-        status: 'not_configured',
-        message: 'Deaktiviert',
+        status: 'error',
+        message: 'Fehler beim Abrufen des FTP-Status',
       };
     }
   } catch (error: any) {
@@ -130,11 +129,18 @@ export async function GET() {
 
   // Check Worker
   try {
-    // Worker is always running if the app is running
-    statuses.worker = {
-      status: 'connected',
-      message: 'Läuft',
-    };
+    const workerStatus = await serviceManager.getStatus('worker');
+    if (workerStatus) {
+      statuses.worker = {
+        status: workerStatus.running ? 'connected' : 'not_configured',
+        message: workerStatus.message,
+      };
+    } else {
+      statuses.worker = {
+        status: 'not_configured',
+        message: 'Nicht implementiert',
+      };
+    }
   } catch (error: any) {
     statuses.worker = {
       status: 'error',

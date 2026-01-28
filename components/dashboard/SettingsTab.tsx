@@ -101,6 +101,49 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
 
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isResettingSetup, setIsResettingSetup] = useState(false);
+  const [isRestartingServices, setIsRestartingServices] = useState(false);
+
+  // Helper function to restart services after configuration changes
+  const restartServices = async (serviceName: 'ftp' | 'worker' | 'all' = 'all') => {
+    setIsRestartingServices(true);
+
+    toast({
+      title: 'Services werden neugestartet...',
+      description: 'Bitte warten Sie einen Moment.',
+    });
+
+    try {
+      const response = await fetch('/api/services/restart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ service: serviceName }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        toast({
+          title: 'Services neugestartet',
+          description: result.message || 'Alle Services laufen mit den neuen Einstellungen.',
+          variant: 'success',
+        });
+      } else {
+        toast({
+          title: 'Neustart teilweise fehlgeschlagen',
+          description: result.message || 'Einige Services konnten nicht neugestartet werden.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Fehler beim Neustart',
+        description: 'Services konnten nicht neugestartet werden.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsRestartingServices(false);
+    }
+  };
 
   // Test functions
   const testPaperless = async () => {
@@ -363,6 +406,9 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
         description: 'Erweiterte Einstellungen gespeichert',
         variant: 'success',
       });
+
+      // Restart services to apply new polling configuration
+      await restartServices('all');
     } catch (error) {
       toast({
         title: 'Fehler',

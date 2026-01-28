@@ -54,13 +54,31 @@ export default function Step9Complete({ data }: Step9CompleteProps) {
 
       toast({
         title: 'Setup Complete!',
-        description: 'Redirecting to dashboard...',
+        description: 'Starting services...',
         variant: 'success',
       });
 
+      // Start all services with new configuration
+      try {
+        await fetch('/api/services/restart', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ service: 'all' }),
+        });
+
+        toast({
+          title: 'Services Started',
+          description: 'FTP server and worker are now running.',
+          variant: 'success',
+        });
+      } catch (serviceError) {
+        console.error('Failed to start services:', serviceError);
+        // Don't block completion if service start fails
+      }
+
       setTimeout(() => {
         router.push('/dashboard');
-      }, 1500);
+      }, 2000);
     } catch (error) {
       toast({
         title: 'Error',
