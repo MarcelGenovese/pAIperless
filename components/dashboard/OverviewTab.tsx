@@ -8,8 +8,18 @@ import {
   faExclamationCircle,
   faChartLine,
   faCheckCircle,
-  faSpinner
+  faSpinner,
+  faServer,
+  faBrain,
+  faGlobe,
+  faEnvelope
 } from '@fortawesome/free-solid-svg-icons';
+import { cn } from '@/lib/utils';
+
+interface ServiceStatus {
+  status: 'connected' | 'error' | 'checking' | 'not_configured';
+  message?: string;
+}
 
 export default function OverviewTab() {
   const [stats, setStats] = useState({
@@ -18,21 +28,65 @@ export default function OverviewTab() {
     apiCalls: 0,
     processingStatus: 'idle' as 'idle' | 'processing' | 'error',
   });
+  const [services, setServices] = useState<Record<string, ServiceStatus>>({
+    paperless: { status: 'checking' },
+    gemini: { status: 'checking' },
+    documentAI: { status: 'checking' },
+    oauth: { status: 'checking' },
+    ftp: { status: 'checking' },
+    email: { status: 'checking' },
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch statistics from database
-    fetch('/api/dashboard/stats')
-      .then(res => res.json())
-      .then(data => {
-        setStats(data);
+    // Fetch statistics and service status
+    const loadData = async () => {
+      try {
+        const [statsRes, servicesRes] = await Promise.all([
+          fetch('/api/dashboard/stats'),
+          fetch('/api/services/status')
+        ]);
+
+        const statsData = await statsRes.json();
+        const servicesData = await servicesRes.json();
+
+        setStats(statsData);
+        setServices({
+          paperless: servicesData.paperless || { status: 'error' },
+          gemini: servicesData.gemini || { status: 'error' },
+          documentAI: servicesData.documentAI || { status: 'error' },
+          oauth: servicesData.oauth || { status: 'error' },
+          ftp: servicesData.ftp || { status: 'not_configured' },
+          email: servicesData.email || { status: 'not_configured' },
+        });
+      } catch (err) {
+        console.error('Failed to load data:', err);
+      } finally {
         setLoading(false);
-      })
-      .catch(err => {
-        console.error('Failed to load stats:', err);
-        setLoading(false);
-      });
+      }
+    };
+
+    loadData();
+
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(loadData, 30000);
+    return () => clearInterval(interval);
   }, []);
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'connected':
+        return 'text-green-600';
+      case 'error':
+        return 'text-red-600';
+      case 'checking':
+        return 'text-blue-600';
+      case 'not_configured':
+        return 'text-gray-400';
+      default:
+        return 'text-gray-400';
+    }
+  };
 
   if (loading) {
     return (
@@ -51,7 +105,7 @@ export default function OverviewTab() {
             <CardTitle className="text-sm font-medium">
               Dokumente verarbeitet
             </CardTitle>
-            <FontAwesomeIcon icon={faFileAlt} className="text-accent" />
+            <FontAwesomeIcon icon={faFileAlt} className="text-[#0066CC]" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalDocuments}</div>
@@ -81,7 +135,7 @@ export default function OverviewTab() {
             <CardTitle className="text-sm font-medium">
               API Calls (Monat)
             </CardTitle>
-            <FontAwesomeIcon icon={faChartLine} className="text-accent" />
+            <FontAwesomeIcon icon={faChartLine} className="text-[#0066CC]" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.apiCalls}</div>
@@ -92,27 +146,121 @@ export default function OverviewTab() {
         </Card>
       </div>
 
-      {/* Quick Status */}
+      {/* System Status */}
       <Card>
         <CardHeader>
           <CardTitle>System Status</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between py-2 border-b">
-              <span className="text-sm font-medium">Worker Status</span>
-              <div className="flex items-center gap-2">
-                <FontAwesomeIcon
-                  icon={stats.processingStatus === 'processing' ? faSpinner : faCheckCircle}
-                  className={stats.processingStatus === 'processing' ? 'text-blue-600 animate-spin' : 'text-green-600'}
-                  spin={stats.processingStatus === 'processing'}
-                />
-                <span className="text-sm text-muted-foreground">
-                  {stats.processingStatus === 'processing' ? 'Verarbeitet...' : 'Bereit'}
-                </span>
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Paperless */}
+            <div className="flex items-center gap-3 p-3 border rounded-lg">
+              <FontAwesomeIcon
+                icon={faServer}
+                className={cn("text-lg", getStatusColor(services.paperless.status))}
+              />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Paperless-NGX</p>
+                <p className="text-xs text-muted-foreground">
+                  {services.paperless.status === 'connected' ? 'Verbunden' :
+                   services.paperless.status === 'checking' ? 'Prüfe...' :
+                   services.paperless.message || 'Nicht konfiguriert'}
+                </p>
+              </div>
+            </div>
+
+            {/* Gemini */}
+            <div className="flex items-center gap-3 p-3 border rounded-lg">
+              <FontAwesomeIcon
+                icon={faBrain}
+                className={cn("text-lg", getStatusColor(services.gemini.status))}
+              />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Gemini AI</p>
+                <p className="text-xs text-muted-foreground">
+                  {services.gemini.status === 'connected' ? 'Verbunden' :
+                   services.gemini.status === 'checking' ? 'Prüfe...' :
+                   services.gemini.message || 'Nicht konfiguriert'}
+                </p>
+              </div>
+            </div>
+
+            {/* Document AI */}
+            <div className="flex items-center gap-3 p-3 border rounded-lg">
+              <FontAwesomeIcon
+                icon={faFileAlt}
+                className={cn("text-lg", getStatusColor(services.documentAI.status))}
+              />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Document AI</p>
+                <p className="text-xs text-muted-foreground">
+                  {services.documentAI.status === 'connected' ? 'Verbunden' :
+                   services.documentAI.status === 'checking' ? 'Prüfe...' :
+                   services.documentAI.message || 'Nicht konfiguriert'}
+                </p>
+              </div>
+            </div>
+
+            {/* Google OAuth */}
+            <div className="flex items-center gap-3 p-3 border rounded-lg">
+              <FontAwesomeIcon
+                icon={faGlobe}
+                className={cn("text-lg", getStatusColor(services.oauth.status))}
+              />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Google OAuth</p>
+                <p className="text-xs text-muted-foreground">
+                  {services.oauth.status === 'connected' ? 'Verbunden' :
+                   services.oauth.status === 'checking' ? 'Prüfe...' :
+                   services.oauth.message || 'Nicht konfiguriert'}
+                </p>
+              </div>
+            </div>
+
+            {/* FTP */}
+            <div className="flex items-center gap-3 p-3 border rounded-lg">
+              <FontAwesomeIcon
+                icon={faServer}
+                className={cn("text-lg", getStatusColor(services.ftp.status))}
+              />
+              <div className="flex-1">
+                <p className="text-sm font-medium">FTP Server</p>
+                <p className="text-xs text-muted-foreground">
+                  {services.ftp.status === 'connected' ? 'Läuft' :
+                   services.ftp.status === 'checking' ? 'Prüfe...' :
+                   services.ftp.message || 'Deaktiviert'}
+                </p>
+              </div>
+            </div>
+
+            {/* Email */}
+            <div className="flex items-center gap-3 p-3 border rounded-lg">
+              <FontAwesomeIcon
+                icon={faEnvelope}
+                className={cn("text-lg", getStatusColor(services.email.status))}
+              />
+              <div className="flex-1">
+                <p className="text-sm font-medium">E-Mail</p>
+                <p className="text-xs text-muted-foreground">
+                  {services.email.status === 'connected' ? 'Konfiguriert' :
+                   services.email.status === 'checking' ? 'Prüfe...' :
+                   services.email.message || 'Deaktiviert'}
+                </p>
               </div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Recent Documents */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Letzte Dokumente</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            Für eine vollständige Liste verwenden Sie den Dokumente-Tab
+          </p>
         </CardContent>
       </Card>
 
@@ -123,21 +271,21 @@ export default function OverviewTab() {
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="text-center p-4 border rounded-lg">
+            <div className="text-center p-4 border rounded-lg hover:border-[#0066CC] transition-colors">
               <div className="text-3xl mb-2">📁</div>
               <h3 className="font-semibold mb-1">Dateien ablegen</h3>
               <p className="text-sm text-muted-foreground">
                 PDFs in /consume Ordner legen
               </p>
             </div>
-            <div className="text-center p-4 border rounded-lg">
+            <div className="text-center p-4 border rounded-lg hover:border-[#0066CC] transition-colors">
               <div className="text-3xl mb-2">⚡</div>
               <h3 className="font-semibold mb-1">Auto-Verarbeitung</h3>
               <p className="text-sm text-muted-foreground">
                 OCR, Tagging und Analyse automatisch
               </p>
             </div>
-            <div className="text-center p-4 border rounded-lg">
+            <div className="text-center p-4 border rounded-lg hover:border-[#0066CC] transition-colors">
               <div className="text-3xl mb-2">📊</div>
               <h3 className="font-semibold mb-1">Überwachen</h3>
               <p className="text-sm text-muted-foreground">

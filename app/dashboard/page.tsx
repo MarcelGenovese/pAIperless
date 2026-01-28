@@ -4,23 +4,27 @@ import { useSession, signOut } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSignOutAlt, faHome, faFileAlt, faCog, faServer } from '@fortawesome/free-solid-svg-icons';
+import { faSignOutAlt, faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
 
+import Sidebar from '@/components/dashboard/Sidebar';
 import OverviewTab from '@/components/dashboard/OverviewTab';
 import DocumentsTab from '@/components/dashboard/DocumentsTab';
-import SettingsTab from '@/components/dashboard/SettingsTab';
-import SystemStatusTab from '@/components/dashboard/SystemStatusTab';
+import PaperlessSettingsTab from '@/components/dashboard/PaperlessSettingsTab';
+import GoogleSettingsTab from '@/components/dashboard/GoogleSettingsTab';
+import FTPSettingsCard from '@/components/dashboard/FTPSettingsCard';
+import EmailSettingsCard from '@/components/dashboard/EmailSettingsCard';
+import AdvancedSettingsTab from '@/components/dashboard/AdvancedSettingsTab';
 
 export default function DashboardPage() {
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState('overview');
   const [settingsData, setSettingsData] = useState({});
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    // Load all config data for settings tab
+    // Load all config data for settings tabs
     const loadSettings = async () => {
       try {
         const responses = await Promise.all([
@@ -56,78 +60,132 @@ export default function DashboardPage() {
     loadSettings();
   }, []);
 
+  const restartServices = async (service: 'ftp' | 'worker' | 'all' = 'all') => {
+    try {
+      const response = await fetch('/api/services/restart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ service }),
+      });
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Failed to restart services:', error);
+      throw error;
+    }
+  };
+
+  const renderTabContent = () => {
+    if (loading && ['paperless', 'google', 'ftp', 'email', 'advanced'].includes(activeTab)) {
+      return (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Lade Einstellungen...</p>
+        </div>
+      );
+    }
+
+    switch (activeTab) {
+      case 'overview':
+        return <OverviewTab />;
+      case 'documents':
+        return <DocumentsTab />;
+      case 'paperless':
+        return <PaperlessSettingsTab initialData={settingsData} />;
+      case 'google':
+        return <GoogleSettingsTab initialData={settingsData} />;
+      case 'ftp':
+        return <FTPSettingsCard initialData={settingsData} onServiceRestart={restartServices} />;
+      case 'email':
+        return <EmailSettingsCard initialData={settingsData} />;
+      case 'advanced':
+        return <AdvancedSettingsTab />;
+      default:
+        return <OverviewTab />;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-900 shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <header className="bg-white dark:bg-gray-900 shadow-sm border-b sticky top-0 z-10">
+        <div className="px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
+              {/* Mobile menu button */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+              >
+                <FontAwesomeIcon icon={sidebarOpen ? faTimes : faBars} />
+              </Button>
+
               <Image
                 src="/logo_complete.png"
                 alt="pAIperless"
                 width={200}
                 height={50}
-                className="h-12 w-auto"
+                className="h-10 w-auto"
                 priority
               />
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600 dark:text-gray-400">
+              <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">
                 {session?.user?.name || 'User'}
               </span>
               <Button variant="outline" size="sm" onClick={() => signOut({ callbackUrl: '/auth/login' })}>
                 <FontAwesomeIcon icon={faSignOutAlt} className="mr-2" />
-                Logout
+                <span className="hidden sm:inline">Logout</span>
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto">
-            <TabsTrigger value="overview" className="gap-2">
-              <FontAwesomeIcon icon={faHome} />
-              <span className="hidden sm:inline">Übersicht</span>
-            </TabsTrigger>
-            <TabsTrigger value="documents" className="gap-2">
-              <FontAwesomeIcon icon={faFileAlt} />
-              <span className="hidden sm:inline">Dokumente</span>
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="gap-2">
-              <FontAwesomeIcon icon={faCog} />
-              <span className="hidden sm:inline">Einstellungen</span>
-            </TabsTrigger>
-            <TabsTrigger value="status" className="gap-2">
-              <FontAwesomeIcon icon={faServer} />
-              <span className="hidden sm:inline">System Status</span>
-            </TabsTrigger>
-          </TabsList>
+      {/* Main Layout */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar - Desktop */}
+        <aside className="hidden lg:block w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 overflow-y-auto">
+          <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        </aside>
 
-          <TabsContent value="overview" className="space-y-4">
-            <OverviewTab />
-          </TabsContent>
+        {/* Sidebar - Mobile (Overlay) */}
+        {sidebarOpen && (
+          <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50" onClick={() => setSidebarOpen(false)}>
+            <aside
+              className="w-64 h-full bg-white dark:bg-gray-900 shadow-xl overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-4 border-b flex items-center justify-between">
+                <span className="font-semibold">Navigation</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <FontAwesomeIcon icon={faTimes} />
+                </Button>
+              </div>
+              <Sidebar
+                activeTab={activeTab}
+                onTabChange={(tab) => {
+                  setActiveTab(tab);
+                  setSidebarOpen(false);
+                }}
+              />
+            </aside>
+          </div>
+        )}
 
-          <TabsContent value="documents" className="space-y-4">
-            <DocumentsTab />
-          </TabsContent>
-
-          <TabsContent value="settings" className="space-y-4">
-            {loading ? (
-              <div className="text-center py-12">Lade Einstellungen...</div>
-            ) : (
-              <SettingsTab initialData={settingsData} />
-            )}
-          </TabsContent>
-
-          <TabsContent value="status" className="space-y-4">
-            <SystemStatusTab />
-          </TabsContent>
-        </Tabs>
-      </main>
+        {/* Main Content */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {renderTabContent()}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
