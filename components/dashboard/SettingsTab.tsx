@@ -15,7 +15,8 @@ import {
   faExclamationTriangle,
   faRedo,
   faEye,
-  faEyeSlash
+  faEyeSlash,
+  faSave
 } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
 import FTPSettingsCard from './FTPSettingsCard';
@@ -107,6 +108,16 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
   const [isResettingSetup, setIsResettingSetup] = useState(false);
   const [isRestartingServices, setIsRestartingServices] = useState(false);
 
+  // Loading states for test/save buttons
+  const [isTestingPaperless, setIsTestingPaperless] = useState(false);
+  const [isSavingPaperless, setIsSavingPaperless] = useState(false);
+  const [isTestingGemini, setIsTestingGemini] = useState(false);
+  const [isSavingGemini, setIsSavingGemini] = useState(false);
+  const [isTestingDocAI, setIsTestingDocAI] = useState(false);
+  const [isSavingDocAI, setIsSavingDocAI] = useState(false);
+  const [isSavingIntegration, setIsSavingIntegration] = useState(false);
+  const [isSavingAdvanced, setIsSavingAdvanced] = useState(false);
+
   // Helper function to restart services after configuration changes
   const restartServices = async (serviceName: 'ftp' | 'worker' | 'all' = 'all') => {
     setIsRestartingServices(true);
@@ -160,6 +171,7 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
       return;
     }
 
+    setIsTestingPaperless(true);
     try {
       const response = await fetch('/api/setup/test-paperless', {
         method: 'POST',
@@ -192,10 +204,13 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
         description: 'Netzwerkfehler',
         variant: 'destructive',
       });
+    } finally {
+      setIsTestingPaperless(false);
     }
   };
 
   const savePaperless = async () => {
+    setIsSavingPaperless(true);
     try {
       await fetch('/api/setup', {
         method: 'POST',
@@ -222,6 +237,8 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
         description: 'Konnte nicht speichern',
         variant: 'destructive',
       });
+    } finally {
+      setIsSavingPaperless(false);
     }
   };
 
@@ -235,6 +252,7 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
       return;
     }
 
+    setIsTestingGemini(true);
     try {
       const response = await fetch('/api/setup/test-gemini', {
         method: 'POST',
@@ -267,10 +285,13 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
         description: 'Netzwerkfehler',
         variant: 'destructive',
       });
+    } finally {
+      setIsTestingGemini(false);
     }
   };
 
   const saveGemini = async () => {
+    setIsSavingGemini(true);
     try {
       await fetch('/api/setup', {
         method: 'POST',
@@ -297,6 +318,8 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
         description: 'Konnte nicht speichern',
         variant: 'destructive',
       });
+    } finally {
+      setIsSavingGemini(false);
     }
   };
 
@@ -310,6 +333,7 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
       return;
     }
 
+    setIsTestingDocAI(true);
     try {
       const response = await fetch('/api/setup/test-document-ai', {
         method: 'POST',
@@ -342,10 +366,13 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
         description: 'Netzwerkfehler',
         variant: 'destructive',
       });
+    } finally {
+      setIsTestingDocAI(false);
     }
   };
 
   const saveDocumentAI = async () => {
+    setIsSavingDocAI(true);
     try {
       await fetch('/api/setup', {
         method: 'POST',
@@ -369,10 +396,13 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
         description: 'Konnte nicht speichern',
         variant: 'destructive',
       });
+    } finally {
+      setIsSavingDocAI(false);
     }
   };
 
   const saveIntegration = async () => {
+    setIsSavingIntegration(true);
     try {
       await fetch('/api/setup', {
         method: 'POST',
@@ -394,10 +424,13 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
         description: 'Konnte nicht speichern',
         variant: 'destructive',
       });
+    } finally {
+      setIsSavingIntegration(false);
     }
   };
 
   const saveAdvanced = async () => {
+    setIsSavingAdvanced(true);
     try {
       await fetch('/api/setup', {
         method: 'POST',
@@ -422,6 +455,8 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
         description: 'Konnte nicht speichern',
         variant: 'destructive',
       });
+    } finally {
+      setIsSavingAdvanced(false);
     }
   };
 
@@ -503,16 +538,17 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button onClick={testPaperless} variant="outline">
-              <FontAwesomeIcon icon={faCheckCircle} className="mr-2" />
-              Verbindung testen
+            <Button onClick={testPaperless} variant="outline" disabled={isTestingPaperless || isSavingPaperless}>
+              <FontAwesomeIcon icon={isTestingPaperless ? faSpinner : faCheckCircle} className={`mr-2 ${isTestingPaperless ? 'animate-spin' : ''}`} />
+              {isTestingPaperless ? 'Teste...' : 'Verbindung testen'}
             </Button>
             <Button
               onClick={savePaperless}
-              disabled={!paperlessData.tested}
+              disabled={!paperlessData.tested || isSavingPaperless || isTestingPaperless}
               className={cn(!paperlessData.tested && 'opacity-50 cursor-not-allowed')}
             >
-              Speichern
+              <FontAwesomeIcon icon={isSavingPaperless ? faSpinner : faSave} className={`mr-2 ${isSavingPaperless ? 'animate-spin' : ''}`} />
+              {isSavingPaperless ? 'Speichert...' : 'Speichern'}
             </Button>
             {paperlessData.tested && (
               <span className="flex items-center text-sm text-green-600">
@@ -564,16 +600,17 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
             />
           </div>
           <div className="flex gap-2">
-            <Button onClick={testGemini} variant="outline">
-              <FontAwesomeIcon icon={faCheckCircle} className="mr-2" />
-              API testen
+            <Button onClick={testGemini} variant="outline" disabled={isTestingGemini || isSavingGemini}>
+              <FontAwesomeIcon icon={isTestingGemini ? faSpinner : faCheckCircle} className={`mr-2 ${isTestingGemini ? 'animate-spin' : ''}`} />
+              {isTestingGemini ? 'Teste...' : 'API testen'}
             </Button>
             <Button
               onClick={saveGemini}
-              disabled={!geminiData.tested}
+              disabled={!geminiData.tested || isSavingGemini || isTestingGemini}
               className={cn(!geminiData.tested && 'opacity-50 cursor-not-allowed')}
             >
-              Speichern
+              <FontAwesomeIcon icon={isSavingGemini ? faSpinner : faSave} className={`mr-2 ${isSavingGemini ? 'animate-spin' : ''}`} />
+              {isSavingGemini ? 'Speichert...' : 'Speichern'}
             </Button>
             {geminiData.tested && (
               <span className="flex items-center text-sm text-green-600">
@@ -653,16 +690,17 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button onClick={testDocumentAI} variant="outline">
-              <FontAwesomeIcon icon={faCheckCircle} className="mr-2" />
-              Mit test.pdf testen
+            <Button onClick={testDocumentAI} variant="outline" disabled={isTestingDocAI || isSavingDocAI}>
+              <FontAwesomeIcon icon={isTestingDocAI ? faSpinner : faCheckCircle} className={`mr-2 ${isTestingDocAI ? 'animate-spin' : ''}`} />
+              {isTestingDocAI ? 'Teste...' : 'Mit test.pdf testen'}
             </Button>
             <Button
               onClick={saveDocumentAI}
-              disabled={!documentAIData.tested}
+              disabled={!documentAIData.tested || isSavingDocAI || isTestingDocAI}
               className={cn(!documentAIData.tested && 'opacity-50 cursor-not-allowed')}
             >
-              Speichern
+              <FontAwesomeIcon icon={isSavingDocAI ? faSpinner : faSave} className={`mr-2 ${isSavingDocAI ? 'animate-spin' : ''}`} />
+              {isSavingDocAI ? 'Speichert...' : 'Speichern'}
             </Button>
             {documentAIData.tested && (
               <span className="flex items-center text-sm text-green-600">
@@ -727,8 +765,9 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
               />
             </div>
           </div>
-          <Button onClick={saveIntegration}>
-            Speichern
+          <Button onClick={saveIntegration} disabled={isSavingIntegration}>
+            <FontAwesomeIcon icon={isSavingIntegration ? faSpinner : faSave} className={`mr-2 ${isSavingIntegration ? 'animate-spin' : ''}`} />
+            {isSavingIntegration ? 'Speichert...' : 'Speichern'}
           </Button>
         </CardContent>
       </Card>
@@ -850,8 +889,9 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
               </div>
             )}
           </div>
-          <Button onClick={saveAdvanced}>
-            Speichern
+          <Button onClick={saveAdvanced} disabled={isSavingAdvanced}>
+            <FontAwesomeIcon icon={isSavingAdvanced ? faSpinner : faSave} className={`mr-2 ${isSavingAdvanced ? 'animate-spin' : ''}`} />
+            {isSavingAdvanced ? 'Speichert...' : 'Speichern'}
           </Button>
         </CardContent>
       </Card>

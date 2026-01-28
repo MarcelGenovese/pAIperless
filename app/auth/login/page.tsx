@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowRight, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRight, faEye, faEyeSlash, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -112,7 +112,7 @@ export default function LoginPage() {
 
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? 'Signing in...' : 'Sign In'}
-          <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
+          <FontAwesomeIcon icon={loading ? faSpinner : faArrowRight} className={`ml-2 ${loading ? 'animate-spin' : ''}`} />
         </Button>
       </form>
     </div>

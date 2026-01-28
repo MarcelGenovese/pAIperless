@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faArrowRight, faEye, faEyeSlash, faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faArrowRight, faEye, faEyeSlash, faEnvelope, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 interface StepProps {
   onNext: (data: Record<string, any>) => void;
@@ -284,17 +284,8 @@ export default function Step5Email({ onNext, onBack, data }: StepProps) {
                   disabled={!canProceed || testing}
                   className="w-full"
                 >
-                  {testing ? (
-                    <>
-                      <FontAwesomeIcon icon={faEnvelope} className="mr-2 animate-pulse" />
-                      Test-Email wird gesendet...
-                    </>
-                  ) : (
-                    <>
-                      <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
-                      Test-Email senden
-                    </>
-                  )}
+                  <FontAwesomeIcon icon={testing ? faSpinner : faEnvelope} className={`mr-2 ${testing ? 'animate-spin' : ''}`} />
+                  {testing ? 'Test-Email wird gesendet...' : 'Test-Email senden'}
                 </Button>
                 <p className="text-xs text-muted-foreground text-center mt-2">
                   Speichert die Konfiguration und sendet eine Test-Email an alle Empfänger.

@@ -327,7 +327,7 @@ export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
                 disabled={!clientId || !clientSecret}
                 className="w-full"
               >
-                <FontAwesomeIcon icon={faExternalLinkAlt} />
+                <FontAwesomeIcon icon={faExternalLinkAlt} className="mr-2" />
                 Authorize with Google
               </Button>
               <p className="text-xs text-muted-foreground">

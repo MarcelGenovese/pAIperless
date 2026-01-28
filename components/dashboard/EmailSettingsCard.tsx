@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faEye, faEyeSlash, faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import { faCheckCircle, faEye, faEyeSlash, faEnvelope, faSpinner, faSave } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
 
 interface EmailSettingsCardProps {
@@ -286,15 +286,16 @@ export default function EmailSettingsCard({ initialData = {} }: EmailSettingsCar
 
         <div className="flex gap-2">
           <Button onClick={testEmail} variant="outline" disabled={!emailData.enabled || isTesting || isSaving}>
-            <FontAwesomeIcon icon={faEnvelope} className={cn("mr-2", isTesting && "animate-pulse")} />
-            {isTesting ? 'Wird gesendet...' : 'Test-Email senden'}
+            <FontAwesomeIcon icon={isTesting ? faSpinner : faEnvelope} className={`mr-2 ${isTesting ? 'animate-spin' : ''}`} />
+            {isTesting ? 'Sendet...' : 'Test-Email senden'}
           </Button>
           <Button
             onClick={saveEmail}
             disabled={!emailData.enabled || isTesting || isSaving}
             className={cn(!emailData.enabled && 'opacity-50 cursor-not-allowed')}
           >
-            {isSaving ? 'Wird gespeichert...' : 'Speichern'}
+            <FontAwesomeIcon icon={isSaving ? faSpinner : faSave} className={`mr-2 ${isSaving ? 'animate-spin' : ''}`} />
+            {isSaving ? 'Speichert...' : 'Speichern'}
           </Button>
           {emailData.tested && (
             <span className="flex items-center text-sm text-green-600">

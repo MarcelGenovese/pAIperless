@@ -226,12 +226,8 @@ export default function Step2Gemini({ onNext, onBack, data }: Step2GeminiProps) 
           variant="outline"
           className="flex-1"
         >
-          {testing ? (
-            <>
-              <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
-              Testing...
-            </>
-          ) : 'Test API Connection'}
+          <FontAwesomeIcon icon={testing ? faSpinner : faCheckCircle} className={`mr-2 ${testing ? 'animate-spin' : ''}`} />
+          {testing ? 'Testing...' : 'Test API Connection'}
         </Button>
         {testResult === 'success' && (
           <div className="flex items-center gap-2 text-green-600">

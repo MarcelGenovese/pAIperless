@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faArrowRight, faEye, faEyeSlash, faCheckCircle, faTimesCircle, faCopy, faKey, faLink } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faArrowRight, faEye, faEyeSlash, faCheckCircle, faTimesCircle, faCopy, faKey, faLink, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 interface Step1PaperlessProps {
   onNext: (data: Record<string, any>) => void;
@@ -295,6 +295,7 @@ export default function Step1Paperless({ onNext, onBack, data }: Step1PaperlessP
               variant="outline"
               className="flex-1"
             >
+              <FontAwesomeIcon icon={testing ? faSpinner : faCheckCircle} className={`mr-2 ${testing ? 'animate-spin' : ''}`} />
               {testing ? 'Testing...' : 'Test Connection'}
             </Button>
           </div>
@@ -430,6 +431,7 @@ export default function Step1Paperless({ onNext, onBack, data }: Step1PaperlessP
                   variant="outline"
                   className="flex-1"
                 >
+                  <FontAwesomeIcon icon={testingWebhooks ? faSpinner : faCheckCircle} className={`mr-2 ${testingWebhooks ? 'animate-spin' : ''}`} />
                   {testingWebhooks ? 'Testing...' : 'Verify Webhooks'}
                 </Button>
                 {webhooksExist === true && (

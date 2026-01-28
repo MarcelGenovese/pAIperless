@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faExternalLinkAlt, faCalendar, faListUl, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { faCheckCircle, faExternalLinkAlt, faCalendar, faListUl, faEye, faEyeSlash, faSpinner, faSave } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
 
 interface GoogleOAuthSettingsCardProps {
@@ -358,15 +358,15 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
           {isAuthorized && (
             <>
               <Button onClick={loadResources} variant="outline" disabled={isLoadingResources}>
-                <FontAwesomeIcon icon={faCheckCircle} className="mr-2" />
-                Neu laden
+                <FontAwesomeIcon icon={isLoadingResources ? faSpinner : faCheckCircle} className={`mr-2 ${isLoadingResources ? 'animate-spin' : ''}`} />
+                {isLoadingResources ? 'Lädt...' : 'Neu laden'}
               </Button>
               <Button
                 onClick={testOAuth}
                 variant="outline"
                 disabled={!oauthData.calendarId || !oauthData.taskListId || isTesting}
               >
-                <FontAwesomeIcon icon={faCheckCircle} className="mr-2" />
+                <FontAwesomeIcon icon={isTesting ? faSpinner : faCheckCircle} className={`mr-2 ${isTesting ? 'animate-spin' : ''}`} />
                 {isTesting ? 'Teste...' : 'Test-Eintrag erstellen'}
               </Button>
             </>
@@ -375,7 +375,8 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
             onClick={saveSettings}
             disabled={!oauthData.clientId || !oauthData.clientSecret || isSaving}
           >
-            {isSaving ? 'Wird gespeichert...' : 'Speichern'}
+            <FontAwesomeIcon icon={isSaving ? faSpinner : faSave} className={`mr-2 ${isSaving ? 'animate-spin' : ''}`} />
+            {isSaving ? 'Speichert...' : 'Speichern'}
           </Button>
           {oauthData.tested && (
             <span className="flex items-center text-sm text-green-600">

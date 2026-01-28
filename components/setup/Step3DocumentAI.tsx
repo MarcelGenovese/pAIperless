@@ -394,9 +394,10 @@ export default function Step3DocumentAI({ onNext, onBack, data }: StepProps) {
               variant="outline"
               className="flex-1"
             >
-              {isTestingConnection && <FontAwesomeIcon icon={faSpinner} spin />}
-              {connectionStatus === 'success' && !isTestingConnection && <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />}
-              {connectionStatus === 'error' && !isTestingConnection && <FontAwesomeIcon icon={faTimesCircle} className="text-red-600" />}
+              <FontAwesomeIcon
+                icon={isTestingConnection ? faSpinner : (connectionStatus === 'success' ? faCheckCircle : (connectionStatus === 'error' ? faTimesCircle : faCheckCircle))}
+                className={`mr-2 ${isTestingConnection ? 'animate-spin' : ''} ${connectionStatus === 'success' && !isTestingConnection ? 'text-green-600' : ''} ${connectionStatus === 'error' && !isTestingConnection ? 'text-red-600' : ''}`}
+              />
               Test Connection
             </Button>
 
@@ -406,10 +407,10 @@ export default function Step3DocumentAI({ onNext, onBack, data }: StepProps) {
               variant="outline"
               className="flex-1"
             >
-              {isTestingOCR && <FontAwesomeIcon icon={faSpinner} spin />}
-              {ocrStatus === 'success' && !isTestingOCR && <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />}
-              {ocrStatus === 'error' && !isTestingOCR && <FontAwesomeIcon icon={faTimesCircle} className="text-red-600" />}
-              <FontAwesomeIcon icon={faFileText} />
+              <FontAwesomeIcon
+                icon={isTestingOCR ? faSpinner : (ocrStatus === 'success' ? faCheckCircle : (ocrStatus === 'error' ? faTimesCircle : faFileText))}
+                className={`mr-2 ${isTestingOCR ? 'animate-spin' : ''} ${ocrStatus === 'success' && !isTestingOCR ? 'text-green-600' : ''} ${ocrStatus === 'error' && !isTestingOCR ? 'text-red-600' : ''}`}
+              />
               Test OCR
             </Button>
           </div>

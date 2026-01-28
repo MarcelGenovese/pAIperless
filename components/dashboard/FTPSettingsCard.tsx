@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { faCheckCircle, faEye, faEyeSlash, faSpinner, faSave } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
 
 interface FTPSettingsCardProps {
@@ -37,6 +37,7 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
   const [serverStatus, setServerStatus] = useState<{
     running: boolean;
     message: string;
@@ -88,6 +89,7 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
   };
 
   const testFtp = async () => {
+    setIsTesting(true);
     toast({
       title: 'Test wird ausgeführt',
       description: 'FTP-Server Status wird geprüft...',
@@ -120,6 +122,8 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
         description: 'Netzwerkfehler',
         variant: 'destructive',
       });
+    } finally {
+      setIsTesting(false);
     }
   };
 
@@ -307,16 +311,17 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
         )}
 
         <div className="flex gap-2">
-          <Button onClick={testFtp} variant="outline" disabled={!ftpData.enabled || isSaving}>
-            <FontAwesomeIcon icon={faCheckCircle} className="mr-2" />
-            Status prüfen
+          <Button onClick={testFtp} variant="outline" disabled={!ftpData.enabled || isSaving || isTesting}>
+            <FontAwesomeIcon icon={isTesting ? faSpinner : faCheckCircle} className={`mr-2 ${isTesting ? 'animate-spin' : ''}`} />
+            {isTesting ? 'Prüfe...' : 'Status prüfen'}
           </Button>
           <Button
             onClick={saveFtp}
-            disabled={!ftpData.enabled || isSaving}
+            disabled={!ftpData.enabled || isSaving || isTesting}
             className={cn(!ftpData.enabled && 'opacity-50 cursor-not-allowed')}
           >
-            {isSaving ? 'Wird gespeichert...' : 'Speichern'}
+            <FontAwesomeIcon icon={isSaving ? faSpinner : faSave} className={`mr-2 ${isSaving ? 'animate-spin' : ''}`} />
+            {isSaving ? 'Speichert...' : 'Speichern'}
           </Button>
           {ftpData.tested && (
             <span className="flex items-center text-sm text-green-600">
