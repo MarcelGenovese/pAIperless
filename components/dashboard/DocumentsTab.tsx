@@ -13,6 +13,7 @@ import {
   faSync
 } from '@fortawesome/free-solid-svg-icons';
 import DocumentUpload from './DocumentUpload';
+import FolderContents from './FolderContents';
 
 interface Document {
   id: string;
@@ -112,9 +113,15 @@ export default function DocumentsTab() {
       {/* Upload Component */}
       <DocumentUpload onUploadComplete={loadDocuments} />
 
+      {/* Folder Contents - Live Pipeline View */}
+      <FolderContents />
+
       <Card>
         <CardHeader>
-          <CardTitle>Verarbeitungsübersicht</CardTitle>
+          <CardTitle>Verarbeitungshistorie</CardTitle>
+          <p className="text-sm text-muted-foreground mt-1">
+            Vollständige Historie aller verarbeiteten Dokumente aus der Datenbank
+          </p>
         </CardHeader>
         <CardContent>
           {documents.length === 0 ? (
