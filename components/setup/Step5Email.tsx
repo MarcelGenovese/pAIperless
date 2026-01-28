@@ -28,10 +28,74 @@ export default function Step5Email({ onNext, onBack, data }: StepProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [emailSender, setEmailSender] = useState('');
   const [emailRecipients, setEmailRecipients] = useState('');
+  const [testing, setTesting] = useState(false);
 
   const canProceed = !enabled || (
     smtpServer && smtpPort && smtpUser && smtpPassword && emailSender && emailRecipients
   );
+
+  const handleTestEmail = async () => {
+    if (!canProceed) {
+      toast({
+        title: "Fehler",
+        description: "Bitte füllen Sie alle erforderlichen Felder aus.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setTesting(true);
+
+    try {
+      // Save configuration first
+      await fetch('/api/setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          step: 5,
+          data: {
+            enabled: true,
+            smtpServer,
+            smtpPort: parseInt(smtpPort, 10),
+            smtpEncryption,
+            smtpUser,
+            smtpPassword,
+            emailSender,
+            emailRecipients,
+          }
+        }),
+      });
+
+      // Test email
+      const response = await fetch('/api/email/test', {
+        method: 'GET',
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        toast({
+          title: "Test erfolgreich",
+          description: result.message,
+          variant: "success",
+        });
+      } else {
+        toast({
+          title: "Test fehlgeschlagen",
+          description: result.message || 'Fehler beim Senden der Test-Email',
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Test fehlgeschlagen",
+        description: "Netzwerkfehler",
+        variant: "destructive",
+      });
+    } finally {
+      setTesting(false);
+    }
+  };
 
   const handleNext = async () => {
     if (!canProceed) return;
@@ -208,6 +272,32 @@ export default function Step5Email({ onNext, onBack, data }: StepProps) {
                 />
                 <p className="text-xs text-muted-foreground">
                   Kommagetrennte Liste von E-Mail-Adressen für Benachrichtigungen.
+                </p>
+              </div>
+
+              {/* Test Email Button */}
+              <div className="pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleTestEmail}
+                  disabled={!canProceed || testing}
+                  className="w-full"
+                >
+                  {testing ? (
+                    <>
+                      <FontAwesomeIcon icon={faEnvelope} className="mr-2 animate-pulse" />
+                      Test-Email wird gesendet...
+                    </>
+                  ) : (
+                    <>
+                      <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
+                      Test-Email senden
+                    </>
+                  )}
+                </Button>
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  Speichert die Konfiguration und sendet eine Test-Email an alle Empfänger.
                 </p>
               </div>
             </>
