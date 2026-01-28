@@ -165,8 +165,19 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
 
       if (!contentType || !contentType.includes('application/json')) {
         const text = await response.text();
-        console.error('[Upload] Non-JSON response:', text.substring(0, 200));
-        throw new Error('Server hat keine JSON-Antwort zurückgegeben. Möglicherweise ist ein Fehler aufgetreten.');
+        console.error('[Upload] Non-JSON response:', text.substring(0, 500));
+
+        // Show detailed error with response status and text
+        let errorMsg = `Server-Fehler (${response.status}): `;
+        if (text.includes('Unauthorized')) {
+          errorMsg += 'Nicht autorisiert. Bitte neu anmelden.';
+        } else if (text.includes('Setup not complete')) {
+          errorMsg += 'Setup nicht abgeschlossen.';
+        } else {
+          errorMsg += text.substring(0, 100);
+        }
+
+        throw new Error(errorMsg);
       }
 
       const result = await response.json();
