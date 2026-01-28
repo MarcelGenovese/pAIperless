@@ -18,6 +18,7 @@ interface FTPSettingsCardProps {
     password?: string;
     port?: string;
     enableTls?: boolean;
+    pasvUrl?: string;
   };
   onServiceRestart?: (service: 'ftp') => Promise<void>;
 }
@@ -31,6 +32,7 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
     password: initialData.password || '',
     port: initialData.port || '21',
     enableTls: initialData.enableTls || false,
+    pasvUrl: initialData.pasvUrl || '',
     tested: false,
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -40,10 +42,34 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
     message: string;
   } | null>(null);
 
-  // Load FTP server status on mount
+  // Load FTP server status and paperless URL on mount
   useEffect(() => {
     loadStatus();
+    loadPaperlessUrl();
   }, []);
+
+  const loadPaperlessUrl = async () => {
+    // Load paperless URL as default for PASV URL if not set
+    if (!ftpData.pasvUrl || ftpData.pasvUrl === '') {
+      try {
+        const response = await fetch('/api/setup/load-config');
+        const config = await response.json();
+
+        if (config.paperlessUrl) {
+          // Extract hostname from Paperless URL
+          const url = new URL(config.paperlessUrl);
+          const hostname = url.hostname;
+
+          // Don't use localhost
+          if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+            setFtpData(prev => ({ ...prev, pasvUrl: hostname }));
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load paperless URL:', error);
+      }
+    }
+  };
 
   const loadStatus = async () => {
     try {
@@ -113,6 +139,7 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
             ftpPassword: ftpData.password,
             ftpPort: parseInt(ftpData.port, 10),
             enableTls: ftpData.enableTls,
+            ftpPasvUrl: ftpData.pasvUrl,
           }
         }),
       });
@@ -237,6 +264,22 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
                   <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
                 </Button>
               </div>
+            </div>
+
+            <div>
+              <Label htmlFor="ftp-pasv-url">PASV URL (Server IP/Hostname)</Label>
+              <Input
+                id="ftp-pasv-url"
+                value={ftpData.pasvUrl}
+                onChange={(e) => {
+                  setFtpData({ ...ftpData, pasvUrl: e.target.value, tested: false });
+                }}
+                placeholder="192.168.1.100 oder domain.com"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Die IP-Adresse oder Domain, die Clients für Datenverbindungen verwenden.
+                Standard: Hostname aus Paperless-URL
+              </p>
             </div>
 
             <div className="flex items-center justify-between p-4 border rounded-lg">

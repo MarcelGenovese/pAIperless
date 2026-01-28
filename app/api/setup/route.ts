@@ -96,6 +96,7 @@ export async function POST(request: NextRequest) {
           await setConfigSecure(CONFIG_KEYS.FTP_PASSWORD, data.ftpPassword);
           await setConfig(CONFIG_KEYS.FTP_PORT, data.ftpPort?.toString() || '21');
           await setConfig(CONFIG_KEYS.FTP_ENABLE_TLS, data.enableTls ? 'true' : 'false');
+          await setConfig(CONFIG_KEYS.FTP_PASV_URL, data.ftpPasvUrl || '');
         }
         break;
 

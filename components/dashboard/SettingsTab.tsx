@@ -81,6 +81,7 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
     password: initialData.ftpPassword || '',
     port: initialData.ftpPort || '21',
     enableTls: initialData.ftpEnableTls || false,
+    pasvUrl: initialData.ftpPasvUrl || '',
     tested: false,
   });
   const [showFtpPassword, setShowFtpPassword] = useState(false);
@@ -736,6 +737,7 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
           password: ftpData.password,
           port: ftpData.port,
           enableTls: ftpData.enableTls,
+          pasvUrl: ftpData.pasvUrl,
         }}
         onServiceRestart={restartServices}
       />

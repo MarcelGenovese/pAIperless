@@ -80,6 +80,7 @@ export async function GET(request: NextRequest) {
           data.ftpPassword = await getConfigSecure(CONFIG_KEYS.FTP_PASSWORD) || '';
           data.ftpPort = await getConfig(CONFIG_KEYS.FTP_PORT) || '21';
           data.enableTls = await getConfig(CONFIG_KEYS.FTP_ENABLE_TLS) === 'true';
+          data.ftpPasvUrl = await getConfig(CONFIG_KEYS.FTP_PASV_URL) || '';
         }
         break;
 

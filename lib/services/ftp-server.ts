@@ -9,8 +9,6 @@ import FtpSrv from 'ftp-srv';
 import { getConfig, getConfigSecure, CONFIG_KEYS } from '@/lib/config';
 import { prisma } from '@/lib/prisma';
 import fs from 'fs';
-import path from 'path';
-import { networkInterfaces } from 'os';
 
 interface FTPServerStatus {
   running: boolean;
@@ -31,6 +29,7 @@ class FTPServerService {
     password: string;
     port: number;
     enableTls: boolean;
+    pasvUrl?: string;
   } | null = null;
 
   /**
@@ -43,6 +42,7 @@ class FTPServerService {
       const password = await getConfigSecure(CONFIG_KEYS.FTP_PASSWORD);
       const portStr = await getConfig(CONFIG_KEYS.FTP_PORT);
       const enableTlsStr = await getConfig(CONFIG_KEYS.FTP_ENABLE_TLS);
+      const pasvUrl = await getConfig(CONFIG_KEYS.FTP_PASV_URL);
 
       if (!enabled) {
         this.config = null;
@@ -62,12 +62,33 @@ class FTPServerService {
         return false;
       }
 
+      // Get PASV URL: Priority = Database > Env Variable > Extract from Paperless URL
+      let finalPasvUrl = pasvUrl || process.env.FTP_PASV_URL || '';
+
+      // If still empty, try to extract from Paperless URL
+      if (!finalPasvUrl) {
+        try {
+          const paperlessUrl = await getConfig(CONFIG_KEYS.PAPERLESS_URL);
+          if (paperlessUrl) {
+            const url = new URL(paperlessUrl);
+            const hostname = url.hostname;
+            if (hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== '0.0.0.0') {
+              finalPasvUrl = hostname;
+              console.log(`[FTP] Using PASV URL from Paperless URL: ${finalPasvUrl}`);
+            }
+          }
+        } catch (error) {
+          console.warn('[FTP] Could not extract hostname from Paperless URL');
+        }
+      }
+
       this.config = {
         enabled,
         username,
         password,
         port,
         enableTls: enableTlsStr === 'true',
+        pasvUrl: finalPasvUrl,
       };
 
       return true;
@@ -120,44 +141,6 @@ class FTPServerService {
     }
   }
 
-  /**
-   * Get server IP for PASV based on client IP
-   * Returns the appropriate server IP that the client should connect to
-   */
-  private getServerIpForClient(clientIp: string): string {
-    try {
-      const nets = networkInterfaces();
-
-      // If client is localhost, return localhost
-      if (clientIp === '127.0.0.1' || clientIp === '::1' || clientIp.startsWith('::ffff:127.')) {
-        console.log(`[FTP] PASV for localhost client`);
-        return '127.0.0.1';
-      }
-
-      // Find all non-internal IPv4 addresses
-      const addresses: string[] = [];
-      for (const name of Object.keys(nets)) {
-        for (const net of nets[name] || []) {
-          if (net.family === 'IPv4' && !net.internal) {
-            addresses.push(net.address);
-          }
-        }
-      }
-
-      // If we have addresses, return the first one (most likely the primary interface)
-      if (addresses.length > 0) {
-        console.log(`[FTP] PASV using server IP: ${addresses[0]} for client ${clientIp}`);
-        return addresses[0];
-      }
-
-      // Fallback to localhost if no external interface found
-      console.warn(`[FTP] No external IP found, using 127.0.0.1`);
-      return '127.0.0.1';
-    } catch (error) {
-      console.error('[FTP] Error determining server IP:', error);
-      return '127.0.0.1';
-    }
-  }
 
   /**
    * Start the FTP server
@@ -181,19 +164,20 @@ class FTPServerService {
       // Create FTP server options
       const serverOptions: any = {
         url: `ftp://0.0.0.0:${this.config.port}`,
-        // If FTP_PASV_URL is set, use it; otherwise use auto-detect function
-        pasv_url: process.env.FTP_PASV_URL && process.env.FTP_PASV_URL !== '0.0.0.0'
-          ? process.env.FTP_PASV_URL
-          : (clientIp: string) => {
-              // Auto-detect server IP based on client IP
-              return this.getServerIpForClient(clientIp);
-            },
+        // Use configured PASV URL (from DB or env or paperless URL)
+        pasv_url: this.config.pasvUrl || undefined,
         pasv_min: 1024,
         pasv_max: 1048,
         anonymous: false,
         greeting: ['Welcome to pAIperless FTP Server', 'Upload PDFs to automatically process them.'],
         timeout: 30000,
       };
+
+      if (this.config.pasvUrl) {
+        console.log(`[FTP] Using PASV URL: ${this.config.pasvUrl}`);
+      } else {
+        console.warn('[FTP] No PASV URL configured - passive mode will not work for external clients');
+      }
 
       // Add TLS if enabled
       if (this.config.enableTls) {
