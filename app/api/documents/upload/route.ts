@@ -38,10 +38,32 @@ export async function POST(request: NextRequest) {
 
     console.log(`[Upload] Target directory: ${consumeDir}`);
 
-    // Ensure consume directory exists
-    if (!existsSync(consumeDir)) {
-      console.log(`[Upload] Creating directory: ${consumeDir}`);
-      await mkdir(consumeDir, { recursive: true, mode: 0o777 });
+    // Ensure consume directory exists with proper permissions
+    try {
+      if (!existsSync(consumeDir)) {
+        console.log(`[Upload] Creating directory: ${consumeDir}`);
+        await mkdir(consumeDir, { recursive: true, mode: 0o777 });
+      }
+
+      // Verify directory is writable
+      const testFile = path.join(consumeDir, '.write-test');
+      try {
+        await writeFile(testFile, 'test', { mode: 0o666 });
+        await import('fs').then(fs => fs.promises.unlink(testFile));
+        console.log(`[Upload] Directory is writable: ${consumeDir}`);
+      } catch (writeError: any) {
+        console.error(`[Upload] Directory not writable: ${consumeDir}`, writeError);
+        return NextResponse.json(
+          { error: `Upload-Verzeichnis nicht beschreibbar: ${writeError.message}` },
+          { status: 500 }
+        );
+      }
+    } catch (mkdirError: any) {
+      console.error(`[Upload] Failed to create directory: ${consumeDir}`, mkdirError);
+      return NextResponse.json(
+        { error: `Verzeichnis konnte nicht erstellt werden: ${mkdirError.message}` },
+        { status: 500 }
+      );
     }
 
     const uploadedFiles: string[] = [];

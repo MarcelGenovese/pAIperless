@@ -43,10 +43,10 @@ export default function FolderContents() {
       const response = await fetch('/api/documents/folders');
       const data = await response.json();
 
-      if (data.error) {
-        console.error('Failed to load folders:', data.error);
-      } else {
+      if (data && !data.error) {
         setFolders(data);
+      } else if (data?.error) {
+        console.error('[FolderContents] Failed to load folders:', data.error);
       }
       setLoading(false);
     } catch (error) {

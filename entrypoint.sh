@@ -14,8 +14,10 @@ echo "📁 Storage directory ready"
 # Fix permissions as root (we start as root for this)
 echo "🔧 Setting directory permissions..."
 chown -R nextjs:nodejs /app/storage
-chmod -R 777 /app/storage/consume
 chmod -R 775 /app/storage
+# Give consume folder full write permissions (must be after general chmod)
+chmod -R 777 /app/storage/consume /app/storage/processing /app/storage/error
+echo "✅ Permissions: consume/processing/error = 777, others = 775"
 
 # Run Prisma migrations as nextjs user
 echo "🔄 Running database migrations..."
