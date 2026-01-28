@@ -120,6 +120,59 @@ class FTPServerService {
   }
 
   /**
+   * Get PASV URL for FTP server
+   * Priority: FTP_PASV_URL env var > Extract from PAPERLESS_URL > Auto-detect
+   */
+  private async getPasvUrl(): Promise<string> {
+    // 1. Check environment variable
+    if (process.env.FTP_PASV_URL && process.env.FTP_PASV_URL !== '0.0.0.0') {
+      console.log(`[FTP] Using PASV URL from environment: ${process.env.FTP_PASV_URL}`);
+      return process.env.FTP_PASV_URL;
+    }
+
+    // 2. Try to extract from Paperless URL
+    try {
+      const paperlessUrl = await getConfig(CONFIG_KEYS.PAPERLESS_URL);
+      if (paperlessUrl) {
+        const url = new URL(paperlessUrl);
+        const hostname = url.hostname;
+
+        // Skip localhost/127.0.0.1 as they won't work for external clients
+        if (hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== '0.0.0.0') {
+          console.log(`[FTP] Using PASV URL from Paperless URL: ${hostname}`);
+          return hostname;
+        }
+      }
+    } catch (error) {
+      console.warn('[FTP] Could not extract hostname from Paperless URL');
+    }
+
+    // 3. Try to auto-detect server IP
+    try {
+      const { networkInterfaces } = await import('os');
+      const nets = networkInterfaces();
+
+      // Look for first non-internal IPv4 address
+      for (const name of Object.keys(nets)) {
+        for (const net of nets[name] || []) {
+          // Skip internal (loopback) and IPv6
+          if (net.family === 'IPv4' && !net.internal) {
+            console.log(`[FTP] Auto-detected PASV URL: ${net.address}`);
+            return net.address;
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('[FTP] Could not auto-detect server IP');
+    }
+
+    // 4. Fallback to 0.0.0.0 (will not work for external clients)
+    console.warn('[FTP] No valid PASV URL found, using 0.0.0.0 (external clients will not be able to connect)');
+    console.warn('[FTP] Please set FTP_PASV_URL environment variable or configure Paperless URL with server hostname/IP');
+    return '0.0.0.0';
+  }
+
+  /**
    * Start the FTP server
    */
   async start(): Promise<{ success: boolean; message: string }> {
@@ -138,10 +191,13 @@ class FTPServerService {
       // Ensure consume directory exists
       const consumeDir = this.ensureConsumeDirectory();
 
+      // Get PASV URL (auto-detect or from config)
+      const pasvUrl = await this.getPasvUrl();
+
       // Create FTP server options
       const serverOptions: any = {
         url: `ftp://0.0.0.0:${this.config.port}`,
-        pasv_url: process.env.FTP_PASV_URL || '0.0.0.0',
+        pasv_url: pasvUrl,
         pasv_min: 1024,
         pasv_max: 1048,
         anonymous: false,

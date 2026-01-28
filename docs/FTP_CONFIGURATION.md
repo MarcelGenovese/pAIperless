@@ -19,13 +19,39 @@ These are already configured in the `docker-compose.yml` file.
 
 ### Passive Mode IP Address
 
-FTP passive mode requires the server to tell clients which IP address to connect to for data transfers. By default, Docker containers don't know their external IP address.
+FTP passive mode requires the server to tell clients which IP address to connect to for data transfers.
 
-You **must** configure the `FTP_PASV_URL` environment variable with your server's external IP address or hostname.
+**pAIperless automatically detects the correct IP address** using this priority:
+
+1. **`FTP_PASV_URL` environment variable** (if set)
+2. **Paperless-NGX URL hostname** (extracted from your Paperless URL in setup)
+3. **Auto-detected server IP** (first non-loopback IPv4 address)
+
+In most cases, you **don't need to manually configure** `FTP_PASV_URL`. The auto-detection will work correctly if:
+- You configured your Paperless-NGX URL with the server's IP/hostname (not localhost)
+- Your server has a valid network interface
+
+Only set `FTP_PASV_URL` manually if:
+- Auto-detection fails
+- You need to use a specific IP address
+- You're behind NAT and need to specify the public IP
 
 ## Configuration Steps
 
-### 1. Find Your Server's External IP Address
+### Automatic Configuration (Recommended)
+
+**No manual configuration needed!** Just configure your Paperless-NGX URL correctly during setup:
+
+1. In pAIperless setup wizard, enter your Paperless-NGX URL
+2. Use your server's IP or hostname (e.g., `http://192.168.1.100:8000`)
+3. **Don't use** `http://localhost:8000` if you want external FTP access
+4. pAIperless will automatically use this hostname for FTP passive mode
+
+### Manual Configuration (Optional)
+
+Only needed if auto-detection doesn't work or you need a specific IP.
+
+#### 1. Find Your Server's External IP Address
 
 **For local network access:**
 ```bash
@@ -44,27 +70,39 @@ curl ifconfig.me
 # Example: 203.0.113.45
 ```
 
-### 2. Set the FTP_PASV_URL Environment Variable
+#### 2. Set the FTP_PASV_URL Environment Variable
 
-Edit your `.env` file or `docker-compose.yml`:
+Edit your `.env` file:
 
-**.env file method:**
 ```env
 FTP_PASV_URL=192.168.1.100
 ```
 
-**docker-compose.yml method:**
+Or in `docker-compose.yml`:
 ```yaml
 environment:
   - FTP_PASV_URL=192.168.1.100
 ```
 
-### 3. Restart the Container
+#### 3. Restart the Container
 
 ```bash
 docker compose down
 docker compose up -d
 ```
+
+### Verify Configuration
+
+Check the logs to see which PASV URL is being used:
+
+```bash
+docker logs paiperless | grep PASV
+```
+
+You should see one of:
+- `Using PASV URL from environment: 192.168.1.100`
+- `Using PASV URL from Paperless URL: 192.168.1.100`
+- `Auto-detected PASV URL: 192.168.1.100`
 
 ## Firewall Configuration
 
