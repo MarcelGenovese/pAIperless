@@ -12,7 +12,10 @@ import {
   faServer,
   faBrain,
   faGlobe,
-  faEnvelope
+  faEnvelope,
+  faFolderOpen,
+  faBolt,
+  faChartBar
 } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
 
@@ -271,22 +274,22 @@ export default function OverviewTab() {
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="text-center p-4 border rounded-lg hover:border-[#0066CC] transition-colors">
-              <div className="text-3xl mb-2">📁</div>
+            <div className="text-center p-4 border rounded-lg hover:border-[#27417A] transition-colors">
+              <FontAwesomeIcon icon={faFolderOpen} className="text-4xl mb-2 text-[#27417A]" />
               <h3 className="font-semibold mb-1">Dateien ablegen</h3>
               <p className="text-sm text-muted-foreground">
                 PDFs in /consume Ordner legen
               </p>
             </div>
-            <div className="text-center p-4 border rounded-lg hover:border-[#0066CC] transition-colors">
-              <div className="text-3xl mb-2">⚡</div>
+            <div className="text-center p-4 border rounded-lg hover:border-[#27417A] transition-colors">
+              <FontAwesomeIcon icon={faBolt} className="text-4xl mb-2 text-[#27417A]" />
               <h3 className="font-semibold mb-1">Auto-Verarbeitung</h3>
               <p className="text-sm text-muted-foreground">
                 OCR, Tagging und Analyse automatisch
               </p>
             </div>
-            <div className="text-center p-4 border rounded-lg hover:border-[#0066CC] transition-colors">
-              <div className="text-3xl mb-2">📊</div>
+            <div className="text-center p-4 border rounded-lg hover:border-[#27417A] transition-colors">
+              <FontAwesomeIcon icon={faChartBar} className="text-4xl mb-2 text-[#27417A]" />
               <h3 className="font-semibold mb-1">Überwachen</h3>
               <p className="text-sm text-muted-foreground">
                 Fortschritt im Documents-Tab verfolgen
