@@ -44,17 +44,20 @@ export async function middleware(request: NextRequest) {
   }
 
   // Check authentication for protected routes
-  if (!pathname.startsWith('/auth/login') && !pathname.startsWith('/login')) {
+  if (!pathname.startsWith('/auth/login') && !pathname.startsWith('/login') && !pathname.startsWith('/about')) {
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
     });
 
+    console.log(`[Middleware] Path: ${pathname}, Token: ${token ? 'Present' : 'Missing'}`);
+
     if (!token) {
       // For API routes, return 401 instead of redirecting
       if (pathname.startsWith('/api/')) {
+        console.log(`[Middleware] Returning 401 for ${pathname}`);
         return NextResponse.json(
-          { error: 'Unauthorized' },
+          { error: 'Unauthorized - Please login again' },
           { status: 401 }
         );
       }
