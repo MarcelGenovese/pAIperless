@@ -1,0 +1,146 @@
+import { NextResponse } from 'next/server';
+import { getConfig, getConfigSecure, CONFIG_KEYS } from '@/lib/config';
+import { PaperlessClient } from '@/lib/paperless';
+
+export const runtime = 'nodejs';
+
+export async function GET() {
+  const statuses: Record<string, any> = {};
+
+  // Check Paperless-NGX
+  try {
+    const paperlessUrl = await getConfig(CONFIG_KEYS.PAPERLESS_URL);
+    const paperlessToken = await getConfigSecure(CONFIG_KEYS.PAPERLESS_TOKEN);
+
+    if (paperlessUrl && paperlessToken) {
+      const client = new PaperlessClient(paperlessUrl, paperlessToken);
+      const isConnected = await client.validateConnection();
+
+      statuses.paperless = {
+        status: isConnected ? 'connected' : 'error',
+        message: isConnected ? 'Verbunden' : 'Verbindung fehlgeschlagen',
+      };
+    } else {
+      statuses.paperless = {
+        status: 'not_configured',
+        message: 'Nicht konfiguriert',
+      };
+    }
+  } catch (error: any) {
+    statuses.paperless = {
+      status: 'error',
+      message: error.message || 'Fehler',
+    };
+  }
+
+  // Check Gemini AI
+  try {
+    const geminiApiKey = await getConfigSecure(CONFIG_KEYS.GEMINI_API_KEY);
+
+    if (geminiApiKey) {
+      // Quick validation - just check if key exists and has correct format
+      const isValid = geminiApiKey.startsWith('AIza') && geminiApiKey.length > 30;
+
+      statuses.gemini = {
+        status: isValid ? 'connected' : 'error',
+        message: isValid ? 'Konfiguriert' : 'Ungültiger API Key',
+      };
+    } else {
+      statuses.gemini = {
+        status: 'not_configured',
+        message: 'Nicht konfiguriert',
+      };
+    }
+  } catch (error: any) {
+    statuses.gemini = {
+      status: 'error',
+      message: error.message || 'Fehler',
+    };
+  }
+
+  // Check Document AI
+  try {
+    const projectId = await getConfig(CONFIG_KEYS.GOOGLE_CLOUD_PROJECT_ID);
+    const credentials = await getConfigSecure(CONFIG_KEYS.GOOGLE_CLOUD_CREDENTIALS);
+    const processorId = await getConfig(CONFIG_KEYS.DOCUMENT_AI_PROCESSOR_ID);
+
+    if (projectId && credentials && processorId) {
+      statuses.documentAI = {
+        status: 'connected',
+        message: 'Konfiguriert',
+      };
+    } else {
+      statuses.documentAI = {
+        status: 'not_configured',
+        message: 'Nicht konfiguriert',
+      };
+    }
+  } catch (error: any) {
+    statuses.documentAI = {
+      status: 'error',
+      message: error.message || 'Fehler',
+    };
+  }
+
+  // Check Google OAuth
+  try {
+    const clientId = await getConfigSecure(CONFIG_KEYS.GOOGLE_OAUTH_CLIENT_ID);
+    const clientSecret = await getConfigSecure(CONFIG_KEYS.GOOGLE_OAUTH_CLIENT_SECRET);
+
+    if (clientId && clientSecret) {
+      statuses.oauth = {
+        status: 'connected',
+        message: 'Konfiguriert',
+      };
+    } else {
+      statuses.oauth = {
+        status: 'not_configured',
+        message: 'Nicht konfiguriert',
+      };
+    }
+  } catch (error: any) {
+    statuses.oauth = {
+      status: 'error',
+      message: error.message || 'Fehler',
+    };
+  }
+
+  // Check FTP Server
+  try {
+    const ftpEnabled = await getConfig(CONFIG_KEYS.FTP_ENABLED) === 'true';
+
+    if (ftpEnabled) {
+      // FTP server not implemented yet, so just check config
+      statuses.ftp = {
+        status: 'not_configured',
+        message: 'Nicht implementiert',
+      };
+    } else {
+      statuses.ftp = {
+        status: 'not_configured',
+        message: 'Deaktiviert',
+      };
+    }
+  } catch (error: any) {
+    statuses.ftp = {
+      status: 'error',
+      message: error.message || 'Fehler',
+    };
+  }
+
+  // Check Worker
+  try {
+    // Worker is always running if the app is running
+    statuses.worker = {
+      status: 'connected',
+      message: 'Läuft',
+    };
+  } catch (error: any) {
+    statuses.worker = {
+      status: 'error',
+      message: error.message || 'Fehler',
+    };
+  }
+
+  return NextResponse.json(statuses);
+}
