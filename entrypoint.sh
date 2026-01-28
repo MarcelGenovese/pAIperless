@@ -11,9 +11,15 @@ done
 
 echo "📁 Storage directory ready"
 
-# Run Prisma migrations
+# Fix permissions as root (we start as root for this)
+echo "🔧 Setting directory permissions..."
+chown -R nextjs:nodejs /app/storage
+chmod -R 777 /app/storage/consume
+chmod -R 775 /app/storage
+
+# Run Prisma migrations as nextjs user
 echo "🔄 Running database migrations..."
-node /app/node_modules/prisma/build/index.js migrate deploy || echo "⚠️  Migration warning (this is normal on first run)"
+gosu nextjs node /app/node_modules/prisma/build/index.js migrate deploy || echo "⚠️  Migration warning (this is normal on first run)"
 
 echo "✅ Database ready"
 
@@ -25,6 +31,6 @@ echo "✅ Database ready"
   curl -s -X POST http://localhost:3000/api/services/init || echo "⚠️  Service init will retry on first request"
 ) &
 
-# Start Next.js server
+# Start Next.js server as nextjs user
 echo "🌐 Starting web server on port 3000..."
-exec "$@"
+exec gosu nextjs "$@"

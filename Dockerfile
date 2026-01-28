@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     procps \
     openssl \
+    gosu \
     && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies only when needed
@@ -65,12 +66,14 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/scripts ./scripts
 RUN chmod +x /app/scripts/cli.js
 
-# Create storage directories
+# Create storage directories with proper permissions
 RUN mkdir -p /app/storage/consume /app/storage/processing /app/storage/error \
     /app/storage/completed /app/storage/database /app/storage/backups /app/storage/logs && \
-    chown -R nextjs:nodejs /app/storage
+    chown -R nextjs:nodejs /app/storage && \
+    chmod -R 777 /app/storage
 
-USER nextjs
+# Don't switch to nextjs user yet - entrypoint.sh will do it
+# USER nextjs
 
 EXPOSE 3000
 
