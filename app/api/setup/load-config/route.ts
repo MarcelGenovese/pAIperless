@@ -44,16 +44,14 @@ export async function GET(request: NextRequest) {
 
       case 5: // Email
         const emailEnabled = await getConfig(CONFIG_KEYS.EMAIL_ENABLED) === 'true';
-        data.enabled = emailEnabled;
-        if (emailEnabled) {
-          data.smtpServer = await getConfig(CONFIG_KEYS.SMTP_SERVER) || '';
-          data.smtpPort = await getConfig(CONFIG_KEYS.SMTP_PORT) || '587';
-          data.smtpEncryption = await getConfig(CONFIG_KEYS.SMTP_ENCRYPTION) || 'STARTTLS';
-          data.smtpUser = await getConfig(CONFIG_KEYS.SMTP_USER) || '';
-          data.smtpPassword = await getConfigSecure(CONFIG_KEYS.SMTP_PASSWORD) || '';
-          data.emailSender = await getConfig(CONFIG_KEYS.EMAIL_SENDER) || '';
-          data.emailRecipients = await getConfig(CONFIG_KEYS.EMAIL_RECIPIENTS) || '';
-        }
+        data.emailEnabled = emailEnabled;
+        data.smtpServer = await getConfig(CONFIG_KEYS.SMTP_SERVER) || '';
+        data.smtpPort = await getConfig(CONFIG_KEYS.SMTP_PORT) || '587';
+        data.smtpEncryption = await getConfig(CONFIG_KEYS.SMTP_ENCRYPTION) || 'STARTTLS';
+        data.smtpUser = await getConfig(CONFIG_KEYS.SMTP_USER) || '';
+        data.smtpPassword = await getConfigSecure(CONFIG_KEYS.SMTP_PASSWORD) || '';
+        data.emailSender = await getConfig(CONFIG_KEYS.EMAIL_SENDER) || '';
+        data.emailRecipients = await getConfig(CONFIG_KEYS.EMAIL_RECIPIENTS) || '';
         break;
 
       case 6: // Paperless Integration
@@ -74,14 +72,12 @@ export async function GET(request: NextRequest) {
 
       case 8: // FTP
         const ftpEnabled = await getConfig(CONFIG_KEYS.FTP_ENABLED) === 'true';
-        data.enabled = ftpEnabled;
-        if (ftpEnabled) {
-          data.ftpUsername = await getConfig(CONFIG_KEYS.FTP_USERNAME) || 'paiperless';
-          data.ftpPassword = await getConfigSecure(CONFIG_KEYS.FTP_PASSWORD) || '';
-          data.ftpPort = await getConfig(CONFIG_KEYS.FTP_PORT) || '21';
-          data.enableTls = await getConfig(CONFIG_KEYS.FTP_ENABLE_TLS) === 'true';
-          data.ftpPasvUrl = await getConfig(CONFIG_KEYS.FTP_PASV_URL) || '';
-        }
+        data.ftpEnabled = ftpEnabled;
+        data.ftpUsername = await getConfig(CONFIG_KEYS.FTP_USERNAME) || 'paiperless';
+        data.ftpPassword = await getConfigSecure(CONFIG_KEYS.FTP_PASSWORD) || '';
+        data.ftpPort = await getConfig(CONFIG_KEYS.FTP_PORT) || '21';
+        data.ftpEnableTls = await getConfig(CONFIG_KEYS.FTP_ENABLE_TLS) === 'true';
+        data.ftpPasvUrl = await getConfig(CONFIG_KEYS.FTP_PASV_URL) || '';
         break;
 
       default:
