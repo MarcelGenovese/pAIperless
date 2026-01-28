@@ -120,55 +120,43 @@ class FTPServerService {
   }
 
   /**
-   * Get PASV URL dynamically from connection
-   * This uses the IP address that the client connected to
+   * Get server IP for PASV based on client IP
+   * Returns the appropriate server IP that the client should connect to
    */
-  private getPasvUrlFromConnection(connection: any): string {
+  private getServerIpForClient(clientIp: string): string {
     try {
-      // Check if FTP_PASV_URL is set (manual override)
-      if (process.env.FTP_PASV_URL && process.env.FTP_PASV_URL !== '0.0.0.0') {
-        return process.env.FTP_PASV_URL;
+      const { networkInterfaces } = require('os');
+      const nets = networkInterfaces();
+
+      // If client is localhost, return localhost
+      if (clientIp === '127.0.0.1' || clientIp === '::1' || clientIp.startsWith('::ffff:127.')) {
+        console.log(`[FTP] PASV for localhost client`);
+        return '127.0.0.1';
       }
 
-      // Try to get the local address from the connection's command socket
-      // This is the IP address the client connected to
-      if (connection.commandSocket?.localAddress) {
-        const localAddress = connection.commandSocket.localAddress;
-
-        // Convert IPv6 localhost to IPv4
-        if (localAddress === '::' || localAddress === '::1' || localAddress === '::ffff:127.0.0.1') {
-          return '127.0.0.1';
-        }
-
-        // Remove IPv6 prefix if present (::ffff:192.168.1.1 -> 192.168.1.1)
-        if (localAddress.startsWith('::ffff:')) {
-          return localAddress.substring(7);
-        }
-
-        return localAddress;
-      }
-
-      // Alternative: try connection.server.address()
-      if (connection.server?.address) {
-        const address = typeof connection.server.address === 'function'
-          ? connection.server.address()
-          : connection.server.address;
-
-        if (address?.address) {
-          const serverAddress = address.address;
-          if (serverAddress === '::' || serverAddress === '::1') {
-            return '127.0.0.1';
+      // Find all non-internal IPv4 addresses
+      const addresses: string[] = [];
+      for (const name of Object.keys(nets)) {
+        for (const net of nets[name] || []) {
+          if (net.family === 'IPv4' && !net.internal) {
+            addresses.push(net.address);
           }
-          return serverAddress;
         }
       }
-    } catch (error) {
-      console.warn('[FTP] Could not determine server IP from connection:', error);
-    }
 
-    // Last resort: return 0.0.0.0
-    console.warn('[FTP] Falling back to 0.0.0.0 for PASV - this may not work for external clients');
-    return '0.0.0.0';
+      // If we have addresses, return the first one (most likely the primary interface)
+      if (addresses.length > 0) {
+        console.log(`[FTP] PASV using server IP: ${addresses[0]} for client ${clientIp}`);
+        return addresses[0];
+      }
+
+      // Fallback to localhost if no external interface found
+      console.warn(`[FTP] No external IP found, using 127.0.0.1`);
+      return '127.0.0.1';
+    } catch (error) {
+      console.error('[FTP] Error determining server IP:', error);
+      return '127.0.0.1';
+    }
   }
 
   /**
@@ -191,15 +179,15 @@ class FTPServerService {
       const consumeDir = this.ensureConsumeDirectory();
 
       // Create FTP server options
-      // Use a function for pasv_url to dynamically get the IP from each connection
       const serverOptions: any = {
         url: `ftp://0.0.0.0:${this.config.port}`,
-        pasv_url: (connection: any) => {
-          // Use the IP address that the client connected to
-          const serverIp = this.getPasvUrlFromConnection(connection);
-          console.log(`[FTP] PASV mode using server IP: ${serverIp}`);
-          return serverIp;
-        },
+        // If FTP_PASV_URL is set, use it; otherwise use auto-detect function
+        pasv_url: process.env.FTP_PASV_URL && process.env.FTP_PASV_URL !== '0.0.0.0'
+          ? process.env.FTP_PASV_URL
+          : (clientIp: string) => {
+              // Auto-detect server IP based on client IP
+              return this.getServerIpForClient(clientIp);
+            },
         pasv_min: 1024,
         pasv_max: 1048,
         anonymous: false,
@@ -225,8 +213,10 @@ class FTPServerService {
       // Handle login
       this.server.on('login', ({ connection, username, password }, resolve, reject) => {
         if (this.config && username === this.config.username && password === this.config.password) {
-          const clientIp = connection.commandSocket?.remoteAddress || 'unknown';
-          const serverIp = connection.commandSocket?.localAddress || 'unknown';
+          // Access commandSocket (exists in runtime but not in types)
+          const commandSocket = (connection as any).commandSocket;
+          const clientIp = commandSocket?.remoteAddress || (connection as any).ip || 'unknown';
+          const serverIp = commandSocket?.localAddress || 'unknown';
           console.log(`[FTP] User logged in: ${username} from ${clientIp} to server IP ${serverIp}`);
           this.log('INFO', `User logged in: ${username} from ${clientIp} to ${serverIp}`);
           resolve({ root: consumeDir });
