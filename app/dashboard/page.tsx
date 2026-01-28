@@ -40,16 +40,23 @@ export default function DashboardPage() {
 
         const [step1, step2, step3, step4, step5, step6, step7, step8] = responses;
 
-        setSettingsData({
+        // Map API response keys to component prop names
+        const mappedData = {
           ...step1,
           ...step2,
           ...step3,
           ...step4,
+          // Email: map emailEnabled -> enabled for EmailSettingsCard
           ...step5,
+          enabled: step5.emailEnabled, // Add mapped property
+          // FTP: map ftpEnabled -> enabled for FTPSettingsCard
+          ...step8,
+          ftpEnabled: step8.ftpEnabled, // Keep original for FTPSettingsCard
           ...step6,
           ...step7,
-          ...step8,
-        });
+        };
+
+        setSettingsData(mappedData);
         setLoading(false);
       } catch (error) {
         console.error('Failed to load settings:', error);

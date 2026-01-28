@@ -9,6 +9,7 @@ import FtpSrv from 'ftp-srv';
 import { getConfig, getConfigSecure, CONFIG_KEYS } from '@/lib/config';
 import { prisma } from '@/lib/prisma';
 import fs from 'fs';
+import net from 'net';
 
 interface FTPServerStatus {
   running: boolean;
@@ -327,6 +328,23 @@ class FTPServerService {
   }
 
   /**
+   * Check if FTP port is actually in use (real status check)
+   */
+  private async isPortInUse(port: number): Promise<boolean> {
+    return new Promise((resolve) => {
+      const tester = net.createServer()
+        .once('error', () => {
+          resolve(true); // Port is in use
+        })
+        .once('listening', () => {
+          tester.close();
+          resolve(false); // Port is free
+        })
+        .listen(port);
+    });
+  }
+
+  /**
    * Get server status
    */
   async getStatus(): Promise<FTPServerStatus> {
@@ -345,11 +363,21 @@ class FTPServerService {
         };
       }
 
+      // Check actual port status instead of just relying on flag
+      const portInUse = await this.isPortInUse(this.config.port);
+      const actuallyRunning = this.isRunning || portInUse;
+
+      // Sync internal flag with actual status
+      if (portInUse && !this.isRunning) {
+        this.isRunning = true;
+        console.log(`[FTP] Detected running server on port ${this.config.port}, syncing status`);
+      }
+
       return {
-        running: this.isRunning,
+        running: actuallyRunning,
         enabled: this.config.enabled,
         port: this.config.port,
-        url: this.isRunning ? `ftp://${this.config.username}@localhost:${this.config.port}` : null,
+        url: actuallyRunning ? `ftp://${this.config.username}@localhost:${this.config.port}` : null,
         username: this.config.username,
         tlsEnabled: this.config.enableTls,
         error: null,
