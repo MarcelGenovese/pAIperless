@@ -52,7 +52,10 @@ class ServiceManager {
   private async startFTP(): Promise<ServiceControlResult> {
     console.log('[ServiceManager] Starting FTP server...');
     const result = await ftpServerService.start();
-    await this.log(result.success ? 'INFO' : 'ERROR', `FTP start: ${result.message}`);
+    // Don't log as error if FTP is just disabled
+    const logLevel = result.success ? 'INFO' :
+                     (result.message.includes('disabled') || result.message.includes('not configured')) ? 'INFO' : 'ERROR';
+    await this.log(logLevel, `FTP start: ${result.message}`);
     return result;
   }
 
@@ -125,7 +128,12 @@ class ServiceManager {
     // Start FTP
     const ftpResult = await this.startFTP();
     results.push(`FTP: ${ftpResult.message}`);
-    if (!ftpResult.success) allSuccess = false;
+    // Don't count as failure if FTP is just disabled
+    if (!ftpResult.success &&
+        !ftpResult.message.includes('disabled') &&
+        !ftpResult.message.includes('not configured')) {
+      allSuccess = false;
+    }
 
     // Start Worker
     const workerResult = await this.startWorker();

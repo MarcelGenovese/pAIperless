@@ -17,6 +17,14 @@ node /app/node_modules/prisma/build/index.js migrate deploy || echo "⚠️  Mig
 
 echo "✅ Database ready"
 
+# Start services in background (after delay to allow Next.js to start)
+(
+  echo "⏳ Waiting for Next.js server to start..."
+  sleep 15
+  echo "🔧 Initializing services (FTP, Worker)..."
+  curl -s -X POST http://localhost:3000/api/services/init || echo "⚠️  Service init will retry on first request"
+) &
+
 # Start Next.js server
 echo "🌐 Starting web server on port 3000..."
 exec "$@"
