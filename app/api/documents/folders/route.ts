@@ -23,13 +23,13 @@ interface FolderContents {
  */
 export async function GET() {
   try {
-    // Determine directories
+    // Determine directories (must match worker.ts paths)
     const baseDir = process.env.STORAGE_DIR || '/app/storage';
     const devMode = !existsSync('/app/storage') && existsSync('./test-consume');
 
     const consumeDir = devMode ? './test-consume' : path.join(baseDir, 'consume');
-    const processingDir = devMode ? './test-processing' : path.join(baseDir, 'processing');
-    const errorDir = devMode ? './test-error' : path.join(baseDir, 'error');
+    const processingDir = devMode ? './test-consume/processing' : path.join(baseDir, 'processing');
+    const errorDir = devMode ? './test-consume/error' : path.join(baseDir, 'error');
 
     const result: FolderContents = {
       consume: [],
