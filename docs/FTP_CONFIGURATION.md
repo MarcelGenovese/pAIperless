@@ -21,31 +21,32 @@ These are already configured in the `docker-compose.yml` file.
 
 FTP passive mode requires the server to tell clients which IP address to connect to for data transfers.
 
-**pAIperless automatically detects the correct IP address** using this priority:
+**pAIperless uses the smartest approach: It automatically uses the same IP address that the client connected to!**
 
-1. **`FTP_PASV_URL` environment variable** (if set)
-2. **Paperless-NGX URL hostname** (extracted from your Paperless URL in setup)
-3. **Auto-detected server IP** (first non-loopback IPv4 address)
+When a client connects to the FTP server on port 21, the server knows exactly which of its IP addresses was used for the connection. This same IP address is then returned for passive mode data connections.
 
-In most cases, you **don't need to manually configure** `FTP_PASV_URL`. The auto-detection will work correctly if:
-- You configured your Paperless-NGX URL with the server's IP/hostname (not localhost)
-- Your server has a valid network interface
+**This means zero configuration is needed!** Whether you connect via:
+- Local network: `192.168.1.100`
+- VPN: `10.0.0.50`
+- Public IP: `203.0.113.45`
+
+The server automatically responds with the correct IP address.
 
 Only set `FTP_PASV_URL` manually if:
-- Auto-detection fails
-- You need to use a specific IP address
-- You're behind NAT and need to specify the public IP
+- You're behind NAT/port forwarding and need to specify the public IP
+- You have complex networking requirements
 
 ## Configuration Steps
 
 ### Automatic Configuration (Recommended)
 
-**No manual configuration needed!** Just configure your Paperless-NGX URL correctly during setup:
+**No configuration needed at all!** The FTP server automatically detects the correct IP address from each client connection.
 
-1. In pAIperless setup wizard, enter your Paperless-NGX URL
-2. Use your server's IP or hostname (e.g., `http://192.168.1.100:8000`)
-3. **Don't use** `http://localhost:8000` if you want external FTP access
-4. pAIperless will automatically use this hostname for FTP passive mode
+Simply:
+1. Enable FTP server in the dashboard
+2. Set username and password
+3. Connect from your FTP client
+4. The server will automatically use the IP you connected to for passive mode
 
 ### Manual Configuration (Optional)
 

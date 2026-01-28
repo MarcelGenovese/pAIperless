@@ -20,11 +20,9 @@ services:
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3002}
       - NODE_ENV=production
-      # FTP Server Configuration (Optional)
-      # If not set, pAIperless will auto-detect from:
-      # 1. Paperless-NGX URL hostname
-      # 2. Server's network interface IP
-      # Set this if auto-detection fails or you need a specific IP/hostname
+      # FTP Server Configuration (Optional - Usually not needed!)
+      # The FTP server automatically uses the IP that clients connect to.
+      # Only set this if you're behind NAT and need to specify a public IP.
       - FTP_PASV_URL=${FTP_PASV_URL:-}
     restart: unless-stopped
     networks:

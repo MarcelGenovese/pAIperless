@@ -120,55 +120,54 @@ class FTPServerService {
   }
 
   /**
-   * Get PASV URL for FTP server
-   * Priority: FTP_PASV_URL env var > Extract from PAPERLESS_URL > Auto-detect
+   * Get PASV URL dynamically from connection
+   * This uses the IP address that the client connected to
    */
-  private async getPasvUrl(): Promise<string> {
-    // 1. Check environment variable
-    if (process.env.FTP_PASV_URL && process.env.FTP_PASV_URL !== '0.0.0.0') {
-      console.log(`[FTP] Using PASV URL from environment: ${process.env.FTP_PASV_URL}`);
-      return process.env.FTP_PASV_URL;
-    }
-
-    // 2. Try to extract from Paperless URL
+  private getPasvUrlFromConnection(connection: any): string {
     try {
-      const paperlessUrl = await getConfig(CONFIG_KEYS.PAPERLESS_URL);
-      if (paperlessUrl) {
-        const url = new URL(paperlessUrl);
-        const hostname = url.hostname;
-
-        // Skip localhost/127.0.0.1 as they won't work for external clients
-        if (hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== '0.0.0.0') {
-          console.log(`[FTP] Using PASV URL from Paperless URL: ${hostname}`);
-          return hostname;
-        }
+      // Check if FTP_PASV_URL is set (manual override)
+      if (process.env.FTP_PASV_URL && process.env.FTP_PASV_URL !== '0.0.0.0') {
+        return process.env.FTP_PASV_URL;
       }
-    } catch (error) {
-      console.warn('[FTP] Could not extract hostname from Paperless URL');
-    }
 
-    // 3. Try to auto-detect server IP
-    try {
-      const { networkInterfaces } = await import('os');
-      const nets = networkInterfaces();
+      // Try to get the local address from the connection's command socket
+      // This is the IP address the client connected to
+      if (connection.commandSocket?.localAddress) {
+        const localAddress = connection.commandSocket.localAddress;
 
-      // Look for first non-internal IPv4 address
-      for (const name of Object.keys(nets)) {
-        for (const net of nets[name] || []) {
-          // Skip internal (loopback) and IPv6
-          if (net.family === 'IPv4' && !net.internal) {
-            console.log(`[FTP] Auto-detected PASV URL: ${net.address}`);
-            return net.address;
+        // Convert IPv6 localhost to IPv4
+        if (localAddress === '::' || localAddress === '::1' || localAddress === '::ffff:127.0.0.1') {
+          return '127.0.0.1';
+        }
+
+        // Remove IPv6 prefix if present (::ffff:192.168.1.1 -> 192.168.1.1)
+        if (localAddress.startsWith('::ffff:')) {
+          return localAddress.substring(7);
+        }
+
+        return localAddress;
+      }
+
+      // Alternative: try connection.server.address()
+      if (connection.server?.address) {
+        const address = typeof connection.server.address === 'function'
+          ? connection.server.address()
+          : connection.server.address;
+
+        if (address?.address) {
+          const serverAddress = address.address;
+          if (serverAddress === '::' || serverAddress === '::1') {
+            return '127.0.0.1';
           }
+          return serverAddress;
         }
       }
     } catch (error) {
-      console.warn('[FTP] Could not auto-detect server IP');
+      console.warn('[FTP] Could not determine server IP from connection:', error);
     }
 
-    // 4. Fallback to 0.0.0.0 (will not work for external clients)
-    console.warn('[FTP] No valid PASV URL found, using 0.0.0.0 (external clients will not be able to connect)');
-    console.warn('[FTP] Please set FTP_PASV_URL environment variable or configure Paperless URL with server hostname/IP');
+    // Last resort: return 0.0.0.0
+    console.warn('[FTP] Falling back to 0.0.0.0 for PASV - this may not work for external clients');
     return '0.0.0.0';
   }
 
@@ -191,13 +190,16 @@ class FTPServerService {
       // Ensure consume directory exists
       const consumeDir = this.ensureConsumeDirectory();
 
-      // Get PASV URL (auto-detect or from config)
-      const pasvUrl = await this.getPasvUrl();
-
       // Create FTP server options
+      // Use a function for pasv_url to dynamically get the IP from each connection
       const serverOptions: any = {
         url: `ftp://0.0.0.0:${this.config.port}`,
-        pasv_url: pasvUrl,
+        pasv_url: (connection: any) => {
+          // Use the IP address that the client connected to
+          const serverIp = this.getPasvUrlFromConnection(connection);
+          console.log(`[FTP] PASV mode using server IP: ${serverIp}`);
+          return serverIp;
+        },
         pasv_min: 1024,
         pasv_max: 1048,
         anonymous: false,
@@ -223,8 +225,10 @@ class FTPServerService {
       // Handle login
       this.server.on('login', ({ connection, username, password }, resolve, reject) => {
         if (this.config && username === this.config.username && password === this.config.password) {
-          console.log(`[FTP] User logged in: ${username}`);
-          this.log('INFO', `User logged in: ${username}`);
+          const clientIp = connection.commandSocket?.remoteAddress || 'unknown';
+          const serverIp = connection.commandSocket?.localAddress || 'unknown';
+          console.log(`[FTP] User logged in: ${username} from ${clientIp} to server IP ${serverIp}`);
+          this.log('INFO', `User logged in: ${username} from ${clientIp} to ${serverIp}`);
           resolve({ root: consumeDir });
         } else {
           console.log(`[FTP] Login failed for user: ${username}`);
