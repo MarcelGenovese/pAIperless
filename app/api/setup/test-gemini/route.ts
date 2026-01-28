@@ -3,7 +3,10 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   console.log('Gemini test endpoint called');
   try {
-    const { apiKey, model } = await request.json();
+    const body = await request.json();
+    const apiKey = body.geminiApiKey || body.apiKey;
+    const model = body.geminiModel || body.model;
+
     console.log('Gemini test request:', {
       hasApiKey: !!apiKey,
       apiKeyLength: apiKey?.length,

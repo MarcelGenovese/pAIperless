@@ -20,6 +20,7 @@ import {
 import { cn } from '@/lib/utils';
 import FTPSettingsCard from './FTPSettingsCard';
 import EmailSettingsCard from './EmailSettingsCard';
+import GoogleOAuthSettingsCard from './GoogleOAuthSettingsCard';
 
 interface SettingsTabProps {
   initialData?: Record<string, any>;
@@ -313,7 +314,10 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
       const response = await fetch('/api/setup/test-document-ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(documentAIData),
+        body: JSON.stringify({
+          ...documentAIData,
+          testType: 'connection', // Test connection only (faster than OCR test)
+        }),
       });
 
       const result = await response.json();
@@ -322,7 +326,7 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
         setDocumentAIData({ ...documentAIData, tested: true });
         toast({
           title: 'Test erfolgreich',
-          description: 'Document AI ist funktionsfähig',
+          description: 'Document AI Verbindung erfolgreich',
           variant: 'success',
         });
       } else {
@@ -728,6 +732,16 @@ export default function SettingsTab({ initialData = {} }: SettingsTabProps) {
           </Button>
         </CardContent>
       </Card>
+
+      {/* Google OAuth Section */}
+      <GoogleOAuthSettingsCard
+        initialData={{
+          clientId: oauthData.clientId,
+          clientSecret: oauthData.clientSecret,
+          calendarId: oauthData.calendarId,
+          taskListId: oauthData.taskListId,
+        }}
+      />
 
       {/* FTP Server Section */}
       <FTPSettingsCard
