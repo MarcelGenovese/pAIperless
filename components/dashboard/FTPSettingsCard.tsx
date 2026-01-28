@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,17 +42,11 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
     message: string;
   } | null>(null);
 
-  // Load FTP server status and paperless URL on mount
-  useEffect(() => {
-    loadStatus();
-    loadPaperlessUrl();
-  }, []);
-
-  const loadPaperlessUrl = async () => {
+  const loadPaperlessUrl = useCallback(async () => {
     // Load paperless URL as default for PASV URL if not set
     if (!ftpData.pasvUrl || ftpData.pasvUrl === '') {
       try {
-        const response = await fetch('/api/setup/load-config');
+        const response = await fetch('/api/setup/load-config?step=1');
         const config = await response.json();
 
         if (config.paperlessUrl) {
@@ -61,7 +55,7 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
           const hostname = url.hostname;
 
           // Don't use localhost
-          if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+          if (hostname !== 'localhost' && hostname !== '127.0.0.1' && hostname !== '0.0.0.0') {
             setFtpData(prev => ({ ...prev, pasvUrl: hostname }));
           }
         }
@@ -69,7 +63,13 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
         console.error('Failed to load paperless URL:', error);
       }
     }
-  };
+  }, [ftpData.pasvUrl]);
+
+  // Load FTP server status and paperless URL on mount
+  useEffect(() => {
+    loadStatus();
+    loadPaperlessUrl();
+  }, [loadPaperlessUrl]);
 
   const loadStatus = async () => {
     try {
@@ -210,8 +210,12 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
           <Switch
             id="ftp-enabled"
             checked={ftpData.enabled}
-            onCheckedChange={(checked) => {
+            onCheckedChange={async (checked) => {
               setFtpData({ ...ftpData, enabled: checked });
+              // Load default PASV URL when enabling FTP if not already set
+              if (checked && (!ftpData.pasvUrl || ftpData.pasvUrl === '')) {
+                await loadPaperlessUrl();
+              }
             }}
           />
         </div>

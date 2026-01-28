@@ -131,9 +131,18 @@ class FTPServerService {
 
     try {
       if (!fs.existsSync(consumeDir)) {
-        fs.mkdirSync(consumeDir, { recursive: true });
+        fs.mkdirSync(consumeDir, { recursive: true, mode: 0o777 });
         console.log(`[FTP] Created consume directory: ${consumeDir}`);
       }
+
+      // Ensure directory has write permissions
+      try {
+        fs.chmodSync(consumeDir, 0o777);
+        console.log(`[FTP] Set permissions for consume directory: ${consumeDir}`);
+      } catch (chmodError: any) {
+        console.warn(`[FTP] Could not set permissions: ${chmodError.message}`);
+      }
+
       return consumeDir;
     } catch (error: any) {
       console.error(`[FTP] Failed to create consume directory: ${error.message}`);
