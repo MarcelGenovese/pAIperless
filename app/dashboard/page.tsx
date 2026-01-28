@@ -10,6 +10,7 @@ import { faSignOutAlt, faBars, faTimes } from '@fortawesome/free-solid-svg-icons
 import Sidebar from '@/components/dashboard/Sidebar';
 import OverviewTab from '@/components/dashboard/OverviewTab';
 import DocumentsTab from '@/components/dashboard/DocumentsTab';
+import LogsTab from '@/components/dashboard/LogsTab';
 import PaperlessSettingsTab from '@/components/dashboard/PaperlessSettingsTab';
 import GoogleSettingsTab from '@/components/dashboard/GoogleSettingsTab';
 import FTPSettingsCard from '@/components/dashboard/FTPSettingsCard';
@@ -97,6 +98,8 @@ export default function DashboardPage() {
         return <OverviewTab />;
       case 'documents':
         return <DocumentsTab />;
+      case 'logs':
+        return <LogsTab />;
       case 'paperless':
         return <PaperlessSettingsTab initialData={settingsData} />;
       case 'google':

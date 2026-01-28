@@ -9,6 +9,7 @@ import {
   faEnvelope,
   faGlobe,
   faSlidersH,
+  faTerminal,
 } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
 
@@ -27,6 +28,7 @@ interface NavItem {
 const mainNavItems: NavItem[] = [
   { id: 'overview', label: 'Übersicht', icon: faHome },
   { id: 'documents', label: 'Dokumente', icon: faFileAlt },
+  { id: 'logs', label: 'Live Logs', icon: faTerminal },
 ];
 
 const settingsNavItems: NavItem[] = [
