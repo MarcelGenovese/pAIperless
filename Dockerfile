@@ -61,6 +61,10 @@ COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/prisma ./prisma
 
+# Copy management scripts
+COPY --from=builder /app/scripts ./scripts
+RUN chmod +x /app/scripts/cli.js
+
 # Create storage directories
 RUN mkdir -p /app/storage/consume /app/storage/processing /app/storage/error \
     /app/storage/completed /app/storage/database /app/storage/backups /app/storage/logs && \
