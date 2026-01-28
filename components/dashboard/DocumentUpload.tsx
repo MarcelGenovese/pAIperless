@@ -115,6 +115,8 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
     const targetFiles = filesToUpload || files.filter(f => f.status === 'pending');
     if (targetFiles.length === 0) return;
 
+    console.log('[Upload] Starting upload for', targetFiles.length, 'files');
+
     setIsUploading(true);
 
     // Mark files as uploading
@@ -128,6 +130,7 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
 
     const formData = new FormData();
     targetFiles.forEach(({ file }) => {
+      console.log('[Upload] Adding file:', file.name, file.size, 'bytes');
       formData.append('files', file);
     });
 
@@ -144,14 +147,30 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
         );
       }, 200);
 
+      console.log('[Upload] Sending request to /api/documents/upload');
+
       const response = await fetch('/api/documents/upload', {
         method: 'POST',
         body: formData,
       });
 
+      console.log('[Upload] Response status:', response.status);
+      console.log('[Upload] Response headers:', Object.fromEntries(response.headers.entries()));
+
       clearInterval(progressInterval);
 
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      console.log('[Upload] Content-Type:', contentType);
+
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('[Upload] Non-JSON response:', text.substring(0, 200));
+        throw new Error('Server hat keine JSON-Antwort zurückgegeben. Möglicherweise ist ein Fehler aufgetreten.');
+      }
+
       const result = await response.json();
+      console.log('[Upload] Response result:', result);
 
       if (response.ok) {
         // Mark all as success with 100% progress

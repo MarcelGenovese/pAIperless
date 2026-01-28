@@ -26,6 +26,13 @@ export async function middleware(request: NextRequest) {
   // If setup is not complete, redirect to /setup (unless already there)
   if (setupComplete !== 'true') {
     if (!pathname.startsWith('/setup')) {
+      // For API routes, return JSON error
+      if (pathname.startsWith('/api/')) {
+        return NextResponse.json(
+          { error: 'Setup not complete' },
+          { status: 503 }
+        );
+      }
       return NextResponse.redirect(new URL('/setup', request.url));
     }
     return NextResponse.next();

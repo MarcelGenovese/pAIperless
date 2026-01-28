@@ -10,11 +10,17 @@ export const runtime = 'nodejs';
  * Handles single and multiple file uploads
  */
 export async function POST(request: NextRequest) {
+  console.log('[Upload] Starting upload process...');
+
   try {
     const formData = await request.formData();
+    console.log('[Upload] FormData received');
+
     const files = formData.getAll('files') as File[];
+    console.log(`[Upload] Number of files: ${files.length}`);
 
     if (!files || files.length === 0) {
+      console.log('[Upload] No files in request');
       return NextResponse.json(
         { error: 'Keine Dateien hochgeladen' },
         { status: 400 }
@@ -27,10 +33,14 @@ export async function POST(request: NextRequest) {
     // Check if we're in development mode (not in Docker)
     if (!existsSync('/app/storage') && existsSync('./test-consume')) {
       consumeDir = './test-consume';
+      console.log('[Upload] Using development mode: ./test-consume');
     }
+
+    console.log(`[Upload] Target directory: ${consumeDir}`);
 
     // Ensure consume directory exists
     if (!existsSync(consumeDir)) {
+      console.log(`[Upload] Creating directory: ${consumeDir}`);
       await mkdir(consumeDir, { recursive: true, mode: 0o777 });
     }
 
