@@ -21,10 +21,10 @@ export default function AboutPage() {
   const [version, setVersion] = useState<string>('');
 
   useEffect(() => {
-    // Load version from public/version.txt
-    fetch('/version.txt')
-      .then(res => res.text())
-      .then(text => setVersion(text.trim()))
+    // Load version from API
+    fetch('/api/version')
+      .then(res => res.json())
+      .then(data => setVersion(data.version || 'unknown'))
       .catch(() => setVersion('unknown'));
   }, []);
 
