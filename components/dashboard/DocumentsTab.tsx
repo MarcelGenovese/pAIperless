@@ -12,6 +12,7 @@ import {
   faClock,
   faSync
 } from '@fortawesome/free-solid-svg-icons';
+import DocumentUpload from './DocumentUpload';
 
 interface Document {
   id: string;
@@ -107,6 +108,9 @@ export default function DocumentsTab() {
           Aktualisieren
         </Button>
       </div>
+
+      {/* Upload Component */}
+      <DocumentUpload onUploadComplete={loadDocuments} />
 
       <Card>
         <CardHeader>

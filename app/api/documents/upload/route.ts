@@ -1,0 +1,116 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { writeFile, mkdir } from 'fs/promises';
+import { existsSync } from 'fs';
+import path from 'path';
+
+export const runtime = 'nodejs';
+
+/**
+ * Upload documents to consume folder
+ * Handles single and multiple file uploads
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const formData = await request.formData();
+    const files = formData.getAll('files') as File[];
+
+    if (!files || files.length === 0) {
+      return NextResponse.json(
+        { error: 'Keine Dateien hochgeladen' },
+        { status: 400 }
+      );
+    }
+
+    // Determine consume directory
+    let consumeDir = process.env.CONSUME_DIR || '/app/storage/consume';
+
+    // Check if we're in development mode (not in Docker)
+    if (!existsSync('/app/storage') && existsSync('./test-consume')) {
+      consumeDir = './test-consume';
+    }
+
+    // Ensure consume directory exists
+    if (!existsSync(consumeDir)) {
+      await mkdir(consumeDir, { recursive: true, mode: 0o777 });
+    }
+
+    const uploadedFiles: string[] = [];
+    const errors: { filename: string; error: string }[] = [];
+
+    for (const file of files) {
+      try {
+        // Validate file type (only PDFs)
+        if (!file.name.toLowerCase().endsWith('.pdf')) {
+          errors.push({
+            filename: file.name,
+            error: 'Nur PDF-Dateien sind erlaubt'
+          });
+          continue;
+        }
+
+        // Validate file size (max 100MB)
+        if (file.size > 100 * 1024 * 1024) {
+          errors.push({
+            filename: file.name,
+            error: 'Datei ist zu groß (max. 100MB)'
+          });
+          continue;
+        }
+
+        // Read file data
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+
+        // Generate safe filename (avoid overwrites)
+        const originalName = file.name;
+        let filename = originalName;
+        let counter = 1;
+        let targetPath = path.join(consumeDir, filename);
+
+        while (existsSync(targetPath)) {
+          const ext = path.extname(originalName);
+          const base = path.basename(originalName, ext);
+          filename = `${base}_${counter}${ext}`;
+          targetPath = path.join(consumeDir, filename);
+          counter++;
+        }
+
+        // Write file to consume directory
+        await writeFile(targetPath, buffer, { mode: 0o666 });
+
+        uploadedFiles.push(filename);
+        console.log(`[Upload] File saved: ${targetPath}`);
+      } catch (error: any) {
+        console.error(`[Upload] Failed to upload ${file.name}:`, error);
+        errors.push({
+          filename: file.name,
+          error: error.message || 'Unbekannter Fehler'
+        });
+      }
+    }
+
+    // Return results
+    if (uploadedFiles.length === 0 && errors.length > 0) {
+      return NextResponse.json(
+        {
+          error: 'Alle Uploads fehlgeschlagen',
+          errors
+        },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      uploaded: uploadedFiles,
+      errors: errors.length > 0 ? errors : undefined,
+      message: `${uploadedFiles.length} Datei(en) erfolgreich hochgeladen`
+    });
+  } catch (error: any) {
+    console.error('[Upload] Error:', error);
+    return NextResponse.json(
+      { error: 'Upload fehlgeschlagen: ' + error.message },
+      { status: 500 }
+    );
+  }
+}
