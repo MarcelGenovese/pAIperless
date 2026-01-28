@@ -5,7 +5,9 @@ services:
     build: .
     container_name: paiperless
     ports:
-      - "3002:3000"   # Map container port 3000 to host port 3002
+      - "3002:3000"      # Web UI
+      - "21:21"          # FTP control port
+      - "1024-1048:1024-1048"  # FTP passive mode data ports
     volumes:
       - ./storage/consume:/app/storage/consume
       - ./storage/processing:/app/storage/processing
@@ -18,6 +20,10 @@ services:
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3002}
       - NODE_ENV=production
+      # FTP Server Configuration
+      # Set this to your server's external IP address or hostname
+      # Example: FTP_PASV_URL=192.168.8.250
+      - FTP_PASV_URL=${FTP_PASV_URL:-192.168.8.250}
     restart: unless-stopped
     networks:
       - paiperless
