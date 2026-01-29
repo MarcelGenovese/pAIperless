@@ -15,13 +15,33 @@ import {
   faEnvelope,
   faFolderOpen,
   faBolt,
-  faChartBar
+  faChartBar,
+  faCoins,
+  faFileCircleCheck
 } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
+import { Progress } from '@/components/ui/progress';
 
 interface ServiceStatus {
   status: 'connected' | 'error' | 'checking' | 'not_configured';
   message?: string;
+}
+
+interface MonthlyUsage {
+  month: string;
+  documentAI: {
+    used: number;
+    limit: number;
+    percentage: number;
+  };
+  gemini: {
+    tokensSent: number;
+    tokensReceived: number;
+    totalTokens: number;
+    limit: number;
+    percentage: number;
+  };
+  estimatedCost: number;
 }
 
 export default function OverviewTab() {
@@ -39,19 +59,22 @@ export default function OverviewTab() {
     ftp: { status: 'checking' },
     email: { status: 'checking' },
   });
+  const [usage, setUsage] = useState<MonthlyUsage | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Fetch statistics and service status
     const loadData = async () => {
       try {
-        const [statsRes, servicesRes] = await Promise.all([
+        const [statsRes, servicesRes, usageRes] = await Promise.all([
           fetch('/api/dashboard/stats'),
-          fetch('/api/services/status')
+          fetch('/api/services/status'),
+          fetch('/api/dashboard/usage')
         ]);
 
         const statsData = await statsRes.json();
         const servicesData = await servicesRes.json();
+        const usageData = await usageRes.json();
 
         setStats(statsData);
         setServices({
@@ -62,6 +85,7 @@ export default function OverviewTab() {
           ftp: servicesData.ftp || { status: 'not_configured' },
           email: servicesData.email || { status: 'not_configured' },
         });
+        setUsage(usageData);
       } catch (err) {
         console.error('Failed to load data:', err);
       } finally {
@@ -89,6 +113,22 @@ export default function OverviewTab() {
       default:
         return 'text-gray-400';
     }
+  };
+
+  const getUsageColor = (percentage: number) => {
+    if (percentage >= 90) return 'text-red-600';
+    if (percentage >= 75) return 'text-yellow-600';
+    return 'text-green-600';
+  };
+
+  const getProgressColor = (percentage: number) => {
+    if (percentage >= 90) return 'bg-red-600';
+    if (percentage >= 75) return 'bg-yellow-600';
+    return 'bg-[#27417A]';
+  };
+
+  const formatNumber = (num: number) => {
+    return new Intl.NumberFormat('de-DE').format(num);
   };
 
   if (loading) {
@@ -148,6 +188,90 @@ export default function OverviewTab() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Monthly Usage */}
+      {usage && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FontAwesomeIcon icon={faCoins} className="text-[#0066CC]" />
+              Monatliche Nutzung ({usage.month})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {/* Gemini AI Token Usage */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <FontAwesomeIcon icon={faBrain} className="text-[#0066CC]" />
+                    <span className="font-medium">Gemini AI Tokens</span>
+                  </div>
+                  <span className={cn("font-semibold", getUsageColor(usage.gemini.percentage))}>
+                    {usage.gemini.percentage}%
+                  </span>
+                </div>
+                <div className="relative">
+                  <Progress
+                    value={usage.gemini.percentage}
+                    className="h-3"
+                  />
+                  <div
+                    className={cn("absolute top-0 left-0 h-3 rounded-full transition-all", getProgressColor(usage.gemini.percentage))}
+                    style={{ width: `${Math.min(usage.gemini.percentage, 100)}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                  <span>
+                    {formatNumber(usage.gemini.totalTokens)} / {formatNumber(usage.gemini.limit)} Tokens
+                  </span>
+                  <span>
+                    Gesendet: {formatNumber(usage.gemini.tokensSent)} | Empfangen: {formatNumber(usage.gemini.tokensReceived)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Document AI Page Usage */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <FontAwesomeIcon icon={faFileCircleCheck} className="text-[#0066CC]" />
+                    <span className="font-medium">Document AI Seiten</span>
+                  </div>
+                  <span className={cn("font-semibold", getUsageColor(usage.documentAI.percentage))}>
+                    {usage.documentAI.percentage}%
+                  </span>
+                </div>
+                <div className="relative">
+                  <Progress
+                    value={usage.documentAI.percentage}
+                    className="h-3"
+                  />
+                  <div
+                    className={cn("absolute top-0 left-0 h-3 rounded-full transition-all", getProgressColor(usage.documentAI.percentage))}
+                    style={{ width: `${Math.min(usage.documentAI.percentage, 100)}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                  <span>
+                    {formatNumber(usage.documentAI.used)} / {formatNumber(usage.documentAI.limit)} Seiten
+                  </span>
+                </div>
+              </div>
+
+              {/* Estimated Cost */}
+              <div className="pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Geschätzte Kosten (Monat)</span>
+                  <span className="text-lg font-bold text-[#27417A]">
+                    ${usage.estimatedCost.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* System Status */}
       <Card>

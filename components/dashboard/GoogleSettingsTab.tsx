@@ -15,12 +15,14 @@ interface GoogleSettingsTabProps {
   initialData?: {
     geminiApiKey?: string;
     geminiModel?: string;
+    geminiMonthlyTokenLimit?: string;
     projectId?: string;
     credentials?: string;
     processorId?: string;
     location?: string;
     maxPages?: string;
     maxSizeMB?: string;
+    documentAIMonthlyPageLimit?: string;
     enabled?: string;
     clientId?: string;
     clientSecret?: string;
