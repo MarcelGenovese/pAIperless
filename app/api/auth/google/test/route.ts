@@ -17,10 +17,7 @@ export async function POST(request: NextRequest) {
     const refreshToken = await getConfigSecure(CONFIG_KEYS.GOOGLE_OAUTH_REFRESH_TOKEN);
 
     if (!clientId || !clientSecret || !accessToken) {
-      return NextResponse.json(
-        { error: 'OAuth not configured or tokens missing' },
-        { status: 401 }
-      );
+      return NextResponse.json({ inactive: true });
     }
 
     const oauth2Client = new google.auth.OAuth2(clientId, clientSecret);
@@ -35,7 +32,12 @@ export async function POST(request: NextRequest) {
     };
 
     // Get calendar ID and task list ID from request or use configured ones
-    const body = await request.json();
+    let body: any = {};
+    try {
+      body = await request.json();
+    } catch (e) {
+      // No body provided, will use config
+    }
     const calendarId = body.calendarId || (await import('@/lib/config').then(m => m.getConfig(CONFIG_KEYS.GOOGLE_CALENDAR_ID))) || 'primary';
     const taskListId = body.taskListId || (await import('@/lib/config').then(m => m.getConfig(CONFIG_KEYS.GOOGLE_TASK_LIST_ID)));
 

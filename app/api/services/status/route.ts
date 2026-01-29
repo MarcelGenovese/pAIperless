@@ -109,12 +109,15 @@ export async function GET() {
   // Check FTP Server
   try {
     const ftpStatus = await serviceManager.getStatus('ftp');
+    const ftpPort = await getConfig(CONFIG_KEYS.FTP_PORT);
+
     if (ftpStatus) {
       statuses.ftp = {
         status: ftpStatus.running ? 'connected' : ftpStatus.enabled ? 'error' : 'not_configured',
         message: ftpStatus.message,
         running: ftpStatus.running,
         enabled: ftpStatus.enabled,
+        port: ftpPort || '21',
         details: ftpStatus.details,
       };
     } else {
@@ -123,6 +126,7 @@ export async function GET() {
         message: 'Fehler beim Abrufen des FTP-Status',
         running: false,
         enabled: false,
+        port: ftpPort || '21',
       };
     }
   } catch (error: any) {

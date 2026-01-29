@@ -8,8 +8,38 @@ export const runtime = 'nodejs';
 export async function POST(request: NextRequest) {
   console.log('Document AI test endpoint called');
   try {
-    const body = await request.json();
-    const { projectId, processorId, location, credentials, testType } = body;
+    let body: any = {};
+    try {
+      body = await request.json();
+    } catch (e) {
+      // No body provided, will use config
+    }
+
+    let { projectId, processorId, location, credentials, testType } = body;
+
+    // If not provided in request, try to get from config
+    if (!projectId || !processorId || !location || !credentials) {
+      const { getConfig, getConfigSecure, CONFIG_KEYS } = await import('@/lib/config');
+
+      // Check if Document AI is enabled
+      const enabled = await getConfig(CONFIG_KEYS.DOCUMENT_AI_ENABLED);
+      if (enabled !== 'true') {
+        return NextResponse.json({ inactive: true });
+      }
+
+      if (!projectId) {
+        projectId = await getConfig(CONFIG_KEYS.GOOGLE_CLOUD_PROJECT_ID);
+      }
+      if (!processorId) {
+        processorId = await getConfig(CONFIG_KEYS.DOCUMENT_AI_PROCESSOR_ID);
+      }
+      if (!location) {
+        location = await getConfig(CONFIG_KEYS.DOCUMENT_AI_LOCATION);
+      }
+      if (!credentials) {
+        credentials = await getConfigSecure(CONFIG_KEYS.GOOGLE_CLOUD_CREDENTIALS);
+      }
+    }
 
     console.log('=== API RECEIVED DATA ===');
     console.log('projectId:', projectId);
