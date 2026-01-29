@@ -1,10 +1,15 @@
 import { watch } from 'chokidar';
 import { createHash } from 'crypto';
-import { readFileSync, renameSync, existsSync, mkdirSync } from 'fs';
+import { readFileSync, copyFileSync, unlinkSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { prisma } from './prisma';
-import { processWithDocumentAI } from './google';
+import { processWithDocumentAI, createSearchablePDF } from './google';
 import { getPaperlessClient } from './paperless';
+import { createLogger } from './logger';
+import { getConfig, CONFIG_KEYS } from './config';
+import { getPDFInfo, detectAndRotatePDF, removeOCRLayer, exceedsLimits } from './pdf-processor';
+
+const logger = createLogger('Worker');
 
 // Determine directories based on environment
 function getDirectories() {
@@ -45,7 +50,13 @@ function calculateFileHash(filePath: string): string {
 
 async function processFile(filePath: string) {
   const fileName = filePath.split('/').pop() || 'unknown';
-  console.log(`Processing file: ${fileName}`);
+  await logger.info(`📄 Processing file: ${fileName}`);
+
+  let processingPath: string | null = null;
+  let rotatedPath: string | null = null;
+  let noOCRPath: string | null = null;
+  let searchablePath: string | null = null;
+  let documentId: number | null = null;
 
   try {
     // Calculate hash
@@ -57,14 +68,18 @@ async function processFile(filePath: string) {
     });
 
     if (existing) {
-      console.log(`Duplicate file detected: ${fileName}`);
-      renameSync(filePath, join(ERROR_DIR, fileName));
+      await logger.warn(`🛑 Duplicate file detected: ${fileName}`);
+      const errorPath = join(ERROR_DIR, fileName);
+      copyFileSync(filePath, errorPath);
+      unlinkSync(filePath);
       return;
     }
 
     // Move to processing
-    const processingPath = join(PROCESSING_DIR, fileName);
-    renameSync(filePath, processingPath);
+    processingPath = join(PROCESSING_DIR, fileName);
+    copyFileSync(filePath, processingPath);
+    unlinkSync(filePath);
+    await logger.info(`✅ Moved to processing: ${fileName}`);
 
     // Create document record
     const document = await prisma.document.create({
@@ -75,60 +90,153 @@ async function processFile(filePath: string) {
         status: 'PENDING',
       },
     });
+    documentId = document.id;
 
-    // TODO: Pre-processing (rotation detection, OCR layer stripping)
-    // TODO: Document AI OCR processing
-    console.log(`Skipping OCR, uploading directly to Paperless: ${fileName}`);
+    // Get PDF info
+    const pdfInfo = await getPDFInfo(processingPath);
+    await logger.info(`📊 PDF Info: ${pdfInfo.pages} pages, ${pdfInfo.sizeMB.toFixed(2)} MB`);
+
+    // Get configuration
+    const docAIEnabled = (await getConfig(CONFIG_KEYS.DOCUMENT_AI_ENABLED)) === 'true';
+    const maxPages = parseInt(await getConfig(CONFIG_KEYS.DOCUMENT_AI_MAX_PAGES) || '15');
+    const maxSizeMB = parseInt(await getConfig(CONFIG_KEYS.DOCUMENT_AI_MAX_SIZE_MB) || '20');
+    const aiTodoTag = await getConfig(CONFIG_KEYS.TAG_AI_TODO) || 'ai_todo';
+
+    let finalPath = processingPath;
+
+    // Check if we should use Document AI
+    if (!docAIEnabled) {
+      await logger.info(`⏩ Document AI disabled, uploading directly to Paperless`);
+    } else if (exceedsLimits(pdfInfo, maxPages, maxSizeMB)) {
+      await logger.info(`⏩ Document exceeds limits (max: ${maxPages} pages, ${maxSizeMB} MB), skipping Document AI`);
+      await logger.info(`   Paperless will handle OCR with Tesseract`);
+    } else {
+      await logger.info(`🔄 Processing with Document AI...`);
+
+      // Update status
+      await prisma.document.update({
+        where: { id: documentId },
+        data: { status: 'PREPROCESSING', ocrPageCount: pdfInfo.pages },
+      });
+
+      // Step 1: Detect and rotate if needed
+      const [rotated, wasRotated] = await detectAndRotatePDF(processingPath);
+      if (wasRotated) {
+        rotatedPath = rotated;
+        finalPath = rotated;
+        await logger.info(`🔄 PDF rotated: ${rotatedPath}`);
+      }
+
+      // Step 2: Remove existing OCR layer
+      noOCRPath = await removeOCRLayer(finalPath);
+      finalPath = noOCRPath;
+      await logger.info(`🧹 OCR layer removed: ${noOCRPath}`);
+
+      // Update status
+      await prisma.document.update({
+        where: { id: documentId },
+        data: { status: 'OCR_IN_PROGRESS' },
+      });
+
+      // Step 3: Process with Document AI
+      const docAIResult = await processWithDocumentAI(finalPath);
+
+      // Step 4: Create searchable PDF
+      searchablePath = join(PROCESSING_DIR, fileName.replace('.pdf', '_searchable.pdf'));
+      await createSearchablePDF(finalPath, docAIResult, searchablePath);
+      finalPath = searchablePath;
+
+      await logger.info(`✅ Document AI processing complete`);
+
+      // Update status
+      await prisma.document.update({
+        where: { id: documentId },
+        data: { status: 'OCR_COMPLETE' },
+      });
+    }
 
     // Upload to Paperless
-    console.log(`Uploading ${fileName} to Paperless...`);
-    const paperless = await getPaperlessClient();
-    const documentId = await paperless.uploadDocument(processingPath, ['ai_todo']);
-
+    await logger.info(`📤 Uploading to Paperless...`);
     await prisma.document.update({
-      where: { id: document.id },
+      where: { id: documentId },
+      data: { status: 'UPLOADING_TO_PAPERLESS' },
+    });
+
+    const paperless = await getPaperlessClient();
+    const paperlessId = await paperless.uploadDocument(finalPath, [aiTodoTag]);
+
+    // Update final status
+    await prisma.document.update({
+      where: { id: documentId },
       data: {
         status: 'COMPLETED',
-        paperlessId: documentId,
+        paperlessId: paperlessId,
       },
     });
 
-    console.log(`Successfully processed: ${fileName}`);
+    await logger.info(`✅ Successfully processed: ${fileName} (Paperless ID: ${paperlessId})`);
+
+    // Cleanup temporary files
+    if (rotatedPath && existsSync(rotatedPath)) unlinkSync(rotatedPath);
+    if (noOCRPath && existsSync(noOCRPath)) unlinkSync(noOCRPath);
+    if (searchablePath && existsSync(searchablePath)) unlinkSync(searchablePath);
+    if (processingPath && existsSync(processingPath)) unlinkSync(processingPath);
+
   } catch (error: any) {
-    console.error(`Error processing ${fileName}:`, error);
+    await logger.error(`❌ Error processing ${fileName}`, error);
+
+    // Update document status
+    if (documentId) {
+      await prisma.document.update({
+        where: { id: documentId },
+        data: {
+          status: 'ERROR',
+          errorMessage: error.message || 'Unknown error',
+        },
+      });
+    }
 
     // Move to error directory
     try {
       const errorPath = join(ERROR_DIR, fileName);
-      if (existsSync(join(PROCESSING_DIR, fileName))) {
-        renameSync(join(PROCESSING_DIR, fileName), errorPath);
+
+      // Try to move the file from processing if it exists
+      if (processingPath && existsSync(processingPath)) {
+        copyFileSync(processingPath, errorPath);
+        unlinkSync(processingPath);
       }
+
+      await logger.warn(`📁 Moved to error directory: ${fileName}`);
+
+      // Cleanup temporary files
+      if (rotatedPath && existsSync(rotatedPath)) unlinkSync(rotatedPath);
+      if (noOCRPath && existsSync(noOCRPath)) unlinkSync(noOCRPath);
+      if (searchablePath && existsSync(searchablePath)) unlinkSync(searchablePath);
+
     } catch (moveError) {
-      console.error(`Failed to move file to error directory:`, moveError);
+      await logger.error(`Failed to move file to error directory`, moveError);
     }
   }
 }
 
 let watcher: any = null;
 
-export function startWorker() {
+export async function startWorker() {
   if (watcher) {
-    console.log('Worker already running');
+    await logger.info('Worker already running');
     return;
   }
 
   // Ensure directories exist
   ensureDirectories();
 
-  console.log(`Starting worker, watching: ${CONSUME_DIR}`);
+  await logger.info(`Starting worker, watching: ${CONSUME_DIR}`);
 
   watcher = watch(CONSUME_DIR, {
     ignored: /^\./,
     persistent: true,
-    awaitWriteFinish: {
-      stabilityThreshold: 2000,
-      pollInterval: 100,
-    },
+    ignoreInitial: false, // Process existing files on startup
+    // No awaitWriteFinish - trust the OS. Files are only visible when write is complete.
   });
 
   watcher.on('add', (path: string) => {
@@ -137,17 +245,17 @@ export function startWorker() {
     }
   });
 
-  watcher.on('error', (error: Error) => {
-    console.error('Watcher error:', error);
+  watcher.on('error', async (error: Error) => {
+    await logger.error('Watcher error', error);
   });
 
-  console.log('Worker started successfully');
+  await logger.info('Worker started successfully');
 }
 
-export function stopWorker() {
+export async function stopWorker() {
   if (watcher) {
     watcher.close();
     watcher = null;
-    console.log('Worker stopped');
+    await logger.info('Worker stopped');
   }
 }

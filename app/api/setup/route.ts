@@ -41,6 +41,15 @@ export async function POST(request: NextRequest) {
         await setConfigSecure(CONFIG_KEYS.GOOGLE_CLOUD_CREDENTIALS, data.credentials);
         await setConfig(CONFIG_KEYS.DOCUMENT_AI_PROCESSOR_ID, data.processorId);
         await setConfig(CONFIG_KEYS.DOCUMENT_AI_LOCATION, data.location);
+        if (data.maxPages !== undefined) {
+          await setConfig(CONFIG_KEYS.DOCUMENT_AI_MAX_PAGES, data.maxPages.toString());
+        }
+        if (data.maxSizeMB !== undefined) {
+          await setConfig(CONFIG_KEYS.DOCUMENT_AI_MAX_SIZE_MB, data.maxSizeMB.toString());
+        }
+        if (data.enabled !== undefined) {
+          await setConfig(CONFIG_KEYS.DOCUMENT_AI_ENABLED, data.enabled);
+        }
         break;
 
       case 4: // Google OAuth

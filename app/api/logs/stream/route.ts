@@ -94,6 +94,7 @@ function extractSource(message: string): string {
   if (message.includes('[FTP]')) return 'FTP';
   if (message.includes('[Email]') || message.includes('[SMTP]')) return 'Email';
   if (message.includes('[Worker]')) return 'Worker';
+  if (message.includes('[Middleware]')) return 'Middleware';
   if (message.includes('[ServiceManager]')) return 'System';
   if (message.includes('[Init]')) return 'System';
   if (message.includes('[OAuth]')) return 'System';

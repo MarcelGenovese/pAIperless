@@ -168,13 +168,17 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
         const text = await response.text();
         console.error('[Upload] Non-JSON response:', text.substring(0, 500));
 
-        // Show detailed error with response status and text
+        // Show user-friendly error message
         let errorMsg = `Server-Fehler (${response.status}): `;
         if (text.includes('Unauthorized')) {
           errorMsg += 'Nicht autorisiert. Bitte neu anmelden.';
         } else if (text.includes('Setup not complete')) {
           errorMsg += 'Setup nicht abgeschlossen.';
+        } else if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+          // HTML error page returned - show generic error
+          errorMsg += 'Interner Server-Fehler. Bitte versuchen Sie es erneut oder prüfen Sie die Server-Logs.';
         } else {
+          // Plain text error - show first 100 chars
           errorMsg += text.substring(0, 100);
         }
 
@@ -185,6 +189,8 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
       console.log('[Upload] Response result:', result);
 
       if (response.ok) {
+        console.log('[Upload] ✅ Upload successful:', result.uploaded.length, 'files');
+
         // Mark all as success with 100% progress
         setFiles(prev =>
           prev.map(f => {
@@ -194,6 +200,11 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
               : f;
           })
         );
+
+        // Show warnings if any files were renamed
+        if (result.errors && result.errors.length > 0) {
+          console.warn('[Upload] Some files had issues:', result.errors);
+        }
 
         toast({
           title: 'Upload erfolgreich',
@@ -212,6 +223,13 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
       } else {
         // Handle partial errors
         if (result.errors && result.uploaded) {
+          console.log('[Upload] Partial success:', result.uploaded.length, 'uploaded,', result.errors.length, 'failed');
+
+          // Log detailed error information
+          result.errors.forEach((err: any) => {
+            console.error(`[Upload] ❌ ${err.filename}: ${err.error}`);
+          });
+
           toast({
             title: 'Upload teilweise erfolgreich',
             description: `${result.uploaded.length} erfolgreich, ${result.errors.length} fehlgeschlagen`,
@@ -224,6 +242,11 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
               const error = result.errors.find((e: any) => e.filename === f.file.name);
               const uploaded = targetFiles.find(tf => tf.file.name === f.file.name);
               if (!uploaded) return f;
+
+              if (error) {
+                console.log(`[Upload] Setting error for ${f.file.name}:`, error.error);
+              }
+
               return {
                 ...f,
                 status: error ? 'error' : 'success',
@@ -232,12 +255,45 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
               } as UploadFile;
             })
           );
+        } else if (result.error && result.errors) {
+          // All uploads failed (400 error with errors array)
+          console.error('[Upload] All uploads failed:', result.error);
+
+          result.errors.forEach((err: any) => {
+            console.error(`[Upload] ❌ ${err.filename}: ${err.error}`);
+          });
+
+          setFiles(prev =>
+            prev.map(f => {
+              const error = result.errors.find((e: any) => e.filename === f.file.name);
+              const uploaded = targetFiles.find(tf => tf.file.name === f.file.name);
+              if (!uploaded) return f;
+
+              return {
+                ...f,
+                status: 'error' as const,
+                error: error?.error || 'Upload fehlgeschlagen',
+                progress: undefined,
+              } as UploadFile;
+            })
+          );
+
+          toast({
+            title: 'Alle Uploads fehlgeschlagen',
+            description: result.errors.length === 1
+              ? result.errors[0].error
+              : `${result.errors.length} Dateien konnten nicht hochgeladen werden`,
+            variant: 'destructive',
+          });
+
+          return; // Don't throw, we've handled the error
         } else {
+          console.error('[Upload] Complete failure:', result.error);
           throw new Error(result.error || 'Upload fehlgeschlagen');
         }
       }
     } catch (error: any) {
-      console.error('Upload error:', error);
+      console.error('[Upload] Exception during upload:', error);
       setFiles(prev =>
         prev.map(f => {
           const uploaded = targetFiles.find(tf => tf.file.name === f.file.name);

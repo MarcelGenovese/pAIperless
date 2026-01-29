@@ -33,6 +33,9 @@ export async function GET(request: NextRequest) {
         data.credentials = await getConfigSecure(CONFIG_KEYS.GOOGLE_CLOUD_CREDENTIALS) || '';
         data.processorId = await getConfig(CONFIG_KEYS.DOCUMENT_AI_PROCESSOR_ID) || '';
         data.location = await getConfig(CONFIG_KEYS.DOCUMENT_AI_LOCATION) || 'us';
+        data.maxPages = await getConfig(CONFIG_KEYS.DOCUMENT_AI_MAX_PAGES) || '15';
+        data.maxSizeMB = await getConfig(CONFIG_KEYS.DOCUMENT_AI_MAX_SIZE_MB) || '20';
+        data.enabled = await getConfig(CONFIG_KEYS.DOCUMENT_AI_ENABLED) || 'false';
         break;
 
       case 4: // Google OAuth

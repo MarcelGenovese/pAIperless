@@ -2,8 +2,12 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { getConfig, CONFIG_KEYS } from '@/lib/config';
+import { createLogger } from '@/lib/logger';
 
 export const runtime = 'nodejs';
+
+// Create a middleware-specific logger
+const logger = createLogger('Middleware');
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -21,7 +25,21 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check if setup is complete
+  // CRITICAL: Skip FormData routes IMMEDIATELY - BEFORE any async calls!
+  // Even database calls can disturb the request body
+  const skipAuthRoutes = [
+    '/auth/login',
+    '/login',
+    '/about',
+    '/api/documents/upload', // Skip completely - auth checked in route handler
+  ];
+
+  if (skipAuthRoutes.some(route => pathname.startsWith(route))) {
+    // Return immediately without ANY processing whatsoever
+    return NextResponse.next();
+  }
+
+  // Check if setup is complete (safe to do async calls now)
   const setupComplete = await getConfig(CONFIG_KEYS.SETUP_COMPLETED);
 
   // If setup is not complete, redirect to /setup (unless already there)
@@ -44,44 +62,28 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/auth/login', request.url));
   }
 
-  // Skip auth check for routes that use FormData (to avoid body consumption)
-  // These routes will handle auth internally
-  const skipAuthRoutes = [
-    '/auth/login',
-    '/login',
-    '/about',
-    '/api/documents/upload', // Skip in middleware, check in route
-  ];
+  // All other routes: perform auth check
+  const cookies = request.cookies.getAll();
+  await logger.debug(`Path: ${pathname}`, { cookies: cookies.map(c => c.name) });
 
-  if (!skipAuthRoutes.some(route => pathname.startsWith(route))) {
-    const cookies = request.cookies.getAll();
-    console.log(`[Middleware] Path: ${pathname}`);
-    console.log(`[Middleware] Cookies:`, cookies.map(c => c.name).join(', '));
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+  });
 
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
+  await logger.debug(`Token: ${token ? 'Present' : 'Missing'}`, token ? { user: token.name } : undefined);
 
-    console.log(`[Middleware] Token: ${token ? 'Present' : 'Missing'}`);
-    if (token) {
-      console.log(`[Middleware] Token user:`, token.name);
+  if (!token) {
+    // For API routes, return 401 instead of redirecting
+    if (pathname.startsWith('/api/')) {
+      await logger.warn(`Returning 401 for ${pathname} - No valid session`);
+      return NextResponse.json(
+        { error: 'Unauthorized - Please login again', detail: 'No valid session found' },
+        { status: 401 }
+      );
     }
-
-    if (!token) {
-      // For API routes, return 401 instead of redirecting
-      if (pathname.startsWith('/api/')) {
-        console.log(`[Middleware] Returning 401 for ${pathname} - No valid session`);
-        return NextResponse.json(
-          { error: 'Unauthorized - Please login again', detail: 'No valid session found' },
-          { status: 401 }
-        );
-      }
-      console.log(`[Middleware] Redirecting to login`);
-      return NextResponse.redirect(new URL('/auth/login', request.url));
-    }
-  } else if (pathname === '/api/documents/upload') {
-    console.log(`[Middleware] Skipping auth for upload (checked in route)`);
+    await logger.info(`Redirecting to login from ${pathname}`);
+    return NextResponse.redirect(new URL('/auth/login', request.url));
   }
 
   return NextResponse.next();

@@ -40,6 +40,14 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
   const [testing, setTesting] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // OCR Settings Check
+  const [ocrStatus, setOcrStatus] = useState<{
+    valid: boolean;
+    mode: string;
+    message: string;
+  } | null>(null);
+  const [checkingOCR, setCheckingOCR] = useState(false);
+
   const [integrationData, setIntegrationData] = useState({
     tagAiTodo: initialData.tagAiTodo || 'ai_todo',
     tagActionRequired: initialData.tagActionRequired || 'action_required',
@@ -137,6 +145,46 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
     }
   };
 
+  const checkOCRSettings = async () => {
+    setCheckingOCR(true);
+    try {
+      const response = await fetch('/api/paperless/check-ocr');
+      const result = await response.json();
+
+      if (response.ok) {
+        setOcrStatus(result);
+
+        if (result.valid) {
+          toast({
+            title: 'OCR-Einstellungen korrekt',
+            description: result.message,
+            variant: 'success',
+          });
+        } else {
+          toast({
+            title: 'OCR-Einstellungen prüfen',
+            description: result.message,
+            variant: 'destructive',
+          });
+        }
+      } else {
+        toast({
+          title: 'Fehler',
+          description: result.error || 'Konnte OCR-Einstellungen nicht prüfen',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Fehler',
+        description: 'Netzwerkfehler beim Prüfen der OCR-Einstellungen',
+        variant: 'destructive',
+      });
+    } finally {
+      setCheckingOCR(false);
+    }
+  };
+
   const saveIntegration = async () => {
     try {
       await fetch('/api/setup', {
@@ -225,11 +273,74 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
               <FontAwesomeIcon icon={testing ? faSpinner : faCheckCircle} className={`mr-2 ${testing ? 'animate-spin' : ''}`} />
               {testing ? 'Teste...' : 'Verbindung testen'}
             </Button>
-            <Button onClick={savePaperless} disabled={!paperlessData.tested || testing || saving}>
+            <Button onClick={savePaperless} disabled={testing || saving}>
               <FontAwesomeIcon icon={saving ? faSpinner : faSave} className={`mr-2 ${saving ? 'animate-spin' : ''}`} />
               {saving ? 'Speichert...' : 'Speichern'}
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* OCR Settings Check */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Paperless OCR-Einstellungen</CardTitle>
+          <CardDescription>
+            Prüft ob Paperless korrekt konfiguriert ist um Document AI Ergebnisse nicht zu überschreiben
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
+            <h4 className="font-semibold mb-2">ℹ️ Wichtig für Document AI</h4>
+            <p className="text-sm text-muted-foreground mb-2">
+              Damit Paperless die OCR-Ergebnisse von Document AI nicht überschreibt, muss der OCR-Modus auf
+              <strong className="text-foreground"> &quot;skip&quot; </strong> oder
+              <strong className="text-foreground"> &quot;skip_noarchive&quot; </strong> gesetzt sein.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Diese Einstellung kannst du in Paperless unter <strong>Administration → Settings → OCR</strong> ändern.
+            </p>
+          </div>
+
+          {ocrStatus && (
+            <div className={`p-4 border rounded-lg ${
+              ocrStatus.valid
+                ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800'
+                : 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800'
+            }`}>
+              <div className="flex items-start gap-3">
+                <FontAwesomeIcon
+                  icon={ocrStatus.valid ? faCheckCircle : faCheckCircle}
+                  className={`text-lg mt-0.5 ${
+                    ocrStatus.valid ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                  }`}
+                />
+                <div className="flex-1">
+                  <h4 className={`font-semibold ${
+                    ocrStatus.valid ? 'text-green-900 dark:text-green-100' : 'text-red-900 dark:text-red-100'
+                  }`}>
+                    {ocrStatus.valid ? 'Konfiguration korrekt' : 'Konfiguration prüfen'}
+                  </h4>
+                  <p className={`text-sm mt-1 ${
+                    ocrStatus.valid ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'
+                  }`}>
+                    {ocrStatus.message}
+                  </p>
+                  <p className="text-xs mt-2 font-mono bg-white/50 dark:bg-black/20 px-2 py-1 rounded">
+                    Aktueller Modus: {ocrStatus.mode}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <Button onClick={checkOCRSettings} variant="outline" disabled={checkingOCR}>
+            <FontAwesomeIcon
+              icon={checkingOCR ? faSpinner : faCheckCircle}
+              className={`mr-2 ${checkingOCR ? 'animate-spin' : ''}`}
+            />
+            {checkingOCR ? 'Prüfe...' : 'OCR-Einstellungen prüfen'}
+          </Button>
         </CardContent>
       </Card>
 

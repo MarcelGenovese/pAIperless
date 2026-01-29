@@ -19,6 +19,9 @@ interface GoogleSettingsTabProps {
     credentials?: string;
     processorId?: string;
     location?: string;
+    maxPages?: string;
+    maxSizeMB?: string;
+    enabled?: string;
     clientId?: string;
     clientSecret?: string;
     calendarId?: string;
@@ -45,6 +48,9 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
     credentials: initialData.credentials || '',
     processorId: initialData.processorId || '',
     location: initialData.location || 'us',
+    maxPages: initialData.maxPages || '15',
+    maxSizeMB: initialData.maxSizeMB || '20',
+    enabled: initialData.enabled || 'false',
     tested: false,
   });
   const [showDocAICreds, setShowDocAICreds] = useState(false);
@@ -273,8 +279,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
             </Button>
             <Button
               onClick={saveGemini}
-              disabled={!geminiData.tested || isSavingGemini || isTestingGemini}
-              className={cn(!geminiData.tested && 'opacity-50 cursor-not-allowed')}
+              disabled={isSavingGemini || isTestingGemini}
             >
               <FontAwesomeIcon icon={isSavingGemini ? faSpinner : faSave} className={`mr-2 ${isSavingGemini ? 'animate-spin' : ''}`} />
               {isSavingGemini ? 'Speichert...' : 'Speichern'}
@@ -282,7 +287,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
             {geminiData.tested && (
               <span className="flex items-center text-sm text-green-600">
                 <FontAwesomeIcon icon={faCheckCircle} className="mr-2" />
-                Getestet
+                API getestet
               </span>
             )}
           </div>
@@ -329,6 +334,68 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
               placeholder="us or eu"
             />
           </div>
+
+          {/* Processing Limits */}
+          <div className="pt-4 border-t">
+            <h4 className="text-sm font-semibold mb-3">Verarbeitungslimits</h4>
+            <p className="text-xs text-muted-foreground mb-4">
+              PDFs die diese Limits überschreiten werden direkt an Paperless weitergeleitet (nutzt Tesseract OCR)
+            </p>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="doc-ai-max-pages">Max. Seiten</Label>
+                <Input
+                  id="doc-ai-max-pages"
+                  type="number"
+                  value={documentAIData.maxPages}
+                  onChange={(e) => {
+                    setDocumentAIData({ ...documentAIData, maxPages: e.target.value });
+                  }}
+                  placeholder="15"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Standard: 15 Seiten
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="doc-ai-max-size">Max. Dateigröße (MB)</Label>
+                <Input
+                  id="doc-ai-max-size"
+                  type="number"
+                  value={documentAIData.maxSizeMB}
+                  onChange={(e) => {
+                    setDocumentAIData({ ...documentAIData, maxSizeMB: e.target.value });
+                  }}
+                  placeholder="20"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Standard: 20 MB
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Enable/Disable */}
+          <div className="flex items-center space-x-2 pt-2">
+            <input
+              type="checkbox"
+              id="doc-ai-enabled"
+              checked={documentAIData.enabled === 'true'}
+              onChange={(e) => {
+                setDocumentAIData({ ...documentAIData, enabled: e.target.checked ? 'true' : 'false' });
+              }}
+              className="w-4 h-4 rounded border-gray-300"
+            />
+            <Label htmlFor="doc-ai-enabled" className="cursor-pointer">
+              Document AI Verarbeitung aktivieren
+            </Label>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Wenn deaktiviert, werden alle Dokumente direkt an Paperless weitergeleitet
+          </p>
+
           <div>
             <Label htmlFor="doc-ai-creds">Service Account Credentials (JSON)</Label>
             <div className="flex gap-2">
@@ -363,8 +430,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
             </Button>
             <Button
               onClick={saveDocumentAI}
-              disabled={!documentAIData.tested || isSavingDocAI || isTestingDocAI}
-              className={cn(!documentAIData.tested && 'opacity-50 cursor-not-allowed')}
+              disabled={isSavingDocAI || isTestingDocAI}
             >
               <FontAwesomeIcon icon={isSavingDocAI ? faSpinner : faSave} className={`mr-2 ${isSavingDocAI ? 'animate-spin' : ''}`} />
               {isSavingDocAI ? 'Speichert...' : 'Speichern'}
@@ -372,7 +438,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
             {documentAIData.tested && (
               <span className="flex items-center text-sm text-green-600">
                 <FontAwesomeIcon icon={faCheckCircle} className="mr-2" />
-                Getestet
+                Verbindung getestet
               </span>
             )}
           </div>

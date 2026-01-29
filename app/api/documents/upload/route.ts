@@ -7,6 +7,9 @@ import { prisma } from '@/lib/prisma';
 
 export const runtime = 'nodejs';
 
+// IMPORTANT: Don't use async logger here - it causes "body disturbed" errors
+// Using console.log instead, logs will still appear in Docker logs
+
 /**
  * Calculate SHA-256 hash of a buffer
  */
@@ -122,11 +125,35 @@ export async function POST(request: NextRequest) {
         });
 
         if (existingDoc) {
+          const uploadDate = new Date(existingDoc.createdAt).toLocaleDateString('de-DE');
+          let errorMsg = `Duplikat: Bereits hochgeladen am ${uploadDate}`;
+
+          // Add status information
+          if (existingDoc.status === 'COMPLETED') {
+            errorMsg += ` (Status: Verarbeitet`;
+            if (existingDoc.paperlessId) {
+              errorMsg += `, Paperless ID: ${existingDoc.paperlessId}`;
+            }
+            errorMsg += `)`;
+          } else if (existingDoc.status === 'ERROR') {
+            errorMsg += ` (Status: Fehler bei Verarbeitung)`;
+          } else {
+            errorMsg += ` (Status: ${existingDoc.status})`;
+          }
+
           errors.push({
             filename: file.name,
-            error: 'Datei bereits vorhanden (Duplikat erkannt)'
+            error: errorMsg
           });
-          console.log(`[Upload] Duplicate detected: ${file.name} (hash: ${fileHash.substring(0, 8)}...)`);
+
+          console.log(`[Upload] ❌ DUPLICATE REJECTED: ${file.name}`);
+          console.log(`[Upload]    Hash: ${fileHash.substring(0, 12)}...`);
+          console.log(`[Upload]    Original: ${existingDoc.originalFilename}`);
+          console.log(`[Upload]    Uploaded: ${uploadDate}`);
+          console.log(`[Upload]    Status: ${existingDoc.status}`);
+          if (existingDoc.paperlessId) {
+            console.log(`[Upload]    Paperless ID: ${existingDoc.paperlessId}`);
+          }
           continue;
         }
 
@@ -136,6 +163,22 @@ export async function POST(request: NextRequest) {
         let counter = 1;
         let targetPath = path.join(consumeDir, filename);
 
+        // Check if file already exists in consume directory
+        let existingLocation = null;
+        if (existsSync(targetPath)) {
+          existingLocation = 'consume';
+        } else if (existsSync(path.join(consumeDir.replace('/consume', '/processing'), filename))) {
+          existingLocation = 'processing';
+        } else if (existsSync(path.join(consumeDir.replace('/consume', '/error'), filename))) {
+          existingLocation = 'error';
+        }
+
+        if (existingLocation) {
+          console.log(`[Upload] ⚠️  WARNING: File ${filename} already exists in ${existingLocation} folder`);
+          console.log(`[Upload]    Renaming to avoid overwrite...`);
+        }
+
+        // Generate unique filename if needed
         while (existsSync(targetPath)) {
           const ext = path.extname(originalName);
           const base = path.basename(originalName, ext);
@@ -144,11 +187,15 @@ export async function POST(request: NextRequest) {
           counter++;
         }
 
+        if (counter > 1) {
+          console.log(`[Upload]    Renamed: ${originalName} -> ${filename}`);
+        }
+
         // Write file to consume directory
         await writeFile(targetPath, buffer, { mode: 0o666 });
 
         uploadedFiles.push(filename);
-        console.log(`[Upload] File saved: ${targetPath}`);
+        console.log(`[Upload] ✅ File saved: ${targetPath}`);
       } catch (error: any) {
         console.error(`[Upload] Failed to upload ${file.name}:`, error);
         errors.push({
@@ -176,7 +223,7 @@ export async function POST(request: NextRequest) {
       message: `${uploadedFiles.length} Datei(en) erfolgreich hochgeladen`
     });
   } catch (error: any) {
-    console.error('[Upload] Error:', error);
+    console.error('[Upload] Upload error:', error);
     return NextResponse.json(
       { error: 'Upload fehlgeschlagen: ' + error.message },
       { status: 500 }

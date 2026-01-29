@@ -86,7 +86,7 @@ class ServiceManager {
   private async startWorker(): Promise<ServiceControlResult> {
     console.log('[ServiceManager] Starting worker...');
     try {
-      startWorker();
+      await startWorker();
       this.workerRunning = true;
       await this.log('INFO', 'Worker started successfully');
       return {
@@ -108,7 +108,7 @@ class ServiceManager {
   private async stopWorker(): Promise<ServiceControlResult> {
     console.log('[ServiceManager] Stopping worker...');
     try {
-      stopWorker();
+      await stopWorker();
       this.workerRunning = false;
       await this.log('INFO', 'Worker stopped successfully');
       return {

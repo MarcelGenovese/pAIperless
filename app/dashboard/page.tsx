@@ -43,19 +43,16 @@ export default function DashboardPage() {
         const [step1, step2, step3, step4, step5, step6, step7, step8] = responses;
 
         // Map API response keys to component prop names
+        // Note: Be careful with field name collisions - each component uses specific field names
         const mappedData = {
-          ...step1,
-          ...step2,
-          ...step3,
-          ...step4,
-          // Email: map emailEnabled -> enabled for EmailSettingsCard
-          ...step5,
-          enabled: step5.emailEnabled, // Add mapped property
-          // FTP: map ftpEnabled -> enabled for FTPSettingsCard
-          ...step8,
-          ftpEnabled: step8.ftpEnabled, // Keep original for FTPSettingsCard
-          ...step6,
-          ...step7,
+          ...step1,  // Paperless: paperlessUrl, paperlessToken
+          ...step2,  // Gemini: geminiApiKey, geminiModel
+          ...step3,  // Document AI: projectId, credentials, processorId, location, maxPages, maxSizeMB, enabled
+          ...step4,  // Google OAuth: clientId, clientSecret, calendarId, taskListId
+          ...step5,  // Email: emailEnabled, smtpServer, smtpPort, smtpEncryption, smtpUser, smtpPassword, emailSender, emailRecipients
+          ...step6,  // Paperless Integration: tagAiTodo, tagActionRequired, fieldActionDescription, fieldDueDate
+          ...step7,  // Advanced: pollConsumeEnabled, pollConsumeInterval, pollActionEnabled, pollActionInterval, pollAiTodoEnabled, pollAiTodoInterval
+          ...step8,  // FTP: ftpEnabled, ftpUsername, ftpPassword, ftpPort, ftpEnableTls, ftpPasvUrl
         };
 
         setSettingsData(mappedData);
@@ -106,9 +103,9 @@ export default function DashboardPage() {
       case 'google':
         return <GoogleSettingsTab initialData={settingsData} />;
       case 'ftp':
-        return <FTPSettingsCard initialData={settingsData} onServiceRestart={restartServices} />;
+        return <FTPSettingsCard initialData={{ ...settingsData, enabled: (settingsData as any).ftpEnabled }} onServiceRestart={restartServices} />;
       case 'email':
-        return <EmailSettingsCard initialData={settingsData} />;
+        return <EmailSettingsCard initialData={{ ...settingsData, enabled: (settingsData as any).emailEnabled }} />;
       case 'advanced':
         return <AdvancedSettingsTab />;
       default:

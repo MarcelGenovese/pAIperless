@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTerminal, faTrash, faPause, faPlay, faDownload } from '@fortawesome/free-solid-svg-icons';
+import { faTerminal, faTrash, faPause, faPlay, faDownload, faBroom } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 interface LogEntry {
   timestamp: string;
@@ -20,51 +21,104 @@ export default function LogsTab() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [paused, setPaused] = useState(false);
   const [autoScroll, setAutoScroll] = useState(true);
+  const [cleaningUp, setCleaningUp] = useState(false);
   const [filters, setFilters] = useState({
+    upload: true,
     ftp: true,
     email: true,
     system: true,
     worker: true,
+    middleware: true,
+    framework: true,
+    paperless: true,
+    oauth: true,
   });
   const logsEndRef = useRef<HTMLDivElement>(null);
-  const eventSourceRef = useRef<EventSource | null>(null);
+  const { toast } = useToast();
+
+  const fetchDockerLogs = async () => {
+    if (paused) {
+      console.log('[Logs] Paused, skipping fetch');
+      return;
+    }
+
+    console.log('[Logs] Fetching docker logs...');
+
+    try {
+      const response = await fetch('/api/logs/docker-text?lines=500');
+      console.log('[Logs] Response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[Logs] Error response:', errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+
+      const text = await response.text();
+      console.log('[Logs] Received', text.length, 'characters');
+
+      const lines = text.split('\n').filter(line => line.trim());
+      console.log('[Logs] Parsed', lines.length, 'lines');
+
+      const parsedLogs: LogEntry[] = lines.map(line => {
+        const timestampMatch = line.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z)\s+(.*)$/);
+        if (timestampMatch) {
+          const timestamp = timestampMatch[1];
+          const message = timestampMatch[2];
+
+          return {
+            timestamp,
+            level: detectLogLevel(message),
+            source: extractSource(message),
+            message: message.trim(),
+          };
+        }
+
+        return {
+          timestamp: new Date().toISOString(),
+          level: 'INFO',
+          source: 'docker',
+          message: line.trim(),
+        };
+      });
+
+      console.log('[Logs] Setting', parsedLogs.length, 'log entries');
+      setLogs(parsedLogs);
+    } catch (error) {
+      console.error('[Logs] Failed to fetch docker logs:', error);
+    }
+  };
+
+  const detectLogLevel = (message: string): string => {
+    const upperMessage = message.toUpperCase();
+    if (upperMessage.includes('[ERROR]') || upperMessage.includes('ERROR:')) return 'ERROR';
+    if (upperMessage.includes('[WARN]') || upperMessage.includes('WARNING:')) return 'WARN';
+    if (upperMessage.includes('[DEBUG]') || upperMessage.includes('DEBUG:')) return 'DEBUG';
+    return 'INFO';
+  };
+
+  const extractSource = (message: string): string => {
+    if (message.includes('[Upload]')) return 'upload';
+    if (message.includes('[FTP]')) return 'ftp';
+    if (message.includes('[Email]') || message.includes('[SMTP]')) return 'email';
+    if (message.includes('[Worker]')) return 'worker';
+    if (message.includes('[Middleware]')) return 'middleware';
+    if (message.includes('[Paperless]')) return 'paperless';
+    if (message.includes('[OAuth]')) return 'oauth';
+    if (message.includes('TypeError') || message.includes('Error')) return 'framework';
+    if (message.includes('Next.js')) return 'next.js';
+    return 'system';
+  };
 
   useEffect(() => {
-    // Connect to Server-Sent Events for live logs
-    const connectEventSource = () => {
-      const eventSource = new EventSource('/api/logs/stream');
+    // Initial fetch
+    fetchDockerLogs();
 
-      eventSource.onopen = () => {
-        console.log('[Logs] EventSource connected');
-      };
-
-      eventSource.onmessage = (event) => {
-        if (!paused) {
-          try {
-            const logEntry: LogEntry = JSON.parse(event.data);
-            setLogs((prev) => [...prev.slice(-999), logEntry]); // Keep last 1000 logs
-          } catch (error) {
-            console.error('[Logs] Failed to parse log entry:', error);
-          }
-        }
-      };
-
-      eventSource.onerror = (error) => {
-        console.error('[Logs] EventSource error:', error);
-        eventSource.close();
-        console.log('[Logs] Reconnecting in 5s...');
-        setTimeout(connectEventSource, 5000);
-      };
-
-      eventSourceRef.current = eventSource;
-    };
-
-    connectEventSource();
+    // Poll every 2 seconds if not paused
+    const intervalId = setInterval(fetchDockerLogs, 2000);
 
     return () => {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-      }
+      clearInterval(intervalId);
     };
   }, [paused]);
 
@@ -76,6 +130,34 @@ export default function LogsTab() {
 
   const clearLogs = () => {
     setLogs([]);
+  };
+
+  const cleanupOldLogs = async () => {
+    setCleaningUp(true);
+    try {
+      const response = await fetch('/api/logs/cleanup', {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: 'Alte Logs bereinigt',
+          description: `${result.database} Datenbankeinträge und ${result.filesystem} Dateien gelöscht`,
+        });
+      } else {
+        throw new Error(result.error || 'Cleanup fehlgeschlagen');
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Fehler',
+        description: error.message || 'Cleanup fehlgeschlagen',
+        variant: 'destructive',
+      });
+    } finally {
+      setCleaningUp(false);
+    }
   };
 
   const downloadLogs = () => {
@@ -108,12 +190,24 @@ export default function LogsTab() {
 
   const getSourceColor = (source: string) => {
     switch (source.toLowerCase()) {
+      case 'upload':
+        return 'bg-indigo-100 text-indigo-700';
       case 'ftp':
         return 'bg-purple-100 text-purple-700';
       case 'email':
         return 'bg-green-100 text-green-700';
       case 'worker':
         return 'bg-orange-100 text-orange-700';
+      case 'middleware':
+        return 'bg-cyan-100 text-cyan-700';
+      case 'paperless':
+        return 'bg-teal-100 text-teal-700';
+      case 'oauth':
+        return 'bg-pink-100 text-pink-700';
+      case 'framework':
+        return 'bg-red-100 text-red-700';
+      case 'next.js':
+        return 'bg-gray-100 text-gray-700';
       case 'system':
         return 'bg-blue-100 text-blue-700';
       default:
@@ -123,9 +217,14 @@ export default function LogsTab() {
 
   const filteredLogs = logs.filter((log) => {
     const source = log.source.toLowerCase();
+    if (source.includes('upload') && !filters.upload) return false;
     if (source.includes('ftp') && !filters.ftp) return false;
     if (source.includes('email') && !filters.email) return false;
     if (source.includes('worker') && !filters.worker) return false;
+    if (source.includes('middleware') && !filters.middleware) return false;
+    if (source.includes('paperless') && !filters.paperless) return false;
+    if (source.includes('oauth') && !filters.oauth) return false;
+    if (source.includes('framework') && !filters.framework) return false;
     if (source.includes('system') && !filters.system) return false;
     return true;
   });
@@ -140,7 +239,8 @@ export default function LogsTab() {
             Live Logs
           </CardTitle>
           <CardDescription>
-            Echtzeit-Logs von FTP Server, Email System, Worker und System
+            Echtzeit-Logs direkt aus dem Docker Container. Zeigt alle Logs inklusive Framework-Fehler, System-Meldungen und Anwendungs-Logs.
+            Datenbank-Logs werden automatisch nach 4 Wochen gelöscht.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -175,6 +275,17 @@ export default function LogsTab() {
             >
               <FontAwesomeIcon icon={faDownload} className="mr-2" />
               Download
+            </Button>
+
+            {/* Cleanup Old Logs */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={cleanupOldLogs}
+              disabled={cleaningUp}
+            >
+              <FontAwesomeIcon icon={faBroom} className="mr-2" />
+              {cleaningUp ? 'Bereinige...' : 'Alte Logs löschen (>4 Wochen)'}
             </Button>
 
             {/* Auto-scroll */}
