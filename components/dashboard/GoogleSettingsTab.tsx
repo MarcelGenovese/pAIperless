@@ -34,6 +34,13 @@ interface GoogleSettingsTabProps {
 export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTabProps) {
   const { toast } = useToast();
 
+  // Store initial values for comparison
+  const [initialGeminiData, setInitialGeminiData] = useState({
+    apiKey: initialData.geminiApiKey || '',
+    model: initialData.geminiModel || 'gemini-1.5-flash',
+    monthlyTokenLimit: initialData.geminiMonthlyTokenLimit || '1000000',
+  });
+
   // Gemini AI State
   const [geminiData, setGeminiData] = useState({
     apiKey: initialData.geminiApiKey || '',
@@ -44,6 +51,18 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
   const [showGeminiKey, setShowGeminiKey] = useState(false);
   const [isTestingGemini, setIsTestingGemini] = useState(false);
   const [isSavingGemini, setIsSavingGemini] = useState(false);
+
+  // Store initial values for comparison
+  const [initialDocumentAIData, setInitialDocumentAIData] = useState({
+    projectId: initialData.projectId || '',
+    credentials: initialData.credentials || '',
+    processorId: initialData.processorId || '',
+    location: initialData.location || 'us',
+    maxPages: initialData.maxPages || '15',
+    maxSizeMB: initialData.maxSizeMB || '20',
+    monthlyPageLimit: initialData.documentAIMonthlyPageLimit || '5000',
+    enabled: initialData.enabled || 'false',
+  });
 
   // Document AI State
   const [documentAIData, setDocumentAIData] = useState({
@@ -60,6 +79,28 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
   const [showDocAICreds, setShowDocAICreds] = useState(false);
   const [isTestingDocAI, setIsTestingDocAI] = useState(false);
   const [isSavingDocAI, setIsSavingDocAI] = useState(false);
+
+  // Check if data has changed
+  const hasGeminiChanged = () => {
+    return (
+      geminiData.apiKey !== initialGeminiData.apiKey ||
+      geminiData.model !== initialGeminiData.model ||
+      geminiData.monthlyTokenLimit !== initialGeminiData.monthlyTokenLimit
+    );
+  };
+
+  const hasDocumentAIChanged = () => {
+    return (
+      documentAIData.projectId !== initialDocumentAIData.projectId ||
+      documentAIData.credentials !== initialDocumentAIData.credentials ||
+      documentAIData.processorId !== initialDocumentAIData.processorId ||
+      documentAIData.location !== initialDocumentAIData.location ||
+      documentAIData.maxPages !== initialDocumentAIData.maxPages ||
+      documentAIData.maxSizeMB !== initialDocumentAIData.maxSizeMB ||
+      documentAIData.monthlyPageLimit !== initialDocumentAIData.monthlyPageLimit ||
+      documentAIData.enabled !== initialDocumentAIData.enabled
+    );
+  };
 
   // Gemini Test & Save
   const testGemini = async () => {
@@ -132,6 +173,12 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
         variant: 'success',
       });
 
+      // Reset initial data to current values after save
+      setInitialGeminiData({
+        apiKey: geminiData.apiKey,
+        model: geminiData.model,
+        monthlyTokenLimit: geminiData.monthlyTokenLimit,
+      });
       setGeminiData({ ...geminiData, tested: false });
     } catch (error) {
       toast({
@@ -211,6 +258,17 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
         variant: 'success',
       });
 
+      // Reset initial data to current values after save
+      setInitialDocumentAIData({
+        projectId: documentAIData.projectId,
+        credentials: documentAIData.credentials,
+        processorId: documentAIData.processorId,
+        location: documentAIData.location,
+        maxPages: documentAIData.maxPages,
+        maxSizeMB: documentAIData.maxSizeMB,
+        monthlyPageLimit: documentAIData.monthlyPageLimit,
+        enabled: documentAIData.enabled,
+      });
       setDocumentAIData({ ...documentAIData, tested: false });
     } catch (error) {
       toast({
@@ -299,7 +357,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
             </Button>
             <Button
               onClick={saveGemini}
-              disabled={isSavingGemini || isTestingGemini}
+              disabled={isSavingGemini || isTestingGemini || !hasGeminiChanged()}
             >
               <FontAwesomeIcon icon={isSavingGemini ? faSpinner : faSave} className={`mr-2 ${isSavingGemini ? 'animate-spin' : ''}`} />
               {isSavingGemini ? 'Speichert...' : 'Speichern'}
@@ -466,7 +524,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
             </Button>
             <Button
               onClick={saveDocumentAI}
-              disabled={isSavingDocAI || isTestingDocAI}
+              disabled={isSavingDocAI || isTestingDocAI || !hasDocumentAIChanged()}
             >
               <FontAwesomeIcon icon={isSavingDocAI ? faSpinner : faSave} className={`mr-2 ${isSavingDocAI ? 'animate-spin' : ''}`} />
               {isSavingDocAI ? 'Speichert...' : 'Speichern'}
