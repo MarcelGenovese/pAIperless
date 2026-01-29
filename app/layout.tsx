@@ -26,7 +26,23 @@ export default async function RootLayout({
   const messages = (await import(`@/messages/${locale}.json`)).default;
 
   return (
-    <html lang={locale} className={isDark ? 'dark' : ''}>
+    <html lang={locale} className={isDark ? 'dark' : ''} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const darkMode = ${isDark};
+                if (darkMode) {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
+      </head>
       <body className={inter.className}>
         <SessionProvider>
           <NextIntlClientProvider locale={locale} messages={messages}>
