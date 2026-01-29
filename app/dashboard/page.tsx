@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSignOutAlt, faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faSignOutAlt, faBars, faTimes, faStethoscope } from '@fortawesome/free-solid-svg-icons';
 
 import Sidebar from '@/components/dashboard/Sidebar';
 import OverviewTab from '@/components/dashboard/OverviewTab';
@@ -16,6 +16,7 @@ import GoogleSettingsTab from '@/components/dashboard/GoogleSettingsTab';
 import FTPSettingsCard from '@/components/dashboard/FTPSettingsCard';
 import EmailSettingsCard from '@/components/dashboard/EmailSettingsCard';
 import AdvancedSettingsTab from '@/components/dashboard/AdvancedSettingsTab';
+import SystemCheckModal from '@/components/dashboard/SystemCheckModal';
 import Footer from '@/components/Footer';
 
 export default function DashboardPage() {
@@ -24,6 +25,7 @@ export default function DashboardPage() {
   const [settingsData, setSettingsData] = useState({});
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [systemCheckOpen, setSystemCheckOpen] = useState(false);
 
   useEffect(() => {
     // Load all config data for settings tabs
@@ -139,10 +141,14 @@ export default function DashboardPage() {
                 priority
               />
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">
                 {session?.user?.name || 'User'}
               </span>
+              <Button variant="outline" size="sm" onClick={() => setSystemCheckOpen(true)}>
+                <FontAwesomeIcon icon={faStethoscope} className="mr-2" />
+                <span className="hidden sm:inline">System Check</span>
+              </Button>
               <Button variant="outline" size="sm" onClick={() => signOut({ callbackUrl: '/auth/login' })}>
                 <FontAwesomeIcon icon={faSignOutAlt} className="mr-2" />
                 <span className="hidden sm:inline">Logout</span>
@@ -188,13 +194,19 @@ export default function DashboardPage() {
         )}
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="flex-1 overflow-y-auto flex flex-col">
+          <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
             {renderTabContent()}
           </div>
           <Footer />
         </main>
       </div>
+
+      {/* System Check Modal */}
+      <SystemCheckModal
+        isOpen={systemCheckOpen}
+        onClose={() => setSystemCheckOpen(false)}
+      />
     </div>
   );
 }

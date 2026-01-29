@@ -10,8 +10,12 @@ import {
   faExclamationCircle,
   faSpinner,
   faClock,
-  faSync
+  faSync,
+  faTrash,
+  faChevronLeft,
+  faChevronRight
 } from '@fortawesome/free-solid-svg-icons';
+import { useToast } from '@/hooks/use-toast';
 import DocumentUpload from './DocumentUpload';
 import FolderContents from './FolderContents';
 
@@ -24,9 +28,15 @@ interface Document {
 }
 
 export default function DocumentsTab() {
+  const { toast } = useToast();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const itemsPerPage = 10;
 
   const loadDocuments = async () => {
     setRefreshing(true);
@@ -49,6 +59,54 @@ export default function DocumentsTab() {
     const interval = setInterval(loadDocuments, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleDeleteSelected = async () => {
+    setDeleting(true);
+    try {
+      const response = await fetch('/api/documents/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedIds }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Erfolgreich gelöscht',
+          description: `${selectedIds.length} Dokument(e) gelöscht`,
+          variant: 'success',
+        });
+        setSelectedIds([]);
+        setShowDeleteConfirm(false);
+        loadDocuments();
+      } else {
+        throw new Error('Delete failed');
+      }
+    } catch (error) {
+      toast({
+        title: 'Fehler',
+        description: 'Dokumente konnten nicht gelöscht werden',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === paginatedDocuments.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(paginatedDocuments.map(d => d.id));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter(sid => sid !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
+    }
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -78,6 +136,11 @@ export default function DocumentsTab() {
     };
     return statusMap[status] || status;
   };
+
+  // Pagination
+  const totalPages = Math.ceil(documents.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedDocuments = documents.slice(startIndex, startIndex + itemsPerPage);
 
   if (loading) {
     return (
@@ -118,10 +181,24 @@ export default function DocumentsTab() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Verarbeitungshistorie</CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">
-            Vollständige Historie aller verarbeiteten Dokumente aus der Datenbank
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Verarbeitungshistorie</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Vollständige Historie aller verarbeiteten Dokumente aus der Datenbank
+              </p>
+            </div>
+            {selectedIds.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDeleteConfirm(true)}
+              >
+                <FontAwesomeIcon icon={faTrash} className="mr-2" />
+                Ausgewählte löschen ({selectedIds.length})
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {documents.length === 0 ? (
@@ -135,13 +212,32 @@ export default function DocumentsTab() {
               </p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {documents.map((doc) => (
-                <div
-                  key={doc.id}
-                  className="flex items-start justify-between py-3 px-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
-                >
-                  <div className="flex items-start gap-3 flex-1">
+            <>
+              <div className="space-y-3">
+                {/* Select All */}
+                {paginatedDocuments.length > 0 && (
+                  <div className="flex items-center gap-3 py-2 px-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.length === paginatedDocuments.length && paginatedDocuments.length > 0}
+                      onChange={toggleSelectAll}
+                      className="w-4 h-4 rounded border-gray-300 cursor-pointer"
+                    />
+                    <span className="text-sm font-medium">Alle auswählen</span>
+                  </div>
+                )}
+
+                {paginatedDocuments.map((doc) => (
+                  <div
+                    key={doc.id}
+                    className="flex items-start gap-3 py-3 px-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(doc.id)}
+                      onChange={() => toggleSelect(doc.id)}
+                      className="mt-1 w-4 h-4 rounded border-gray-300 cursor-pointer"
+                    />
                     {getStatusIcon(doc.status)}
                     <div className="flex-1">
                       <h3 className="font-semibold text-sm">{doc.filename}</h3>
@@ -157,31 +253,99 @@ export default function DocumentsTab() {
                         {new Date(doc.createdAt).toLocaleString('de-DE')}
                       </p>
                     </div>
+                    {doc.status === 'ERROR' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          try {
+                            await fetch(`/api/documents/${doc.id}/retry`, {
+                              method: 'POST',
+                            });
+                            loadDocuments();
+                          } catch (error) {
+                            console.error('Failed to retry document:', error);
+                          }
+                        }}
+                      >
+                        Wiederholen
+                      </Button>
+                    )}
                   </div>
-                  {doc.status === 'ERROR' && (
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between mt-6 pt-4 border-t">
+                  <div className="text-sm text-muted-foreground">
+                    Seite {currentPage} von {totalPages} ({documents.length} Dokumente gesamt)
+                  </div>
+                  <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={async () => {
-                        try {
-                          await fetch(`/api/documents/${doc.id}/retry`, {
-                            method: 'POST',
-                          });
-                          loadDocuments();
-                        } catch (error) {
-                          console.error('Failed to retry document:', error);
-                        }
-                      }}
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
                     >
-                      Wiederholen
+                      <FontAwesomeIcon icon={faChevronLeft} className="mr-2" />
+                      Zurück
                     </Button>
-                  )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Weiter
+                      <FontAwesomeIcon icon={faChevronRight} className="ml-2" />
+                    </Button>
+                  </div>
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-2xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold mb-4">Dokumente löschen?</h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              Möchten Sie wirklich {selectedIds.length} Dokument(e) aus der Datenbank löschen?
+              Diese Aktion kann nicht rückgängig gemacht werden.
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={deleting}
+              >
+                Abbrechen
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteSelected}
+                disabled={deleting}
+              >
+                {deleting ? (
+                  <>
+                    <FontAwesomeIcon icon={faSpinner} className="mr-2 animate-spin" />
+                    Löschen...
+                  </>
+                ) : (
+                  <>
+                    <FontAwesomeIcon icon={faTrash} className="mr-2" />
+                    Löschen
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

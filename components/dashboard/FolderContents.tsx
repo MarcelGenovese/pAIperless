@@ -36,6 +36,8 @@ export default function FolderContents() {
   });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState<'consume' | 'processing' | 'error' | null>(null);
+  const [clearing, setClearing] = useState(false);
 
   const loadFolders = async () => {
     setRefreshing(true);
@@ -104,6 +106,30 @@ export default function FolderContents() {
     } catch (error) {
       console.error('Failed to delete file:', error);
       alert('Fehler beim Löschen der Datei');
+    }
+  };
+
+  const clearFolder = async (folder: 'consume' | 'processing' | 'error') => {
+    setClearing(true);
+    try {
+      const response = await fetch('/api/documents/clear-folder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ folder }),
+      });
+
+      if (response.ok) {
+        setShowClearConfirm(null);
+        loadFolders();
+      } else {
+        const data = await response.json();
+        alert('Fehler beim Leeren: ' + (data.error || 'Unbekannter Fehler'));
+      }
+    } catch (error) {
+      console.error('Failed to clear folder:', error);
+      alert('Fehler beim Leeren des Ordners');
+    } finally {
+      setClearing(false);
     }
   };
 
@@ -191,16 +217,30 @@ export default function FolderContents() {
         {/* Warteschlange (Consume) */}
         <Card className="border-blue-200 dark:border-blue-900">
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <FontAwesomeIcon icon={faClock} className="text-blue-600" />
-              Warteschlange
-              <span className="ml-auto text-sm font-normal text-muted-foreground">
-                {folders.consume.length}
-              </span>
-            </CardTitle>
-            <CardDescription className="text-xs">
-              Neue Dateien, die auf Verarbeitung warten
-            </CardDescription>
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <FontAwesomeIcon icon={faClock} className="text-blue-600" />
+                  Warteschlange
+                  <span className="ml-auto text-sm font-normal text-muted-foreground">
+                    {folders.consume.length}
+                  </span>
+                </CardTitle>
+                <CardDescription className="text-xs mt-1">
+                  Neue Dateien, die auf Verarbeitung warten
+                </CardDescription>
+              </div>
+              {folders.consume.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowClearConfirm('consume')}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  <FontAwesomeIcon icon={faTrash} />
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent className="pt-0">
             {renderFileList(
@@ -213,16 +253,30 @@ export default function FolderContents() {
         {/* In Bearbeitung (Processing) */}
         <Card className="border-yellow-200 dark:border-yellow-900">
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <FontAwesomeIcon icon={faSpinner} className="text-yellow-600" />
-              In Bearbeitung
-              <span className="ml-auto text-sm font-normal text-muted-foreground">
-                {folders.processing.length}
-              </span>
-            </CardTitle>
-            <CardDescription className="text-xs">
-              Dateien, die gerade verarbeitet werden
-            </CardDescription>
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <FontAwesomeIcon icon={faSpinner} className="text-yellow-600" />
+                  In Bearbeitung
+                  <span className="ml-auto text-sm font-normal text-muted-foreground">
+                    {folders.processing.length}
+                  </span>
+                </CardTitle>
+                <CardDescription className="text-xs mt-1">
+                  Dateien, die gerade verarbeitet werden
+                </CardDescription>
+              </div>
+              {folders.processing.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowClearConfirm('processing')}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  <FontAwesomeIcon icon={faTrash} />
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent className="pt-0">
             {renderFileList(
@@ -235,16 +289,30 @@ export default function FolderContents() {
         {/* Fehler (Error) */}
         <Card className="border-red-200 dark:border-red-900">
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <FontAwesomeIcon icon={faExclamationTriangle} className="text-red-600" />
-              Fehler
-              <span className="ml-auto text-sm font-normal text-muted-foreground">
-                {folders.error.length}
-              </span>
-            </CardTitle>
-            <CardDescription className="text-xs">
-              Fehlerhafte Dateien (Duplikate oder Fehler)
-            </CardDescription>
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <FontAwesomeIcon icon={faExclamationTriangle} className="text-red-600" />
+                  Fehler
+                  <span className="ml-auto text-sm font-normal text-muted-foreground">
+                    {folders.error.length}
+                  </span>
+                </CardTitle>
+                <CardDescription className="text-xs mt-1">
+                  Fehlerhafte Dateien (Duplikate oder Fehler)
+                </CardDescription>
+              </div>
+              {folders.error.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowClearConfirm('error')}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  <FontAwesomeIcon icon={faTrash} />
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent className="pt-0">
             {renderFileList(
@@ -255,6 +323,50 @@ export default function FolderContents() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Clear Folder Confirmation Dialog */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-2xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold mb-4">Ordner leeren?</h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              Möchten Sie wirklich alle Dateien im Ordner &quot;{
+                showClearConfirm === 'consume' ? 'Warteschlange' :
+                showClearConfirm === 'processing' ? 'In Bearbeitung' : 'Fehler'
+              }&quot; löschen?
+              {showClearConfirm === 'consume' && ' Diese Dateien werden nicht mehr verarbeitet.'}
+              {showClearConfirm === 'processing' && ' Die Verarbeitung dieser Dateien wird abgebrochen.'}
+              {showClearConfirm === 'error' && ' Diese Dateien werden endgültig gelöscht.'}
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowClearConfirm(null)}
+                disabled={clearing}
+              >
+                Abbrechen
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => clearFolder(showClearConfirm)}
+                disabled={clearing}
+              >
+                {clearing ? (
+                  <>
+                    <FontAwesomeIcon icon={faSpinner} className="mr-2 animate-spin" />
+                    Leeren...
+                  </>
+                ) : (
+                  <>
+                    <FontAwesomeIcon icon={faTrash} className="mr-2" />
+                    Ordner leeren
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
