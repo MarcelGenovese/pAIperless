@@ -60,3 +60,6 @@ data/
 docker-compose.override.yml
 OLD/keys/*.json
 /test-consume/
+
+# Landing page (deployed separately)
+/paperless.de/

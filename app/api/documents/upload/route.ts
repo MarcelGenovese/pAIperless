@@ -1,9 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
+import { createHash } from 'crypto';
 import path from 'path';
+import { prisma } from '@/lib/prisma';
 
 export const runtime = 'nodejs';
+
+/**
+ * Calculate SHA-256 hash of a buffer
+ */
+function calculateFileHash(buffer: Buffer): string {
+  return createHash('sha256').update(buffer).digest('hex');
+}
 
 /**
  * Upload documents to consume folder
@@ -105,6 +114,21 @@ export async function POST(request: NextRequest) {
         // Read file data
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
+
+        // Check for duplicates by hash
+        const fileHash = calculateFileHash(buffer);
+        const existingDoc = await prisma.document.findUnique({
+          where: { fileHash },
+        });
+
+        if (existingDoc) {
+          errors.push({
+            filename: file.name,
+            error: 'Datei bereits vorhanden (Duplikat erkannt)'
+          });
+          console.log(`[Upload] Duplicate detected: ${file.name} (hash: ${fileHash.substring(0, 8)}...)`);
+          continue;
+        }
 
         // Generate safe filename (avoid overwrites)
         const originalName = file.name;
