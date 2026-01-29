@@ -13,6 +13,10 @@ export async function GET() {
         originalFilename: true,
         status: true,
         errorMessage: true,
+        paperlessId: true,
+        ocrPageCount: true,
+        geminiTokensSent: true,
+        geminiTokensRecv: true,
         createdAt: true,
       },
     });

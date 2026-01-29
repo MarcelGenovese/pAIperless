@@ -10,7 +10,6 @@ import {
   faExclamationCircle,
   faSpinner,
   faClock,
-  faSync,
   faTrash,
   faChevronLeft,
   faChevronRight
@@ -25,13 +24,16 @@ interface Document {
   status: string;
   createdAt: string;
   errorMessage?: string;
+  paperlessId?: number;
+  ocrPageCount?: number;
+  geminiTokensSent?: number;
+  geminiTokensRecv?: number;
 }
 
 export default function DocumentsTab() {
   const { toast } = useToast();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -39,7 +41,6 @@ export default function DocumentsTab() {
   const itemsPerPage = 10;
 
   const loadDocuments = async () => {
-    setRefreshing(true);
     try {
       const response = await fetch('/api/documents');
       const data = await response.json();
@@ -48,8 +49,6 @@ export default function DocumentsTab() {
     } catch (error) {
       console.error('Failed to load documents:', error);
       setLoading(false);
-    } finally {
-      setRefreshing(false);
     }
   };
 
@@ -152,25 +151,11 @@ export default function DocumentsTab() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Dokumente</h2>
-          <p className="text-sm text-muted-foreground">
-            Übersicht aller verarbeiteten Dokumente
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={loadDocuments}
-          disabled={refreshing}
-        >
-          <FontAwesomeIcon
-            icon={faSync}
-            className={`mr-2 ${refreshing ? 'animate-spin' : ''}`}
-          />
-          Aktualisieren
-        </Button>
+      <div>
+        <h2 className="text-2xl font-bold">Dokumente</h2>
+        <p className="text-sm text-muted-foreground">
+          Übersicht aller verarbeiteten Dokumente (automatische Aktualisierung alle 10 Sekunden)
+        </p>
       </div>
 
       {/* Upload Component */}
@@ -244,12 +229,49 @@ export default function DocumentsTab() {
                       <p className="text-xs text-muted-foreground mt-1">
                         {getStatusText(doc.status)}
                       </p>
-                      {doc.errorMessage && (
-                        <p className="text-xs text-red-600 mt-1">
-                          {doc.errorMessage}
-                        </p>
+
+                      {/* Processing History */}
+                      {doc.status === 'COMPLETED' && (
+                        <div className="mt-2 space-y-1">
+                          {doc.ocrPageCount && doc.ocrPageCount > 0 && (
+                            <div className="flex items-center gap-2 text-xs">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                <FontAwesomeIcon icon={faFileAlt} className="mr-1" />
+                                Document AI: {doc.ocrPageCount} Seite(n) verarbeitet
+                              </span>
+                            </div>
+                          )}
+                          {doc.geminiTokensSent && doc.geminiTokensSent > 0 && (
+                            <div className="flex items-center gap-2 text-xs">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                <FontAwesomeIcon icon={faCheckCircle} className="mr-1" />
+                                Gemini AI: Analysiert ({doc.geminiTokensSent.toLocaleString('de-DE')} Tokens)
+                              </span>
+                            </div>
+                          )}
+                          {doc.paperlessId && (
+                            <div className="flex items-center gap-2 text-xs">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                <FontAwesomeIcon icon={faCheckCircle} className="mr-1" />
+                                An Paperless übertragen (ID: {doc.paperlessId})
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       )}
-                      <p className="text-xs text-muted-foreground mt-1">
+
+                      {doc.errorMessage && (
+                        <div className="mt-2">
+                          <div className="flex items-start gap-2 p-2 rounded bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                            <FontAwesomeIcon icon={faExclamationCircle} className="text-red-600 mt-0.5" />
+                            <p className="text-xs text-red-600 dark:text-red-400 flex-1">
+                              {doc.errorMessage}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      <p className="text-xs text-muted-foreground mt-2">
                         {new Date(doc.createdAt).toLocaleString('de-DE')}
                       </p>
                     </div>

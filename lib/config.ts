@@ -18,6 +18,13 @@ export const CONFIG_KEYS = {
   GEMINI_MODEL: 'GEMINI_MODEL',
   GEMINI_MONTHLY_TOKEN_LIMIT: 'GEMINI_MONTHLY_TOKEN_LIMIT',
   GEMINI_PROMPT_TEMPLATE: 'GEMINI_PROMPT_TEMPLATE', // Custom prompt template for document analysis
+  GEMINI_TAG_MODE: 'GEMINI_TAG_MODE', // Tag generation mode: strict/flexible/free
+  GEMINI_MAX_TAGS: 'GEMINI_MAX_TAGS', // Maximum number of tags AI can generate
+  GEMINI_STRICT_CORRESPONDENTS: 'GEMINI_STRICT_CORRESPONDENTS', // Restrict to existing correspondents
+  GEMINI_STRICT_DOCUMENT_TYPES: 'GEMINI_STRICT_DOCUMENT_TYPES', // Restrict to existing document types
+  GEMINI_STRICT_STORAGE_PATHS: 'GEMINI_STRICT_STORAGE_PATHS', // Restrict to existing storage paths
+  GEMINI_COST_AMOUNT: 'GEMINI_COST_AMOUNT', // Cost amount for pricing calculation
+  GEMINI_TOKEN_UNIT: 'GEMINI_TOKEN_UNIT', // Token unit for pricing (e.g., 1000000 for cost per million)
 
   // Google Cloud Document AI
   GOOGLE_CLOUD_PROJECT_ID: 'GOOGLE_CLOUD_PROJECT_ID',
@@ -28,6 +35,8 @@ export const CONFIG_KEYS = {
   DOCUMENT_AI_MAX_SIZE_MB: 'DOCUMENT_AI_MAX_SIZE_MB', // Max file size in MB
   DOCUMENT_AI_ENABLED: 'DOCUMENT_AI_ENABLED', // Enable/disable Document AI processing
   DOCUMENT_AI_MONTHLY_PAGE_LIMIT: 'DOCUMENT_AI_MONTHLY_PAGE_LIMIT', // Monthly page limit for cost control
+  DOCUMENT_AI_COST_AMOUNT: 'DOCUMENT_AI_COST_AMOUNT', // Cost amount for pricing calculation
+  DOCUMENT_AI_PAGE_UNIT: 'DOCUMENT_AI_PAGE_UNIT', // Page unit for pricing (e.g., 1000 for cost per 1000 pages)
 
   // Google OAuth
   GOOGLE_OAUTH_CLIENT_ID: 'GOOGLE_OAUTH_CLIENT_ID',

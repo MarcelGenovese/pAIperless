@@ -184,6 +184,87 @@ export class PaperlessClient {
     const data = await response.json();
     return data.id;
   }
+
+  /**
+   * Get all tags from Paperless
+   */
+  async getTags(): Promise<Array<{ id: number; name: string }>> {
+    try {
+      const data = await this.fetch('/api/tags/?page_size=1000');
+      return data.results.map((tag: any) => ({
+        id: tag.id,
+        name: tag.name,
+      }));
+    } catch (error) {
+      console.error('Error fetching tags:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get all correspondents from Paperless
+   */
+  async getCorrespondents(): Promise<Array<{ id: number; name: string }>> {
+    try {
+      const data = await this.fetch('/api/correspondents/?page_size=1000');
+      return data.results.map((correspondent: any) => ({
+        id: correspondent.id,
+        name: correspondent.name,
+      }));
+    } catch (error) {
+      console.error('Error fetching correspondents:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get all document types from Paperless
+   */
+  async getDocumentTypes(): Promise<Array<{ id: number; name: string }>> {
+    try {
+      const data = await this.fetch('/api/document_types/?page_size=1000');
+      return data.results.map((type: any) => ({
+        id: type.id,
+        name: type.name,
+      }));
+    } catch (error) {
+      console.error('Error fetching document types:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get all custom fields from Paperless
+   */
+  async getCustomFields(): Promise<Array<{ id: number; name: string; data_type: string }>> {
+    try {
+      const data = await this.fetch('/api/custom_fields/?page_size=1000');
+      return data.results.map((field: any) => ({
+        id: field.id,
+        name: field.name,
+        data_type: field.data_type,
+      }));
+    } catch (error) {
+      console.error('Error fetching custom fields:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get all storage paths from Paperless
+   */
+  async getStoragePaths(): Promise<Array<{ id: number; name: string }>> {
+    try {
+      const data = await this.fetch('/api/storage_paths/?page_size=1000');
+      return data.results.map((path: any) => ({
+        id: path.id,
+        name: path.name,
+      }));
+    } catch (error) {
+      console.error('Error fetching storage paths:', error);
+      return [];
+    }
+  }
 }
 
 export async function getPaperlessClient(): Promise<PaperlessClient> {

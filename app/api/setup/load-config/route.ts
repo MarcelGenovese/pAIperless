@@ -27,6 +27,14 @@ export async function GET(request: NextRequest) {
         data.geminiApiKey = await getConfigSecure(CONFIG_KEYS.GEMINI_API_KEY) || '';
         data.geminiModel = await getConfig(CONFIG_KEYS.GEMINI_MODEL) || 'gemini-1.5-flash';
         data.geminiMonthlyTokenLimit = await getConfig(CONFIG_KEYS.GEMINI_MONTHLY_TOKEN_LIMIT) || '1000000';
+        data.geminiCostAmount = await getConfig(CONFIG_KEYS.GEMINI_COST_AMOUNT) || '0.35';
+        data.geminiTokenUnit = await getConfig(CONFIG_KEYS.GEMINI_TOKEN_UNIT) || '1000000';
+        data.geminiPromptTemplate = await getConfig(CONFIG_KEYS.GEMINI_PROMPT_TEMPLATE) || '';
+        data.geminiTagMode = await getConfig(CONFIG_KEYS.GEMINI_TAG_MODE) || 'flexible';
+        data.geminiMaxTags = await getConfig(CONFIG_KEYS.GEMINI_MAX_TAGS) || '5';
+        data.geminiStrictCorrespondents = await getConfig(CONFIG_KEYS.GEMINI_STRICT_CORRESPONDENTS) || 'false';
+        data.geminiStrictDocumentTypes = await getConfig(CONFIG_KEYS.GEMINI_STRICT_DOCUMENT_TYPES) || 'false';
+        data.geminiStrictStoragePaths = await getConfig(CONFIG_KEYS.GEMINI_STRICT_STORAGE_PATHS) || 'false';
         break;
 
       case 3: // Document AI
@@ -38,6 +46,8 @@ export async function GET(request: NextRequest) {
         data.maxSizeMB = await getConfig(CONFIG_KEYS.DOCUMENT_AI_MAX_SIZE_MB) || '20';
         data.documentAIMonthlyPageLimit = await getConfig(CONFIG_KEYS.DOCUMENT_AI_MONTHLY_PAGE_LIMIT) || '5000';
         data.enabled = await getConfig(CONFIG_KEYS.DOCUMENT_AI_ENABLED) || 'false';
+        data.costAmount = await getConfig(CONFIG_KEYS.DOCUMENT_AI_COST_AMOUNT) || '1.50';
+        data.pageUnit = await getConfig(CONFIG_KEYS.DOCUMENT_AI_PAGE_UNIT) || '1000';
         break;
 
       case 4: // Google OAuth

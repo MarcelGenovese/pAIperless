@@ -16,6 +16,8 @@ interface GoogleSettingsTabProps {
     geminiApiKey?: string;
     geminiModel?: string;
     geminiMonthlyTokenLimit?: string;
+    geminiCostAmount?: string;
+    geminiTokenUnit?: string;
     projectId?: string;
     credentials?: string;
     processorId?: string;
@@ -23,6 +25,8 @@ interface GoogleSettingsTabProps {
     maxPages?: string;
     maxSizeMB?: string;
     documentAIMonthlyPageLimit?: string;
+    documentAICostAmount?: string;
+    documentAIPageUnit?: string;
     enabled?: string;
     clientId?: string;
     clientSecret?: string;
@@ -39,6 +43,8 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
     apiKey: initialData.geminiApiKey || '',
     model: initialData.geminiModel || 'gemini-1.5-flash',
     monthlyTokenLimit: initialData.geminiMonthlyTokenLimit || '1000000',
+    costAmount: initialData.geminiCostAmount || '0.35',
+    tokenUnit: initialData.geminiTokenUnit || '1000000',
   });
 
   // Gemini AI State
@@ -46,6 +52,8 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
     apiKey: initialData.geminiApiKey || '',
     model: initialData.geminiModel || 'gemini-1.5-flash',
     monthlyTokenLimit: initialData.geminiMonthlyTokenLimit || '1000000',
+    costAmount: initialData.geminiCostAmount || '0.35',
+    tokenUnit: initialData.geminiTokenUnit || '1000000',
     tested: false,
   });
   const [showGeminiKey, setShowGeminiKey] = useState(false);
@@ -61,6 +69,8 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
     maxPages: initialData.maxPages || '15',
     maxSizeMB: initialData.maxSizeMB || '20',
     monthlyPageLimit: initialData.documentAIMonthlyPageLimit || '5000',
+    costAmount: initialData.documentAICostAmount || '1.50',
+    pageUnit: initialData.documentAIPageUnit || '1000',
     enabled: initialData.enabled || 'false',
   });
 
@@ -73,6 +83,8 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
     maxPages: initialData.maxPages || '15',
     maxSizeMB: initialData.maxSizeMB || '20',
     monthlyPageLimit: initialData.documentAIMonthlyPageLimit || '5000',
+    costAmount: initialData.documentAICostAmount || '1.50',
+    pageUnit: initialData.documentAIPageUnit || '1000',
     enabled: initialData.enabled || 'false',
     tested: false,
   });
@@ -85,7 +97,9 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
     return (
       geminiData.apiKey !== initialGeminiData.apiKey ||
       geminiData.model !== initialGeminiData.model ||
-      geminiData.monthlyTokenLimit !== initialGeminiData.monthlyTokenLimit
+      geminiData.monthlyTokenLimit !== initialGeminiData.monthlyTokenLimit ||
+      geminiData.costAmount !== initialGeminiData.costAmount ||
+      geminiData.tokenUnit !== initialGeminiData.tokenUnit
     );
   };
 
@@ -98,6 +112,8 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
       documentAIData.maxPages !== initialDocumentAIData.maxPages ||
       documentAIData.maxSizeMB !== initialDocumentAIData.maxSizeMB ||
       documentAIData.monthlyPageLimit !== initialDocumentAIData.monthlyPageLimit ||
+      documentAIData.costAmount !== initialDocumentAIData.costAmount ||
+      documentAIData.pageUnit !== initialDocumentAIData.pageUnit ||
       documentAIData.enabled !== initialDocumentAIData.enabled
     );
   };
@@ -163,6 +179,8 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
             geminiApiKey: geminiData.apiKey,
             geminiModel: geminiData.model,
             geminiMonthlyTokenLimit: geminiData.monthlyTokenLimit,
+            geminiCostAmount: geminiData.costAmount,
+            geminiTokenUnit: geminiData.tokenUnit,
           },
         }),
       });
@@ -178,6 +196,8 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
         apiKey: geminiData.apiKey,
         model: geminiData.model,
         monthlyTokenLimit: geminiData.monthlyTokenLimit,
+        costAmount: geminiData.costAmount,
+        tokenUnit: geminiData.tokenUnit,
       });
       setGeminiData({ ...geminiData, tested: false });
     } catch (error) {
@@ -267,6 +287,8 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
         maxPages: documentAIData.maxPages,
         maxSizeMB: documentAIData.maxSizeMB,
         monthlyPageLimit: documentAIData.monthlyPageLimit,
+        costAmount: documentAIData.costAmount,
+        pageUnit: documentAIData.pageUnit,
         enabled: documentAIData.enabled,
       });
       setDocumentAIData({ ...documentAIData, tested: false });
@@ -350,6 +372,48 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
               Maximale Anzahl Tokens pro Monat (Kostenkontrolle)
             </p>
           </div>
+
+          {/* Pricing Section */}
+          <div className="pt-4 border-t">
+            <h4 className="text-sm font-semibold mb-3">Preisberechnung</h4>
+            <p className="text-xs text-muted-foreground mb-4">
+              Geben Sie die Kosten pro Token-Einheit an für die Kostenberechnung
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="gemini-cost-amount">Kosten ($)</Label>
+                <Input
+                  id="gemini-cost-amount"
+                  type="number"
+                  step="0.01"
+                  value={geminiData.costAmount}
+                  onChange={(e) => {
+                    setGeminiData({ ...geminiData, costAmount: e.target.value });
+                  }}
+                  placeholder="0.35"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Preis in Dollar
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="gemini-token-unit">pro X Tokens</Label>
+                <Input
+                  id="gemini-token-unit"
+                  type="number"
+                  value={geminiData.tokenUnit}
+                  onChange={(e) => {
+                    setGeminiData({ ...geminiData, tokenUnit: e.target.value });
+                  }}
+                  placeholder="1000000"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Token-Einheit (z.B. 1000000 für 1M)
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="flex gap-2">
             <Button onClick={testGemini} variant="outline" disabled={isTestingGemini || isSavingGemini}>
               <FontAwesomeIcon icon={isTestingGemini ? faSpinner : faCheckCircle} className={`mr-2 ${isTestingGemini ? 'animate-spin' : ''}`} />
@@ -468,6 +532,47 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
               <p className="text-xs text-muted-foreground mt-1">
                 Maximale Anzahl Seiten pro Monat (Kostenkontrolle). Standard: 5000 Seiten
               </p>
+            </div>
+          </div>
+
+          {/* Pricing Section */}
+          <div className="pt-4 border-t">
+            <h4 className="text-sm font-semibold mb-3">Preisberechnung</h4>
+            <p className="text-xs text-muted-foreground mb-4">
+              Geben Sie die Kosten pro Seiten-Einheit an für die Kostenberechnung
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="doc-ai-cost-amount">Kosten ($)</Label>
+                <Input
+                  id="doc-ai-cost-amount"
+                  type="number"
+                  step="0.01"
+                  value={documentAIData.costAmount}
+                  onChange={(e) => {
+                    setDocumentAIData({ ...documentAIData, costAmount: e.target.value });
+                  }}
+                  placeholder="1.50"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Preis in Dollar
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="doc-ai-page-unit">pro X Seiten</Label>
+                <Input
+                  id="doc-ai-page-unit"
+                  type="number"
+                  value={documentAIData.pageUnit}
+                  onChange={(e) => {
+                    setDocumentAIData({ ...documentAIData, pageUnit: e.target.value });
+                  }}
+                  placeholder="1000"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Seiten-Einheit (z.B. 1000 für pro 1000 Seiten)
+                </p>
+              </div>
             </div>
           </div>
 

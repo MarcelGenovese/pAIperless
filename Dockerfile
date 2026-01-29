@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     tesseract-ocr-eng \
     python3 \
     python3-pip \
+    python3-venv \
     procps \
     openssl \
     gosu \
@@ -18,7 +19,15 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     gnupg \
     lsb-release \
+    unpaper \
+    pngquant \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Python packages for OCR layer embedding
+RUN pip3 install --no-cache-dir --break-system-packages \
+    ocrmypdf \
+    pypdf \
+    reportlab
 
 # Install Docker CLI
 RUN install -m 0755 -d /etc/apt/keyrings && \
@@ -86,7 +95,7 @@ COPY --from=builder /app/prisma ./prisma
 
 # Copy management scripts
 COPY --from=builder /app/scripts ./scripts
-RUN chmod +x /app/scripts/cli.js /app/scripts/cleanup-logs.js /app/scripts/init-config-defaults.js
+RUN chmod +x /app/scripts/cli.js /app/scripts/cleanup-logs.js /app/scripts/init-config-defaults.js /app/scripts/embed-ocr-layer.py
 
 # Create storage directories with proper permissions
 RUN mkdir -p /app/storage/consume /app/storage/processing /app/storage/error \

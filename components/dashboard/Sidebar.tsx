@@ -11,6 +11,7 @@ import {
   faSlidersH,
   faTerminal,
   faInfoCircle,
+  faBrain,
 } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -31,6 +32,7 @@ const mainNavItems: NavItem[] = [
   { id: 'overview', label: 'Übersicht', icon: faHome },
   { id: 'documents', label: 'Dokumente', icon: faFileAlt },
   { id: 'logs', label: 'Live Logs', icon: faTerminal },
+  { id: 'analyze', label: 'Analyze', icon: faBrain },
 ];
 
 const settingsNavItems: NavItem[] = [

@@ -15,6 +15,7 @@ import {
   faSpinner,
 } from '@fortawesome/free-solid-svg-icons';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function AdvancedSettingsTab() {
   const router = useRouter();
@@ -23,6 +24,11 @@ export default function AdvancedSettingsTab() {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isResettingSetup, setIsResettingSetup] = useState(false);
 
+  // Language State
+  const [currentLanguage, setCurrentLanguage] = useState('de');
+  const [isLoadingLanguage, setIsLoadingLanguage] = useState(true);
+  const [isSavingLanguage, setIsSavingLanguage] = useState(false);
+
   // Prompt Template State
   const [promptTemplate, setPromptTemplate] = useState('');
   const [initialPromptTemplate, setInitialPromptTemplate] = useState('');
@@ -30,11 +36,65 @@ export default function AdvancedSettingsTab() {
   const [isSavingPrompt, setIsSavingPrompt] = useState(false);
   const [isRestoringDefault, setIsRestoringDefault] = useState(false);
 
-  // Load prompt template on mount
+  // Load language and prompt template on mount
   useEffect(() => {
+    loadLanguage();
     loadPromptTemplate();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const loadLanguage = async () => {
+    setIsLoadingLanguage(true);
+    try {
+      const response = await fetch('/api/setup/load-config?step=0');
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentLanguage(data.locale || 'de');
+      }
+    } catch (error) {
+      console.error('Failed to load language:', error);
+    } finally {
+      setIsLoadingLanguage(false);
+    }
+  };
+
+  const handleLanguageChange = async (language: string) => {
+    setIsSavingLanguage(true);
+    try {
+      const response = await fetch('/api/setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          step: 0,
+          data: { locale: language }
+        }),
+      });
+
+      if (response.ok) {
+        setCurrentLanguage(language);
+        toast({
+          title: 'Sprache gespeichert',
+          description: 'Die Seite wird neu geladen...',
+          variant: 'success',
+        });
+
+        // Reload page after short delay to apply new language
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } else {
+        throw new Error('Failed to save language');
+      }
+    } catch (error) {
+      toast({
+        title: 'Fehler',
+        description: 'Konnte Sprache nicht speichern',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSavingLanguage(false);
+    }
+  };
 
   const loadPromptTemplate = async () => {
     setIsLoadingPrompt(true);
@@ -194,6 +254,38 @@ export default function AdvancedSettingsTab() {
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Language Selector */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Sprache</CardTitle>
+          <CardDescription>Ändern Sie die Anzeigesprache der Anwendung</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <Label htmlFor="language-select">Sprache auswählen</Label>
+            <Select
+              value={currentLanguage}
+              onValueChange={handleLanguageChange}
+              disabled={isLoadingLanguage || isSavingLanguage}
+            >
+              <SelectTrigger id="language-select" className="w-[280px]">
+                <SelectValue placeholder="Sprache wählen..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="de">Deutsch</SelectItem>
+                <SelectItem value="en">English</SelectItem>
+              </SelectContent>
+            </Select>
+            {isSavingLanguage && (
+              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
+                Speichert und lädt neu...
+              </p>
+            )}
+          </div>
         </CardContent>
       </Card>
 

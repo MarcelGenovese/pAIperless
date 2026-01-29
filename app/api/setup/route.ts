@@ -32,10 +32,38 @@ export async function POST(request: NextRequest) {
         break;
 
       case 2: // Gemini
-        await setConfigSecure(CONFIG_KEYS.GEMINI_API_KEY, data.geminiApiKey);
-        await setConfig(CONFIG_KEYS.GEMINI_MODEL, data.geminiModel);
+        if (data.geminiApiKey !== undefined) {
+          await setConfigSecure(CONFIG_KEYS.GEMINI_API_KEY, data.geminiApiKey);
+        }
+        if (data.geminiModel !== undefined) {
+          await setConfig(CONFIG_KEYS.GEMINI_MODEL, data.geminiModel);
+        }
         if (data.geminiMonthlyTokenLimit !== undefined) {
           await setConfig(CONFIG_KEYS.GEMINI_MONTHLY_TOKEN_LIMIT, data.geminiMonthlyTokenLimit.toString());
+        }
+        if (data.geminiCostAmount !== undefined) {
+          await setConfig(CONFIG_KEYS.GEMINI_COST_AMOUNT, data.geminiCostAmount.toString());
+        }
+        if (data.geminiTokenUnit !== undefined) {
+          await setConfig(CONFIG_KEYS.GEMINI_TOKEN_UNIT, data.geminiTokenUnit.toString());
+        }
+        if (data.geminiPromptTemplate !== undefined) {
+          await setConfig(CONFIG_KEYS.GEMINI_PROMPT_TEMPLATE, data.geminiPromptTemplate);
+        }
+        if (data.geminiTagMode !== undefined) {
+          await setConfig(CONFIG_KEYS.GEMINI_TAG_MODE, data.geminiTagMode);
+        }
+        if (data.geminiMaxTags !== undefined) {
+          await setConfig(CONFIG_KEYS.GEMINI_MAX_TAGS, data.geminiMaxTags.toString());
+        }
+        if (data.geminiStrictCorrespondents !== undefined) {
+          await setConfig(CONFIG_KEYS.GEMINI_STRICT_CORRESPONDENTS, data.geminiStrictCorrespondents);
+        }
+        if (data.geminiStrictDocumentTypes !== undefined) {
+          await setConfig(CONFIG_KEYS.GEMINI_STRICT_DOCUMENT_TYPES, data.geminiStrictDocumentTypes);
+        }
+        if (data.geminiStrictStoragePaths !== undefined) {
+          await setConfig(CONFIG_KEYS.GEMINI_STRICT_STORAGE_PATHS, data.geminiStrictStoragePaths);
         }
         break;
 
@@ -52,6 +80,12 @@ export async function POST(request: NextRequest) {
         }
         if (data.monthlyPageLimit !== undefined) {
           await setConfig(CONFIG_KEYS.DOCUMENT_AI_MONTHLY_PAGE_LIMIT, data.monthlyPageLimit.toString());
+        }
+        if (data.costAmount !== undefined) {
+          await setConfig(CONFIG_KEYS.DOCUMENT_AI_COST_AMOUNT, data.costAmount.toString());
+        }
+        if (data.pageUnit !== undefined) {
+          await setConfig(CONFIG_KEYS.DOCUMENT_AI_PAGE_UNIT, data.pageUnit.toString());
         }
         if (data.enabled !== undefined) {
           await setConfig(CONFIG_KEYS.DOCUMENT_AI_ENABLED, data.enabled);

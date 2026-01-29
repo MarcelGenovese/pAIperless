@@ -1,8 +1,9 @@
 import { DocumentProcessorServiceClient } from '@google-cloud/documentai';
 import type { protos } from '@google-cloud/documentai';
 import { getConfig, getConfigSecure, CONFIG_KEYS } from './config';
-import { PDFDocument } from 'pdf-lib';
 import { readFileSync, writeFileSync } from 'fs';
+import { execSync } from 'child_process';
+import { join } from 'path';
 import { createLogger } from './logger';
 
 const logger = createLogger('DocumentAI');
@@ -77,7 +78,7 @@ export async function processWithDocumentAI(filePath: string): Promise<Document>
 
 /**
  * Create searchable PDF from Document AI result
- * Embeds OCR text layer into PDF pages
+ * Uses Python script to embed OCR text layer with proper PDF Render Mode 3
  */
 export async function createSearchablePDF(
   inputPath: string,
@@ -85,76 +86,58 @@ export async function createSearchablePDF(
   outputPath: string
 ): Promise<void> {
   try {
-    await logger.info('Creating searchable PDF...');
+    await logger.info('Creating searchable PDF with proper OCR layer...');
 
-    // Load the input PDF
-    const pdfBytes = readFileSync(inputPath);
-    const pdfDoc = await PDFDocument.load(pdfBytes);
-    const pages = pdfDoc.getPages();
+    // Save Document AI result as JSON for Python script
+    const tempJsonPath = inputPath + '.docai.json';
 
-    const fullText = docAIResult.text || '';
-    const docAIPages = docAIResult.pages || [];
+    // Convert Document AI result to serializable JSON
+    const serializedResult = JSON.parse(JSON.stringify(docAIResult));
+    writeFileSync(tempJsonPath, JSON.stringify(serializedResult, null, 2));
 
-    await logger.info(`Processing ${pages.length} pages with ${docAIPages.length} OCR pages`);
+    await logger.info(`Document AI data saved to: ${tempJsonPath}`);
 
-    // For each page, add invisible text layer at token positions
-    for (let pageIdx = 0; pageIdx < Math.min(pages.length, docAIPages.length); pageIdx++) {
-      const page = pages[pageIdx];
-      const docAIPage = docAIPages[pageIdx];
-      const { width: pageWidth, height: pageHeight } = page.getSize();
+    // Determine script path
+    const scriptPath = process.env.NODE_ENV === 'production'
+      ? '/app/scripts/embed-ocr-layer.py'
+      : join(process.cwd(), 'scripts', 'embed-ocr-layer.py');
 
-      if (!docAIPage.tokens) continue;
+    // Call Python script to embed OCR layer
+    await logger.info(`Running OCR embedding script: ${scriptPath}`);
 
-      let tokensAdded = 0;
-
-      // Add each token as invisible text at its position
-      for (const token of docAIPage.tokens) {
-        try {
-          if (!token.layout?.textAnchor?.textSegments?.[0]) continue;
-
-          const segment = token.layout.textAnchor.textSegments[0];
-          const startIndex = parseInt(segment.startIndex?.toString() || '0');
-          const endIndex = parseInt(segment.endIndex?.toString() || '0');
-          const tokenText = fullText.substring(startIndex, endIndex).replace(/\n/g, '').trim();
-
-          if (!tokenText) continue;
-
-          const vertices = token.layout.boundingPoly?.normalizedVertices;
-          if (!vertices || vertices.length < 3) continue;
-
-          // Calculate bounding box
-          const x = (vertices[0].x || 0) * pageWidth;
-          const y = pageHeight - (vertices[0].y || 0) * pageHeight; // Flip Y coordinate
-          const width = ((vertices[2].x || 0) - (vertices[0].x || 0)) * pageWidth;
-          const height = ((vertices[2].y || 0) - (vertices[0].y || 0)) * pageHeight;
-
-          // Add invisible text at token position
-          // Note: pdf-lib doesn't support render mode 3 (invisible text) directly
-          // We'll add very small, transparent text instead
-          const fontSize = Math.max(1, height * 0.75);
-
-          page.drawText(tokenText, {
-            x,
-            y: y - height,
-            size: fontSize,
-            opacity: 0, // Make text invisible
-          });
-
-          tokensAdded++;
-        } catch (err) {
-          // Skip token on error
-          continue;
+    try {
+      const output = execSync(
+        `python3 "${scriptPath}" "${inputPath}" "${tempJsonPath}" "${outputPath}"`,
+        {
+          encoding: 'utf-8',
+          maxBuffer: 10 * 1024 * 1024, // 10MB buffer
         }
-      }
+      );
 
-      await logger.debug(`Page ${pageIdx + 1}: Added ${tokensAdded} text tokens`);
+      await logger.info(`Python script output: ${output.trim()}`);
+    } catch (execError: any) {
+      // Log stderr if available
+      if (execError.stderr) {
+        await logger.error(`Python script stderr: ${execError.stderr}`);
+      }
+      if (execError.stdout) {
+        await logger.info(`Python script stdout: ${execError.stdout}`);
+      }
+      throw new Error(`OCR embedding script failed: ${execError.message}`);
     }
 
-    // Save the PDF with embedded OCR
-    const outputBytes = await pdfDoc.save();
-    writeFileSync(outputPath, outputBytes);
+    // Clean up temporary JSON file
+    try {
+      const fs = await import('fs').then(m => m.promises);
+      await fs.unlink(tempJsonPath);
+    } catch (cleanupError) {
+      await logger.warn('Failed to clean up temporary JSON file', cleanupError);
+    }
 
-    await logger.info(`Searchable PDF created: ${outputPath} (${(outputBytes.length / 1024 / 1024).toFixed(2)} MB)`);
+    // Verify output was created
+    const fs = await import('fs').then(m => m.promises);
+    const stats = await fs.stat(outputPath);
+    await logger.info(`Searchable PDF created: ${outputPath} (${(stats.size / 1024 / 1024).toFixed(2)} MB)`);
   } catch (error: any) {
     await logger.error('Failed to create searchable PDF', error);
     throw error;

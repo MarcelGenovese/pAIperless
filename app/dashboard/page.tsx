@@ -11,6 +11,7 @@ import Sidebar from '@/components/dashboard/Sidebar';
 import OverviewTab from '@/components/dashboard/OverviewTab';
 import DocumentsTab from '@/components/dashboard/DocumentsTab';
 import LogsTab from '@/components/dashboard/LogsTab';
+import AnalyzeTab from '@/components/dashboard/AnalyzeTab';
 import PaperlessSettingsTab from '@/components/dashboard/PaperlessSettingsTab';
 import GoogleSettingsTab from '@/components/dashboard/GoogleSettingsTab';
 import FTPSettingsCard from '@/components/dashboard/FTPSettingsCard';
@@ -100,6 +101,8 @@ export default function DashboardPage() {
         return <DocumentsTab />;
       case 'logs':
         return <LogsTab />;
+      case 'analyze':
+        return <AnalyzeTab />;
       case 'paperless':
         return <PaperlessSettingsTab initialData={settingsData} />;
       case 'google':
@@ -116,9 +119,9 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-900 shadow-sm border-b sticky top-0 z-10">
+    <div className="h-screen bg-gray-50 dark:bg-gray-950 flex flex-col overflow-hidden">
+      {/* Header - Fixed */}
+      <header className="bg-white dark:bg-gray-900 shadow-sm border-b z-10 shrink-0">
         <div className="px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -158,10 +161,10 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* Main Layout */}
-      <div className="flex flex-1 overflow-hidden">
+      {/* Main Layout - Takes remaining height */}
+      <div className="flex flex-1 overflow-hidden min-h-0">
         {/* Sidebar - Desktop */}
-        <aside className="hidden lg:block w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 overflow-y-auto">
+        <aside className="hidden lg:block w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 overflow-y-auto shrink-0">
           <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
         </aside>
 
@@ -193,16 +196,16 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto pb-24">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        {/* Main Content - Scrollable area */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 w-full">
             {renderTabContent()}
           </div>
         </main>
       </div>
 
       {/* Fixed Footer */}
-      <div className="fixed bottom-0 left-0 right-0 z-40">
+      <div className="fixed bottom-0 left-0 right-0 z-40 lg:left-64">
         <Footer />
       </div>
 

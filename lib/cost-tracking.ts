@@ -251,6 +251,24 @@ export async function updateActualGeminiTokens(documentId: number, actualSent: n
 export async function getMonthlyUsage() {
   const tracking = await getCurrentMonthTracking();
 
+  // Load pricing configuration
+  const docAICostAmount = parseFloat(await getConfig(CONFIG_KEYS.DOCUMENT_AI_COST_AMOUNT) || '1.50');
+  const docAIPageUnit = parseInt(await getConfig(CONFIG_KEYS.DOCUMENT_AI_PAGE_UNIT) || '1000', 10);
+  const geminiCostAmount = parseFloat(await getConfig(CONFIG_KEYS.GEMINI_COST_AMOUNT) || '0.35');
+  const geminiTokenUnit = parseInt(await getConfig(CONFIG_KEYS.GEMINI_TOKEN_UNIT) || '1000000', 10);
+
+  // Calculate actual costs based on usage and pricing
+  const docAICost = (tracking.documentAIPages / docAIPageUnit) * docAICostAmount;
+  const geminiTotalTokens = tracking.geminiTokensSent + tracking.geminiTokensReceived;
+  const geminiCost = (geminiTotalTokens / geminiTokenUnit) * geminiCostAmount;
+  const totalCost = docAICost + geminiCost;
+
+  // Update the tracking record with calculated cost
+  await prisma.costTracking.update({
+    where: { id: tracking.id },
+    data: { estimatedCost: totalCost }
+  });
+
   return {
     month: tracking.month,
     documentAI: {
@@ -261,10 +279,10 @@ export async function getMonthlyUsage() {
     gemini: {
       tokensSent: tracking.geminiTokensSent,
       tokensReceived: tracking.geminiTokensReceived,
-      totalTokens: tracking.geminiTokensSent + tracking.geminiTokensReceived,
+      totalTokens: geminiTotalTokens,
       limit: tracking.geminiTokensLimit,
-      percentage: Math.round(((tracking.geminiTokensSent + tracking.geminiTokensReceived) / tracking.geminiTokensLimit) * 100)
+      percentage: Math.round((geminiTotalTokens / tracking.geminiTokensLimit) * 100)
     },
-    estimatedCost: tracking.estimatedCost
+    estimatedCost: totalCost
   };
 }

@@ -5,8 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTerminal, faTrash, faPause, faPlay, faDownload, faBroom } from '@fortawesome/free-solid-svg-icons';
+import { faTerminal, faTrash, faPause, faPlay, faDownload, faBroom, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
@@ -22,18 +24,10 @@ export default function LogsTab() {
   const [paused, setPaused] = useState(false);
   const [autoScroll, setAutoScroll] = useState(true);
   const [cleaningUp, setCleaningUp] = useState(false);
-  const [filters, setFilters] = useState({
-    upload: true,
-    ftp: true,
-    email: true,
-    system: true,
-    worker: true,
-    middleware: true,
-    framework: true,
-    paperless: true,
-    oauth: true,
-  });
+  const [searchText, setSearchText] = useState('');
+  const [searchMode, setSearchMode] = useState<'AND' | 'OR'>('OR');
   const logsEndRef = useRef<HTMLDivElement>(null);
+  const logsContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   const fetchDockerLogs = async () => {
@@ -123,8 +117,8 @@ export default function LogsTab() {
   }, [paused]);
 
   useEffect(() => {
-    if (autoScroll && logsEndRef.current) {
-      logsEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (autoScroll && logsContainerRef.current) {
+      logsContainerRef.current.scrollTop = logsContainerRef.current.scrollHeight;
     }
   }, [logs, autoScroll]);
 
@@ -216,17 +210,22 @@ export default function LogsTab() {
   };
 
   const filteredLogs = logs.filter((log) => {
-    const source = log.source.toLowerCase();
-    if (source.includes('upload') && !filters.upload) return false;
-    if (source.includes('ftp') && !filters.ftp) return false;
-    if (source.includes('email') && !filters.email) return false;
-    if (source.includes('worker') && !filters.worker) return false;
-    if (source.includes('middleware') && !filters.middleware) return false;
-    if (source.includes('paperless') && !filters.paperless) return false;
-    if (source.includes('oauth') && !filters.oauth) return false;
-    if (source.includes('framework') && !filters.framework) return false;
-    if (source.includes('system') && !filters.system) return false;
-    return true;
+    // If no search text, show all logs
+    if (!searchText.trim()) {
+      return true;
+    }
+
+    // Split search text into individual terms
+    const searchTerms = searchText.toLowerCase().trim().split(/\s+/);
+    const logText = `${log.message} ${log.source} ${log.level}`.toLowerCase();
+
+    if (searchMode === 'AND') {
+      // All terms must match
+      return searchTerms.every(term => logText.includes(term));
+    } else {
+      // At least one term must match
+      return searchTerms.some(term => logText.includes(term));
+    }
   });
 
   return (
@@ -306,26 +305,37 @@ export default function LogsTab() {
             </span>
           </div>
 
-          {/* Filters */}
-          <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t">
-            <Label className="text-sm font-semibold">Filter:</Label>
-            {Object.entries(filters).map(([key, value]) => (
-              <div key={key} className="flex items-center gap-2">
-                <Switch
-                  id={`filter-${key}`}
-                  checked={value}
-                  onCheckedChange={(checked) =>
-                    setFilters({ ...filters, [key]: checked })
-                  }
+          {/* Search Filter */}
+          <div className="mt-4 pt-4 border-t">
+            <Label className="text-sm font-semibold mb-2 block">
+              <FontAwesomeIcon icon={faSearch} className="mr-2" />
+              Text-Filter
+            </Label>
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <Input
+                  type="text"
+                  placeholder="Suchbegriffe eingeben (durch Leerzeichen getrennt)..."
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  className="w-full"
                 />
-                <Label
-                  htmlFor={`filter-${key}`}
-                  className="cursor-pointer capitalize"
-                >
-                  {key}
-                </Label>
               </div>
-            ))}
+              <Select value={searchMode} onValueChange={(value: 'AND' | 'OR') => setSearchMode(value)}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="OR">ODER</SelectItem>
+                  <SelectItem value="AND">UND</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              {searchMode === 'OR'
+                ? 'Zeigt Logs, die mindestens einen der Suchbegriffe enthalten'
+                : 'Zeigt Logs, die alle Suchbegriffe enthalten'}
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -334,6 +344,7 @@ export default function LogsTab() {
       <Card>
         <CardContent className="p-0">
           <div
+            ref={logsContainerRef}
             className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono text-xs h-[600px] overflow-y-auto p-4 space-y-1 border-t"
             style={{ fontFamily: 'ui-monospace, monospace' }}
           >
