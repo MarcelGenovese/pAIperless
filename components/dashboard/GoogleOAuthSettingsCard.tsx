@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faExternalLinkAlt, faCalendar, faListUl, faEye, faEyeSlash, faSpinner, faSave } from '@fortawesome/free-solid-svg-icons';
+import { faCheckCircle, faExternalLinkAlt, faCalendar, faListUl, faEye, faEyeSlash, faSpinner, faSave, faRotate } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
 
 interface GoogleOAuthSettingsCardProps {
@@ -354,7 +354,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
           </>
         )}
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           {isAuthorized && (
             <>
               <Button onClick={loadResources} variant="outline" disabled={isLoadingResources}>
@@ -368,6 +368,15 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
               >
                 <FontAwesomeIcon icon={isTesting ? faSpinner : faCheckCircle} className={`mr-2 ${isTesting ? 'animate-spin' : ''}`} />
                 {isTesting ? 'Teste...' : 'Test-Eintrag erstellen'}
+              </Button>
+              <Button
+                onClick={handleAuthorize}
+                variant="outline"
+                className="border-[#27417A] text-[#27417A] hover:bg-[#F0F7FF]"
+                disabled={!oauthData.clientId || !oauthData.clientSecret}
+              >
+                <FontAwesomeIcon icon={faRotate} className="mr-2" />
+                Neu autorisieren
               </Button>
             </>
           )}
