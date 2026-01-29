@@ -4,9 +4,13 @@ AI-powered extension for Paperless-NGX that adds intelligent document processing
 
 ## Features
 
-🤖 **Automated OCR** - Google Document AI for high-quality text extraction
-🏷️ **Smart Tagging** - Gemini LLM analyzes documents and extracts metadata automatically
-📅 **Action Tracking** - Creates Google Calendar events and Tasks for documents requiring user action
+✅ **Document Upload** - Web interface with drag & drop + duplicate detection
+✅ **Worker Pipeline** - Automated processing from consume folder to Paperless
+✅ **Live Dashboard** - Real-time monitoring of document processing pipeline
+✅ **FTP Server** - Upload documents via FTP (optional)
+🚧 **Automated OCR** - Google Document AI integration (planned)
+🚧 **Smart Tagging** - Gemini LLM for metadata extraction (planned)
+🚧 **Action Tracking** - Google Calendar/Tasks integration (planned)
 🔄 **Seamless Integration** - Works with your existing Paperless-NGX instance
 🐳 **Single Container** - Everything runs in one Docker container
 
@@ -58,14 +62,23 @@ AI-powered extension for Paperless-NGX that adds intelligent document processing
 
 ### Document Processing
 
-Drop PDF files into the `./consume` folder or upload via FTP (planned feature). The system will:
+Upload PDFs via web interface or drop into `./consume` folder (or via FTP). The system:
 
-1. Pre-process the document (rotation detection, OCR stripping)
-2. Perform OCR using Google Document AI
-3. Upload to Paperless-NGX with `ai_todo` tag
-4. Analyze with Gemini to extract tags, metadata, and detect required actions
-5. Update Paperless document with extracted information
-6. Create Calendar events and Tasks if action is required
+**✅ Stage 1 - Implemented:**
+1. **Duplicate Detection** - SHA-256 hash check prevents reprocessing
+2. **File Monitoring** - Worker watches consume folder with chokidar
+3. **Processing Pipeline** - Moves files: consume → processing → Paperless
+4. **Live Dashboard** - Real-time view of pipeline status (3 cards)
+
+**🚧 Stage 2 - Planned:**
+5. Pre-process the document (rotation detection, OCR stripping)
+6. Perform OCR using Google Document AI
+7. Analyze with Gemini to extract tags, metadata, and detect actions
+8. Update Paperless document with extracted information
+
+**🚧 Stage 3 - Planned:**
+9. Create Calendar events and Tasks if action is required
+10. Track task completion and update Paperless accordingly
 
 ## Development
 
@@ -211,8 +224,13 @@ Contributions are welcome! Please read the development guide in CLAUDE.md for ar
 
 ## Support
 
-For issues and questions, please use the GitHub issue tracker.
+- **GitHub Issues:** [Report bugs and feature requests](https://github.com/MarcelGenovese/pAIperless/issues)
+- **Email:** info@paiperless.de
+- **Donate:** [PayPal](https://paypal.me/mg3n0)
 
 ---
 
+**Version:** v0.2.0
 **Built with:** Next.js 15, TypeScript, Tailwind CSS, Prisma, Google Cloud AI
+**Author:** Marcel Genovese
+**License:** MIT

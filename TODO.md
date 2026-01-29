@@ -206,19 +206,52 @@ docker exec paiperless node scripts/cli.js <command> [args]
 
 ## Completed ✅
 
+### Core Infrastructure
 - ✅ Setup Wizard (Steps 1-9)
 - ✅ Paperless-NGX Integration und Validation
 - ✅ Gemini API Konfiguration
 - ✅ Google Cloud Document AI Konfiguration und Testing
 - ✅ Google OAuth Flow für Calendar/Tasks
 - ✅ Database Schema (Prisma + SQLite)
-- ✅ Basic Worker mit Filesystem Watcher
 - ✅ Login via Paperless-NGX Credentials
-- ✅ Dashboard Grundgerüst
-- ✅ Settings Seite mit Setup-Reset
 - ✅ Middleware für Setup/Auth-Routing
 - ✅ OAuth Credentials Persistence und Reload
 - ✅ UI Components (Switch, Button, Input, etc.)
+
+### Worker Pipeline (v0.2.0)
+- ✅ Worker Implementation with chokidar file watching
+- ✅ Service Manager Integration (Start/Stop/Restart)
+- ✅ File Processing Pipeline (consume → processing → Paperless)
+- ✅ SHA-256 Hash Calculation für Duplicate Detection
+- ✅ Database Tracking mit Status Updates
+- ✅ Error Handling (Move to error folder)
+- ✅ Development Mode Support (test-consume)
+
+### Upload & Dashboard (v0.2.0)
+- ✅ Document Upload (Web Interface, Drag & Drop)
+- ✅ Duplicate Detection in Upload API (before disk write)
+- ✅ Dashboard Redesign mit Tabbed Interface
+- ✅ Live Pipeline Monitoring (3 Kacheln: Consume, Processing, Error)
+- ✅ Document History mit Database Records
+- ✅ Auto-Refresh (5s für Folders, 10s für Documents)
+- ✅ Live Log Streaming via SSE
+- ✅ Settings Management (All Setup Steps editable)
+
+### Services & Management (v0.2.0)
+- ✅ FTP Server Implementation (ftp-srv)
+- ✅ Email Configuration (SMTP)
+- ✅ Service Manager (FTP + Worker Control)
+- ✅ Management CLI (scripts/manage.sh)
+- ✅ Container-External Configuration Management
+- ✅ Audit Logging für kritische Operationen
+
+### UI/UX (v0.2.0)
+- ✅ Footer mit Copyright, Author, Links
+- ✅ About Page mit Version Display
+- ✅ Landing Page (paperless.de) - Separate Deployment
+- ✅ Email Update: info@paiperless.de
+- ✅ FontAwesome Icons Integration
+- ✅ Responsive Design (Mobile, Tablet, Desktop)
 
 ---
 
