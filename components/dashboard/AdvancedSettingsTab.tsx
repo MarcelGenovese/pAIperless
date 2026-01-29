@@ -16,6 +16,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 
 export default function AdvancedSettingsTab() {
   const router = useRouter();
@@ -29,6 +30,11 @@ export default function AdvancedSettingsTab() {
   const [isLoadingLanguage, setIsLoadingLanguage] = useState(true);
   const [isSavingLanguage, setIsSavingLanguage] = useState(false);
 
+  // Dark Mode State
+  const [darkMode, setDarkMode] = useState(false);
+  const [isLoadingDarkMode, setIsLoadingDarkMode] = useState(true);
+  const [isSavingDarkMode, setIsSavingDarkMode] = useState(false);
+
   // Prompt Template State
   const [promptTemplate, setPromptTemplate] = useState('');
   const [initialPromptTemplate, setInitialPromptTemplate] = useState('');
@@ -36,9 +42,10 @@ export default function AdvancedSettingsTab() {
   const [isSavingPrompt, setIsSavingPrompt] = useState(false);
   const [isRestoringDefault, setIsRestoringDefault] = useState(false);
 
-  // Load language and prompt template on mount
+  // Load language, dark mode and prompt template on mount
   useEffect(() => {
     loadLanguage();
+    loadDarkMode();
     loadPromptTemplate();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -93,6 +100,67 @@ export default function AdvancedSettingsTab() {
       });
     } finally {
       setIsSavingLanguage(false);
+    }
+  };
+
+  const loadDarkMode = async () => {
+    setIsLoadingDarkMode(true);
+    try {
+      const response = await fetch('/api/setup/load-config?step=0');
+      if (response.ok) {
+        const data = await response.json();
+        const isDark = data.darkMode === 'true';
+        setDarkMode(isDark);
+        // Apply dark mode class to document
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load dark mode:', error);
+    } finally {
+      setIsLoadingDarkMode(false);
+    }
+  };
+
+  const handleDarkModeChange = async (checked: boolean) => {
+    setIsSavingDarkMode(true);
+    try {
+      const response = await fetch('/api/setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          step: 0,
+          data: { darkMode: checked ? 'true' : 'false' }
+        }),
+      });
+
+      if (response.ok) {
+        setDarkMode(checked);
+        // Apply dark mode class to document
+        if (checked) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+        toast({
+          title: 'Design gespeichert',
+          description: checked ? 'Dark Mode aktiviert' : 'Light Mode aktiviert',
+          variant: 'success',
+        });
+      } else {
+        throw new Error('Failed to save dark mode');
+      }
+    } catch (error) {
+      toast({
+        title: 'Fehler',
+        description: 'Konnte Design nicht speichern',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSavingDarkMode(false);
     }
   };
 
@@ -286,6 +354,36 @@ export default function AdvancedSettingsTab() {
               </p>
             )}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Dark Mode */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Design</CardTitle>
+          <CardDescription>Wählen Sie zwischen hellem und dunklem Design</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="dark-mode-switch">Dark Mode</Label>
+              <p className="text-sm text-muted-foreground">
+                Aktivieren Sie das dunkle Design
+              </p>
+            </div>
+            <Switch
+              id="dark-mode-switch"
+              checked={darkMode}
+              onCheckedChange={handleDarkModeChange}
+              disabled={isLoadingDarkMode || isSavingDarkMode}
+            />
+          </div>
+          {isSavingDarkMode && (
+            <p className="text-sm text-muted-foreground flex items-center gap-2 mt-3">
+              <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
+              Speichert...
+            </p>
+          )}
         </CardContent>
       </Card>
 

@@ -7,9 +7,16 @@ export async function POST(request: NextRequest) {
     const { step, data } = await request.json();
 
     switch (step) {
-      case 0: // Welcome Screen
-        await setConfig(CONFIG_KEYS.SETUP_LOCALE, data.locale || 'en');
-        await setConfig(CONFIG_KEYS.BASE_URL, data.baseUrl);
+      case 0: // Welcome Screen / General Settings
+        if (data.locale !== undefined) {
+          await setConfig(CONFIG_KEYS.SETUP_LOCALE, data.locale || 'en');
+        }
+        if (data.baseUrl !== undefined) {
+          await setConfig(CONFIG_KEYS.BASE_URL, data.baseUrl);
+        }
+        if (data.darkMode !== undefined) {
+          await setConfig(CONFIG_KEYS.DARK_MODE, data.darkMode);
+        }
         break;
 
       case 1: // Paperless

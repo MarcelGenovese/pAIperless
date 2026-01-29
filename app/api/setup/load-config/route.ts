@@ -18,6 +18,11 @@ export async function GET(request: NextRequest) {
     const data: Record<string, any> = {};
 
     switch (parseInt(step, 10)) {
+      case 0: // General Settings
+        data.locale = await getConfig(CONFIG_KEYS.SETUP_LOCALE) || 'de';
+        data.darkMode = await getConfig(CONFIG_KEYS.DARK_MODE) || 'false';
+        break;
+
       case 1: // Paperless
         data.paperlessUrl = await getConfig(CONFIG_KEYS.PAPERLESS_URL) || '';
         data.paperlessToken = await getConfigSecure(CONFIG_KEYS.PAPERLESS_TOKEN) || '';

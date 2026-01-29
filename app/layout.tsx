@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { NextIntlClientProvider } from 'next-intl';
-import { getLocale } from '@/lib/config';
+import { getLocale, getConfig, CONFIG_KEYS } from '@/lib/config';
 import SessionProvider from '@/components/SessionProvider';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -19,12 +19,14 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const locale = await getLocale();
+  const darkMode = await getConfig(CONFIG_KEYS.DARK_MODE);
+  const isDark = darkMode === 'true';
 
   // Load messages dynamically
   const messages = (await import(`@/messages/${locale}.json`)).default;
 
   return (
-    <html lang={locale}>
+    <html lang={locale} className={isDark ? 'dark' : ''}>
       <body className={inter.className}>
         <SessionProvider>
           <NextIntlClientProvider locale={locale} messages={messages}>
