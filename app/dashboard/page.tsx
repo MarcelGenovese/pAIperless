@@ -194,12 +194,16 @@ export default function DashboardPage() {
         )}
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto flex flex-col">
-          <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        <main className="flex-1 overflow-y-auto pb-24">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
             {renderTabContent()}
           </div>
-          <Footer />
         </main>
+      </div>
+
+      {/* Fixed Footer */}
+      <div className="fixed bottom-0 left-0 right-0 z-40">
+        <Footer />
       </div>
 
       {/* System Check Modal */}
