@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,11 @@ import {
   faRedo,
   faExclamationTriangle,
   faInfoCircle,
+  faSave,
+  faRotateLeft,
+  faSpinner,
 } from '@fortawesome/free-solid-svg-icons';
+import { Label } from '@/components/ui/label';
 
 export default function AdvancedSettingsTab() {
   const router = useRouter();
@@ -18,6 +22,93 @@ export default function AdvancedSettingsTab() {
 
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isResettingSetup, setIsResettingSetup] = useState(false);
+
+  // Prompt Template State
+  const [promptTemplate, setPromptTemplate] = useState('');
+  const [initialPromptTemplate, setInitialPromptTemplate] = useState('');
+  const [isLoadingPrompt, setIsLoadingPrompt] = useState(true);
+  const [isSavingPrompt, setIsSavingPrompt] = useState(false);
+  const [isRestoringDefault, setIsRestoringDefault] = useState(false);
+
+  // Load prompt template on mount
+  useEffect(() => {
+    loadPromptTemplate();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const loadPromptTemplate = async () => {
+    setIsLoadingPrompt(true);
+    try {
+      const response = await fetch('/api/config/prompt-template');
+      if (response.ok) {
+        const data = await response.json();
+        setPromptTemplate(data.template || '');
+        setInitialPromptTemplate(data.template || '');
+      }
+    } catch (error) {
+      console.error('Failed to load prompt template:', error);
+    } finally {
+      setIsLoadingPrompt(false);
+    }
+  };
+
+  const loadDefaultPrompt = async () => {
+    setIsRestoringDefault(true);
+    try {
+      const response = await fetch('/api/config/prompt-template/default');
+      if (response.ok) {
+        const data = await response.json();
+        setPromptTemplate(data.template || '');
+        toast({
+          title: 'Standard geladen',
+          description: 'Der Standard-Prompt wurde geladen',
+          variant: 'success',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Fehler',
+        description: 'Konnte Standard-Prompt nicht laden',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsRestoringDefault(false);
+    }
+  };
+
+  const savePromptTemplate = async () => {
+    setIsSavingPrompt(true);
+    try {
+      const response = await fetch('/api/config/prompt-template', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ template: promptTemplate }),
+      });
+
+      if (response.ok) {
+        setInitialPromptTemplate(promptTemplate);
+        toast({
+          title: 'Gespeichert',
+          description: 'Prompt-Template gespeichert',
+          variant: 'success',
+        });
+      } else {
+        throw new Error('Failed to save');
+      }
+    } catch (error) {
+      toast({
+        title: 'Fehler',
+        description: 'Konnte Prompt-Template nicht speichern',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSavingPrompt(false);
+    }
+  };
+
+  const hasPromptChanged = () => {
+    return promptTemplate !== initialPromptTemplate;
+  };
 
   const handleResetSetup = async () => {
     setIsResettingSetup(true);
@@ -103,6 +194,56 @@ export default function AdvancedSettingsTab() {
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Prompt Template Editor */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Prompt Template</CardTitle>
+          <CardDescription>
+            Anpassen des Prompts für Gemini AI Dokumentenanalyse. Verwenden Sie {'{{'} DOCUMENT_CONTENT {'}}'} als Platzhalter für den Dokumenteninhalt.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="prompt-template">Prompt Template</Label>
+            <textarea
+              id="prompt-template"
+              className="flex min-h-[300px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono mt-2"
+              value={promptTemplate}
+              onChange={(e) => setPromptTemplate(e.target.value)}
+              placeholder="Lade Prompt..."
+              disabled={isLoadingPrompt}
+            />
+            <p className="text-xs text-muted-foreground mt-2">
+              Dieser Prompt wird an Gemini AI gesendet, um Dokumente zu analysieren und Metadaten zu extrahieren.
+            </p>
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              onClick={savePromptTemplate}
+              disabled={isSavingPrompt || isRestoringDefault || !hasPromptChanged()}
+            >
+              <FontAwesomeIcon
+                icon={isSavingPrompt ? faSpinner : faSave}
+                className={`mr-2 ${isSavingPrompt ? 'animate-spin' : ''}`}
+              />
+              {isSavingPrompt ? 'Speichert...' : 'Speichern'}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={loadDefaultPrompt}
+              disabled={isRestoringDefault || isSavingPrompt}
+            >
+              <FontAwesomeIcon
+                icon={isRestoringDefault ? faSpinner : faRotateLeft}
+                className={`mr-2 ${isRestoringDefault ? 'animate-spin' : ''}`}
+              />
+              {isRestoringDefault ? 'Lädt...' : 'Standard wiederherstellen'}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
