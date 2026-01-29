@@ -34,6 +34,9 @@ export async function POST(request: NextRequest) {
       case 2: // Gemini
         await setConfigSecure(CONFIG_KEYS.GEMINI_API_KEY, data.geminiApiKey);
         await setConfig(CONFIG_KEYS.GEMINI_MODEL, data.geminiModel);
+        if (data.geminiMonthlyTokenLimit !== undefined) {
+          await setConfig(CONFIG_KEYS.GEMINI_MONTHLY_TOKEN_LIMIT, data.geminiMonthlyTokenLimit.toString());
+        }
         break;
 
       case 3: // Document AI
@@ -46,6 +49,9 @@ export async function POST(request: NextRequest) {
         }
         if (data.maxSizeMB !== undefined) {
           await setConfig(CONFIG_KEYS.DOCUMENT_AI_MAX_SIZE_MB, data.maxSizeMB.toString());
+        }
+        if (data.monthlyPageLimit !== undefined) {
+          await setConfig(CONFIG_KEYS.DOCUMENT_AI_MONTHLY_PAGE_LIMIT, data.monthlyPageLimit.toString());
         }
         if (data.enabled !== undefined) {
           await setConfig(CONFIG_KEYS.DOCUMENT_AI_ENABLED, data.enabled);

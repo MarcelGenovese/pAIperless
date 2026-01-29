@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
       case 2: // Gemini
         data.geminiApiKey = await getConfigSecure(CONFIG_KEYS.GEMINI_API_KEY) || '';
         data.geminiModel = await getConfig(CONFIG_KEYS.GEMINI_MODEL) || 'gemini-1.5-flash';
+        data.geminiMonthlyTokenLimit = await getConfig(CONFIG_KEYS.GEMINI_MONTHLY_TOKEN_LIMIT) || '1000000';
         break;
 
       case 3: // Document AI
@@ -35,6 +36,7 @@ export async function GET(request: NextRequest) {
         data.location = await getConfig(CONFIG_KEYS.DOCUMENT_AI_LOCATION) || 'us';
         data.maxPages = await getConfig(CONFIG_KEYS.DOCUMENT_AI_MAX_PAGES) || '15';
         data.maxSizeMB = await getConfig(CONFIG_KEYS.DOCUMENT_AI_MAX_SIZE_MB) || '20';
+        data.documentAIMonthlyPageLimit = await getConfig(CONFIG_KEYS.DOCUMENT_AI_MONTHLY_PAGE_LIMIT) || '5000';
         data.enabled = await getConfig(CONFIG_KEYS.DOCUMENT_AI_ENABLED) || 'false';
         break;
 

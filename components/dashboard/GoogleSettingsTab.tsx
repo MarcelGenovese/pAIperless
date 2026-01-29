@@ -36,6 +36,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
   const [geminiData, setGeminiData] = useState({
     apiKey: initialData.geminiApiKey || '',
     model: initialData.geminiModel || 'gemini-1.5-flash',
+    monthlyTokenLimit: initialData.geminiMonthlyTokenLimit || '1000000',
     tested: false,
   });
   const [showGeminiKey, setShowGeminiKey] = useState(false);
@@ -50,6 +51,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
     location: initialData.location || 'us',
     maxPages: initialData.maxPages || '15',
     maxSizeMB: initialData.maxSizeMB || '20',
+    monthlyPageLimit: initialData.documentAIMonthlyPageLimit || '5000',
     enabled: initialData.enabled || 'false',
     tested: false,
   });
@@ -117,6 +119,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
           data: {
             geminiApiKey: geminiData.apiKey,
             geminiModel: geminiData.model,
+            geminiMonthlyTokenLimit: geminiData.monthlyTokenLimit,
           },
         }),
       });
@@ -272,6 +275,21 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
               Empfohlen: gemini-1.5-flash oder gemini-2.0-flash-exp
             </p>
           </div>
+          <div>
+            <Label htmlFor="gemini-token-limit">Monatliches Token-Limit</Label>
+            <Input
+              id="gemini-token-limit"
+              type="number"
+              value={geminiData.monthlyTokenLimit}
+              onChange={(e) => {
+                setGeminiData({ ...geminiData, monthlyTokenLimit: e.target.value });
+              }}
+              placeholder="1000000"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Maximale Anzahl Tokens pro Monat (Kostenkontrolle)
+            </p>
+          </div>
           <div className="flex gap-2">
             <Button onClick={testGemini} variant="outline" disabled={isTestingGemini || isSavingGemini}>
               <FontAwesomeIcon icon={isTestingGemini ? faSpinner : faCheckCircle} className={`mr-2 ${isTestingGemini ? 'animate-spin' : ''}`} />
@@ -374,6 +392,22 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
                   Standard: 20 MB
                 </p>
               </div>
+            </div>
+
+            <div className="mt-4">
+              <Label htmlFor="doc-ai-monthly-limit">Monatliches Seiten-Limit</Label>
+              <Input
+                id="doc-ai-monthly-limit"
+                type="number"
+                value={documentAIData.monthlyPageLimit}
+                onChange={(e) => {
+                  setDocumentAIData({ ...documentAIData, monthlyPageLimit: e.target.value });
+                }}
+                placeholder="5000"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Maximale Anzahl Seiten pro Monat (Kostenkontrolle). Standard: 5000 Seiten
+              </p>
             </div>
           </div>
 

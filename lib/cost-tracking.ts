@@ -194,7 +194,7 @@ export async function updateActualGeminiTokens(documentId: number, actualSent: n
     // Get the document to find estimated tokens
     const doc = await prisma.document.findUnique({
       where: { id: documentId },
-      select: { geminiTokensSent: true, geminiTokensReceived: true }
+      select: { geminiTokensSent: true, geminiTokensRecv: true }
     });
 
     if (!doc) {
@@ -203,7 +203,7 @@ export async function updateActualGeminiTokens(documentId: number, actualSent: n
     }
 
     const estimatedSent = doc.geminiTokensSent || 0;
-    const estimatedReceived = doc.geminiTokensReceived || 0;
+    const estimatedReceived = doc.geminiTokensRecv || 0;
 
     // Calculate difference
     const diffSent = actualSent - estimatedSent;
@@ -228,7 +228,7 @@ export async function updateActualGeminiTokens(documentId: number, actualSent: n
       where: { id: documentId },
       data: {
         geminiTokensSent: actualSent,
-        geminiTokensReceived: actualReceived
+        geminiTokensRecv: actualReceived
       }
     });
 
