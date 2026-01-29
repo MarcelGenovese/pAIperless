@@ -139,10 +139,10 @@ export default function SetupPage() {
       <div className="flex gap-0 h-[calc(100vh-8rem)] max-h-[900px]">
         {/* Left Column - Setup Form */}
         <div className={currentStep === 0 ? "w-full" : "flex-1 lg:w-1/2"}>
-          <div className="bg-white shadow-lg h-full flex flex-col">
+          <div className="bg-card shadow-lg h-full flex flex-col">
             {/* Header with Logo - only for steps > 0 */}
             {currentStep > 0 && (
-              <div className="bg-white border-b px-6 py-4 flex-shrink-0">
+              <div className="bg-card border-b px-6 py-4 flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <Image
                     src="/logo_complete.png"

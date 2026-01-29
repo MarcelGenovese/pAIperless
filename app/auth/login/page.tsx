@@ -55,7 +55,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white shadow-lg">
+    <div className="w-full max-w-md mx-auto bg-card shadow-lg">
       {/* Header */}
       <div className="text-center border-b px-6 py-4">
         <Image
