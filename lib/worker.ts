@@ -8,6 +8,7 @@ import { getPaperlessClient } from './paperless';
 import { createLogger } from './logger';
 import { getConfig, CONFIG_KEYS } from './config';
 import { getPDFInfo, detectAndRotatePDF, removeOCRLayer, exceedsLimits } from './pdf-processor';
+import { canProcessWithDocumentAI, reserveDocumentAIPages } from './cost-tracking';
 
 const logger = createLogger('Worker');
 
@@ -111,48 +112,63 @@ async function processFile(filePath: string) {
       await logger.info(`⏩ Document exceeds limits (max: ${maxPages} pages, ${maxSizeMB} MB), skipping Document AI`);
       await logger.info(`   Paperless will handle OCR with Tesseract`);
     } else {
-      await logger.info(`🔄 Processing with Document AI...`);
+      // CRITICAL: Check monthly limit BEFORE processing
+      const limitCheck = await canProcessWithDocumentAI(pdfInfo.pages);
+      if (!limitCheck.allowed) {
+        await logger.warn(`⚠️ Monthly Document AI limit reached, skipping: ${limitCheck.reason}`);
+        await logger.info(`   Paperless will handle OCR with Tesseract`);
+        // Continue without Document AI
+      } else {
+        // CRITICAL: Reserve pages BEFORE API call to ensure limit is not exceeded
+        await logger.info(`🔄 Processing with Document AI...`);
+        const reserved = await reserveDocumentAIPages(pdfInfo.pages);
+        if (!reserved) {
+          await logger.error(`Failed to reserve Document AI pages, skipping`);
+        } else {
+          await logger.info(`✅ Reserved ${pdfInfo.pages} pages from monthly budget`);
 
-      // Update status
-      await prisma.document.update({
-        where: { id: documentId },
-        data: { status: 'PREPROCESSING', ocrPageCount: pdfInfo.pages },
-      });
+          // Update status
+          await prisma.document.update({
+            where: { id: documentId },
+            data: { status: 'PREPROCESSING', ocrPageCount: pdfInfo.pages },
+          });
 
-      // Step 1: Detect and rotate if needed
-      const [rotated, wasRotated] = await detectAndRotatePDF(processingPath);
-      if (wasRotated) {
-        rotatedPath = rotated;
-        finalPath = rotated;
-        await logger.info(`🔄 PDF rotated: ${rotatedPath}`);
+          // Step 1: Detect and rotate if needed
+          const [rotated, wasRotated] = await detectAndRotatePDF(processingPath);
+          if (wasRotated) {
+            rotatedPath = rotated;
+            finalPath = rotated;
+            await logger.info(`🔄 PDF rotated: ${rotatedPath}`);
+          }
+
+          // Step 2: Remove existing OCR layer
+          noOCRPath = await removeOCRLayer(finalPath);
+          finalPath = noOCRPath;
+          await logger.info(`🧹 OCR layer removed: ${noOCRPath}`);
+
+          // Update status
+          await prisma.document.update({
+            where: { id: documentId },
+            data: { status: 'OCR_IN_PROGRESS' },
+          });
+
+          // Step 3: Process with Document AI
+          const docAIResult = await processWithDocumentAI(finalPath);
+
+          // Step 4: Create searchable PDF
+          searchablePath = join(PROCESSING_DIR, fileName.replace('.pdf', '_searchable.pdf'));
+          await createSearchablePDF(finalPath, docAIResult, searchablePath);
+          finalPath = searchablePath;
+
+          await logger.info(`✅ Document AI processing complete`);
+
+          // Update status
+          await prisma.document.update({
+            where: { id: documentId },
+            data: { status: 'OCR_COMPLETE' },
+          });
+        }
       }
-
-      // Step 2: Remove existing OCR layer
-      noOCRPath = await removeOCRLayer(finalPath);
-      finalPath = noOCRPath;
-      await logger.info(`🧹 OCR layer removed: ${noOCRPath}`);
-
-      // Update status
-      await prisma.document.update({
-        where: { id: documentId },
-        data: { status: 'OCR_IN_PROGRESS' },
-      });
-
-      // Step 3: Process with Document AI
-      const docAIResult = await processWithDocumentAI(finalPath);
-
-      // Step 4: Create searchable PDF
-      searchablePath = join(PROCESSING_DIR, fileName.replace('.pdf', '_searchable.pdf'));
-      await createSearchablePDF(finalPath, docAIResult, searchablePath);
-      finalPath = searchablePath;
-
-      await logger.info(`✅ Document AI processing complete`);
-
-      // Update status
-      await prisma.document.update({
-        where: { id: documentId },
-        data: { status: 'OCR_COMPLETE' },
-      });
     }
 
     // Upload to Paperless

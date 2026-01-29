@@ -69,6 +69,7 @@ model CostTracking {
   documentAIPagesLimit    Int      @default(5000)
   geminiTokensSent        Int      @default(0)
   geminiTokensReceived    Int      @default(0)
+  geminiTokensLimit       Int      @default(1000000) // Default: 1 million tokens per month
   estimatedCost           Float    @default(0.0) // USD
   lastUpdated             DateTime @updatedAt
   createdAt               DateTime @default(now())

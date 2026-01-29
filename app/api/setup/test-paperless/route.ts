@@ -4,11 +4,29 @@ import { generateSecureToken } from '@/lib/utils';
 
 export async function POST(request: NextRequest) {
   try {
-    const { paperlessUrl, paperlessToken } = await request.json();
+    // Try to get from request body first, then fall back to config
+    let body: any = {};
+    try {
+      body = await request.json();
+    } catch (e) {
+      // No body provided, will use config
+    }
+
+    let paperlessUrl = body.paperlessUrl;
+    let paperlessToken = body.paperlessToken;
+
+    // If not provided in request, try to get from config
+    if (!paperlessUrl) {
+      paperlessUrl = await getConfig(CONFIG_KEYS.PAPERLESS_URL);
+    }
+    if (!paperlessToken) {
+      const { getConfigSecure } = await import('@/lib/config');
+      paperlessToken = await getConfigSecure(CONFIG_KEYS.PAPERLESS_TOKEN);
+    }
 
     if (!paperlessUrl || !paperlessToken) {
       return NextResponse.json(
-        { error: 'Missing paperlessUrl or paperlessToken' },
+        { error: 'Missing paperlessUrl or paperlessToken in request or config' },
         { status: 400 }
       );
     }

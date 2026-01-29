@@ -3,9 +3,27 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   console.log('Gemini test endpoint called');
   try {
-    const body = await request.json();
-    const apiKey = body.geminiApiKey || body.apiKey;
-    const model = body.geminiModel || body.model;
+    // Try to get from request body first, then fall back to config
+    let body: any = {};
+    try {
+      body = await request.json();
+    } catch (e) {
+      // No body provided, will use config
+    }
+
+    let apiKey = body.geminiApiKey || body.apiKey;
+    let model = body.geminiModel || body.model;
+
+    // If not provided in request, try to get from config
+    if (!apiKey || !model) {
+      const { getConfig, getConfigSecure, CONFIG_KEYS } = await import('@/lib/config');
+      if (!apiKey) {
+        apiKey = await getConfigSecure(CONFIG_KEYS.GEMINI_API_KEY);
+      }
+      if (!model) {
+        model = await getConfig(CONFIG_KEYS.GEMINI_MODEL);
+      }
+    }
 
     console.log('Gemini test request:', {
       hasApiKey: !!apiKey,
