@@ -1,6 +1,5 @@
 "use client"
 
-import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,7 +37,7 @@ export default function Step5Email({ onNext, onBack, data }: StepProps) {
   const handleTestEmail = async () => {
     if (!canProceed) {
       toast({
-        title: t('status.error'),
+        title: "Fehler",
         description: "Bitte füllen Sie alle erforderlichen Felder aus.",
         variant: "destructive",
       });
@@ -123,7 +122,7 @@ export default function Step5Email({ onNext, onBack, data }: StepProps) {
       onNext({});
     } catch (error) {
       toast({
-        title: t('status.error'),
+        title: "Fehler",
         description: "E-Mail-Konfiguration konnte nicht gespeichert werden.",
         variant: "destructive",
       });

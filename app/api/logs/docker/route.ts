@@ -1,4 +1,3 @@
-import { useTranslations } from 'next-intl';
 import { NextRequest } from 'next/server';
 import { spawn } from 'child_process';
 
@@ -154,18 +153,18 @@ function detectLogLevel(message: string, isError: boolean = false): string {
 function extractSource(message: string): string {
   // Look for tagged sources
   if (message.includes('[Upload]')) return 'Upload';
-  if (message.includes('[FTP]')) return t('ftp');
+  if (message.includes('[FTP]')) return 'FTP';
   if (message.includes('[Email]') || message.includes('[SMTP]')) return 'Email';
   if (message.includes('[Worker]')) return 'Worker';
   if (message.includes('[Middleware]')) return 'Middleware';
   if (message.includes('[ServiceManager]')) return 'System';
   if (message.includes('[Init]')) return 'System';
   if (message.includes('[OAuth]')) return 'OAuth';
-  if (message.includes('[Paperless]')) return t('paperless');
+  if (message.includes('[Paperless]')) return 'Paperless';
 
   // Check for framework errors
   if (message.includes('TypeError') || message.includes('ReferenceError') || message.includes('SyntaxError')) {
-    return t('systemInfo.framework');
+    return 'Framework';
   }
 
   // Check for Next.js specific logs

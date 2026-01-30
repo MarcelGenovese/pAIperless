@@ -1,6 +1,5 @@
 "use client"
 
-import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,8 +29,6 @@ interface FolderContents {
 }
 
 export default function FolderContents() {
-  const t = useTranslations('documents');
-
   const [folders, setFolders] = useState<FolderContents>({
     consume: [],
     processing: [],
@@ -335,7 +332,7 @@ export default function FolderContents() {
             <p className="text-sm text-muted-foreground mb-6">
               Möchten Sie wirklich alle Dateien im Ordner &quot;{
                 showClearConfirm === 'consume' ? 'Warteschlange' :
-                showClearConfirm === 'processing' ? 'In Bearbeitung' : t('status.error')
+                showClearConfirm === 'processing' ? 'In Bearbeitung' : 'Fehler'
               }&quot; löschen?
               {showClearConfirm === 'consume' && ' Diese Dateien werden nicht mehr verarbeitet.'}
               {showClearConfirm === 'processing' && ' Die Verarbeitung dieser Dateien wird abgebrochen.'}

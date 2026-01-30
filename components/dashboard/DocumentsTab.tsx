@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -47,8 +46,6 @@ interface AIAnalysis {
 }
 
 export default function DocumentsTab() {
-  const t = useTranslations('documents');
-  const tCommon = useTranslations('common');
   const { toast } = useToast();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
@@ -143,7 +140,7 @@ export default function DocumentsTab() {
 
       if (response.ok) {
         toast({
-          title: t('deleteSuccess'),
+          title: 'Erfolgreich gelöscht',
           description: `${selectedIds.length} Dokument(e) gelöscht`,
           variant: 'success',
         });
@@ -155,8 +152,8 @@ export default function DocumentsTab() {
       }
     } catch (error) {
       toast({
-        title: t('status.error'),
-        description: t('deleteError'),
+        title: 'Fehler',
+        description: 'Dokumente konnten nicht gelöscht werden',
         variant: 'destructive',
       });
     } finally {
@@ -197,14 +194,14 @@ export default function DocumentsTab() {
 
   const getStatusText = (status: string) => {
     const statusMap: Record<string, string> = {
-      'PENDING': t('status.pending'),
-      'PREPROCESSING_COMPLETE': t('status.preprocessingComplete'),
-      'OCR_IN_PROGRESS': t('status.ocrInProgress'),
-      'OCR_COMPLETE': t('status.ocrComplete'),
-      'UPLOADED_TO_PAPERLESS': t('ocrTab.uploadedToPaperless'),
-      'COMPLETED': t('status.completed'),
-      'ERROR': t('status.error'),
-      'PENDING_CONFIGURATION': t('status.pendingConfiguration'),
+      'PENDING': 'Ausstehend',
+      'PREPROCESSING_COMPLETE': 'Vorverarbeitung abgeschlossen',
+      'OCR_IN_PROGRESS': 'OCR läuft',
+      'OCR_COMPLETE': 'OCR abgeschlossen',
+      'UPLOADED_TO_PAPERLESS': 'An Paperless übertragen',
+      'COMPLETED': 'Abgeschlossen',
+      'ERROR': 'Fehler',
+      'PENDING_CONFIGURATION': 'Konfiguration ausstehend',
     };
     return statusMap[status] || status;
   };
@@ -311,7 +308,7 @@ export default function DocumentsTab() {
                             <button
                               onClick={(e) => openInPaperless(doc.paperlessId!, e)}
                               className="text-blue-600 hover:text-blue-800 transition-colors"
-                              title={t('ocrTab.openInPaperless')}
+                              title="In Paperless öffnen"
                             >
                               <FontAwesomeIcon icon={faExternalLinkAlt} className="text-xs" />
                             </button>
@@ -346,7 +343,7 @@ export default function DocumentsTab() {
                               <span
                                 className="inline-flex items-center px-2 py-0.5 rounded bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs cursor-pointer hover:bg-green-200 dark:hover:bg-green-800 transition-colors"
                                 onClick={(e) => openInPaperless(doc.paperlessId!, e)}
-                                title={t('ocrTab.openInPaperless')}
+                                title="In Paperless öffnen"
                               >
                                 <FontAwesomeIcon icon={faCheckCircle} className="mr-1" />
                                 Paperless #{doc.paperlessId}

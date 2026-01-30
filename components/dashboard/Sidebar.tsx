@@ -1,6 +1,5 @@
 "use client"
 
-import { useTranslations } from 'next-intl';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faHome,
@@ -24,28 +23,27 @@ interface SidebarProps {
 
 interface NavItem {
   id: string;
-  labelKey: string;
+  label: string;
   icon: any;
   badge?: string;
 }
 
 const mainNavItems: NavItem[] = [
-  { id: 'overview', labelKey: 'overview', icon: faHome },
-  { id: 'documents', labelKey: 'documents', icon: faFileAlt },
-  { id: 'logs', labelKey: 'logs', icon: faTerminal },
-  { id: 'analyze', labelKey: 'analyze', icon: faBrain },
+  { id: 'overview', label: 'Übersicht', icon: faHome },
+  { id: 'documents', label: 'Dokumente', icon: faFileAlt },
+  { id: 'logs', label: 'Live Logs', icon: faTerminal },
+  { id: 'analyze', label: 'Analyze', icon: faBrain },
 ];
 
 const settingsNavItems: NavItem[] = [
-  { id: 'paperless', labelKey: 'paperless', icon: faServer },
-  { id: 'google', labelKey: 'google', icon: faGlobe },
-  { id: 'ftp', labelKey: 'ftp', icon: faServer },
-  { id: 'email', labelKey: 'email', icon: faEnvelope },
-  { id: 'advanced', labelKey: 'advanced', icon: faSlidersH },
+  { id: 'paperless', label: 'Paperless', icon: faServer },
+  { id: 'google', label: 'Google Services', icon: faGlobe },
+  { id: 'ftp', label: 'FTP Server', icon: faServer },
+  { id: 'email', label: 'E-Mail', icon: faEnvelope },
+  { id: 'advanced', label: 'Erweitert', icon: faSlidersH },
 ];
 
 export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
-  const t = useTranslations('dashboard');
   return (
     <div className="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col h-full">
       {/* Main Navigation */}
@@ -66,7 +64,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
               )}
             >
               <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
-              <span>{t(item.labelKey)}</span>
+              <span>{item.label}</span>
               {item.badge && (
                 <span className="ml-auto bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full text-xs">
                   {item.badge}
@@ -93,7 +91,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
               )}
             >
               <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
-              <span>{t(item.labelKey)}</span>
+              <span>{item.label}</span>
             </button>
           ))}
         </div>

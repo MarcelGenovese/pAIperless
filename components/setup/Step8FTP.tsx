@@ -1,6 +1,5 @@
 "use client"
 
-import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -50,7 +49,7 @@ export default function Step8FTP({ onNext, onBack, data }: StepProps) {
       onNext({});
     } catch (error) {
       toast({
-        title: t('status.error'),
+        title: "Fehler",
         description: "FTP-Konfiguration konnte nicht gespeichert werden.",
         variant: "destructive",
       });

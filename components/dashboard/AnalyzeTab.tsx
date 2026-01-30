@@ -1,6 +1,5 @@
 "use client"
 
-import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,8 +23,6 @@ interface PaperlessMetadata {
 type TagMode = 'strict' | 'flexible' | 'free';
 
 export default function AnalyzeTab() {
-  const t = useTranslations('documents');
-
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -95,8 +92,8 @@ export default function AnalyzeTab() {
     } catch (error) {
       console.error('Failed to load data:', error);
       toast({
-        title: t('status.error'),
-        description: t('loadError'),
+        title: 'Fehler',
+        description: 'Daten konnten nicht geladen werden',
         variant: 'destructive',
       });
     } finally {
@@ -123,13 +120,13 @@ export default function AnalyzeTab() {
       });
 
       toast({
-        title: t('saved'),
+        title: 'Gespeichert',
         description: 'Paperless Integration Einstellungen wurden gespeichert',
       });
     } catch (error) {
       toast({
-        title: t('status.error'),
-        description: t('saveError'),
+        title: 'Fehler',
+        description: 'Einstellungen konnten nicht gespeichert werden',
         variant: 'destructive',
       });
     } finally {
@@ -158,14 +155,14 @@ export default function AnalyzeTab() {
       });
 
       toast({
-        title: t('saved'),
+        title: 'Gespeichert',
         description: 'KI-Verhalten Einstellungen wurden gespeichert',
       });
       setHasChanges(false);
     } catch (error) {
       toast({
-        title: t('status.error'),
-        description: t('saveError'),
+        title: 'Fehler',
+        description: 'Einstellungen konnten nicht gespeichert werden',
         variant: 'destructive',
       });
     } finally {
@@ -176,8 +173,8 @@ export default function AnalyzeTab() {
   const createTag = async () => {
     if (!newTagName.trim()) {
       toast({
-        title: t('status.error'),
-        description: t('tagManagement.enterName'),
+        title: 'Fehler',
+        description: 'Bitte Tag-Namen eingeben',
         variant: 'destructive',
       });
       return;
@@ -193,7 +190,7 @@ export default function AnalyzeTab() {
 
       if (response.ok) {
         toast({
-          title: t('tagManagement.createSuccess'),
+          title: 'Tag erstellt',
           description: `Tag "${newTagName}" wurde in Paperless erstellt`,
         });
         setNewTagName('');
@@ -206,8 +203,8 @@ export default function AnalyzeTab() {
       }
     } catch (error) {
       toast({
-        title: t('status.error'),
-        description: t('tagManagement.createError'),
+        title: 'Fehler',
+        description: 'Tag konnte nicht erstellt werden',
         variant: 'destructive',
       });
     } finally {
@@ -218,7 +215,7 @@ export default function AnalyzeTab() {
   const createCustomField = async () => {
     if (!newFieldName.trim()) {
       toast({
-        title: t('status.error'),
+        title: 'Fehler',
         description: 'Bitte Feld-Namen eingeben',
         variant: 'destructive',
       });
@@ -238,7 +235,7 @@ export default function AnalyzeTab() {
 
       if (response.ok) {
         toast({
-          title: t('customFieldManagement.createSuccess'),
+          title: 'Feld erstellt',
           description: `Benutzerdefiniertes Feld "${newFieldName}" wurde erstellt`,
         });
         setNewFieldName('');
@@ -252,8 +249,8 @@ export default function AnalyzeTab() {
       }
     } catch (error) {
       toast({
-        title: t('status.error'),
-        description: t('customFieldManagement.createError'),
+        title: 'Fehler',
+        description: 'Feld konnte nicht erstellt werden',
         variant: 'destructive',
       });
     } finally {
@@ -265,13 +262,13 @@ export default function AnalyzeTab() {
     try {
       await navigator.clipboard.writeText(text);
       toast({
-        title: t('copied'),
+        title: 'Kopiert',
         description: `${label} wurde in die Zwischenablage kopiert`,
       });
     } catch (error) {
       toast({
-        title: t('status.error'),
-        description: t('copyError'),
+        title: 'Fehler',
+        description: 'Konnte nicht in Zwischenablage kopieren',
         variant: 'destructive',
       });
     }
@@ -283,13 +280,13 @@ export default function AnalyzeTab() {
       const metadataData = await metadataRes.json();
       setMetadata(metadataData);
       toast({
-        title: t('refreshed'),
-        description: t('metadataRefreshed'),
+        title: 'Aktualisiert',
+        description: 'Metadaten wurden neu geladen',
       });
     } catch (error) {
       toast({
-        title: t('status.error'),
-        description: t('refreshError'),
+        title: 'Fehler',
+        description: 'Konnte Metadaten nicht laden',
         variant: 'destructive',
       });
     }
@@ -354,7 +351,7 @@ export default function AnalyzeTab() {
 
     const languageNames: Record<string, string> = {
       'de': 'German',
-      'en': t('language.english'),
+      'en': 'English',
     };
     const languageName = languageNames[systemLanguage] || 'German';
 
@@ -625,7 +622,7 @@ export default function AnalyzeTab() {
         <CardContent>
           <div className="flex gap-2">
             <Input
-              placeholder={t('tagManagement.newTagPlaceholder')}
+              placeholder="Neuer Tag-Name..."
               value={newTagName}
               onChange={(e) => setNewTagName(e.target.value)}
               onKeyDown={(e) => {
@@ -670,7 +667,7 @@ export default function AnalyzeTab() {
         <CardContent>
           <div className="flex gap-2">
             <Input
-              placeholder={t('customFieldManagement.fieldNamePlaceholder')}
+              placeholder="Feld-Name..."
               value={newFieldName}
               onChange={(e) => setNewFieldName(e.target.value)}
               className="flex-1"
@@ -820,9 +817,9 @@ export default function AnalyzeTab() {
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              {tagMode === 'strict' && t('aiBehavior.tagModeDescription.strict')}
-              {tagMode === 'flexible' && t('aiBehavior.tagModeDescription.flexible')}
-              {tagMode === 'free' && t('aiBehavior.tagModeDescription.free')}
+              {tagMode === 'strict' && 'KI darf nur aus vorhandenen Tags wählen'}
+              {tagMode === 'flexible' && 'KI bevorzugt vorhandene Tags, erstellt neue nur wenn nötig'}
+              {tagMode === 'free' && 'KI erstellt beliebige Tags basierend auf Dokumentinhalt'}
             </p>
           </div>
 
@@ -921,7 +918,7 @@ export default function AnalyzeTab() {
                 setCustomPrompt(e.target.value);
                 setHasChanges(true);
               }}
-              placeholder={t('aiBehavior.customPromptPlaceholder')}
+              placeholder="z.B.: Achte besonders auf Rechnungsnummern und Fälligkeitsdaten..."
               className="h-32"
             />
           </div>

@@ -1,4 +1,3 @@
-import { useTranslations } from 'next-intl';
 import { NextResponse } from 'next/server';
 import { getConfig, getConfigSecure, CONFIG_KEYS } from '@/lib/config';
 import { PaperlessClient } from '@/lib/paperless';
@@ -31,7 +30,7 @@ export async function GET() {
   } catch (error: any) {
     statuses.paperless = {
       status: 'error',
-      message: error.message || t('status.error'),
+      message: error.message || 'Fehler',
     };
   }
 
@@ -56,7 +55,7 @@ export async function GET() {
   } catch (error: any) {
     statuses.gemini = {
       status: 'error',
-      message: error.message || t('status.error'),
+      message: error.message || 'Fehler',
     };
   }
 
@@ -80,7 +79,7 @@ export async function GET() {
   } catch (error: any) {
     statuses.documentAI = {
       status: 'error',
-      message: error.message || t('status.error'),
+      message: error.message || 'Fehler',
     };
   }
 
@@ -103,7 +102,7 @@ export async function GET() {
   } catch (error: any) {
     statuses.oauth = {
       status: 'error',
-      message: error.message || t('status.error'),
+      message: error.message || 'Fehler',
     };
   }
 
@@ -133,7 +132,7 @@ export async function GET() {
   } catch (error: any) {
     statuses.ftp = {
       status: 'error',
-      message: error.message || t('status.error'),
+      message: error.message || 'Fehler',
       running: false,
       enabled: false,
     };
@@ -164,7 +163,7 @@ export async function GET() {
   } catch (error: any) {
     statuses.email = {
       status: 'error',
-      message: error.message || t('status.error'),
+      message: error.message || 'Fehler',
     };
   }
 
@@ -185,7 +184,7 @@ export async function GET() {
   } catch (error: any) {
     statuses.worker = {
       status: 'error',
-      message: error.message || t('status.error'),
+      message: error.message || 'Fehler',
     };
   }
 

@@ -1,6 +1,5 @@
 "use client"
 
-import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,7 +45,7 @@ export default function Step6PaperlessIntegration({ onNext, onBack, data }: Step
       onNext({});
     } catch (error) {
       toast({
-        title: t('status.error'),
+        title: "Fehler",
         description: "Paperless-Integration konnte nicht gespeichert werden.",
         variant: "destructive",
       });

@@ -1,6 +1,5 @@
 "use client"
 
-import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -123,7 +122,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
   const testGemini = async () => {
     if (!geminiData.apiKey) {
       toast({
-        title: t('status.error'),
+        title: 'Fehler',
         description: 'Bitte API Key angeben',
         variant: 'destructive',
       });
@@ -187,7 +186,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
       });
 
       toast({
-        title: t('saved'),
+        title: 'Gespeichert',
         description: 'Gemini AI Einstellungen gespeichert',
         variant: 'success',
       });
@@ -203,7 +202,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
       setGeminiData({ ...geminiData, tested: false });
     } catch (error) {
       toast({
-        title: t('status.error'),
+        title: 'Fehler',
         description: 'Konnte nicht speichern',
         variant: 'destructive',
       });
@@ -216,7 +215,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
   const testDocumentAI = async () => {
     if (!documentAIData.projectId || !documentAIData.processorId || !documentAIData.credentials) {
       toast({
-        title: t('status.error'),
+        title: 'Fehler',
         description: 'Bitte alle Felder ausfüllen',
         variant: 'destructive',
       });
@@ -274,7 +273,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
       });
 
       toast({
-        title: t('saved'),
+        title: 'Gespeichert',
         description: 'Document AI Einstellungen gespeichert',
         variant: 'success',
       });
@@ -295,7 +294,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
       setDocumentAIData({ ...documentAIData, tested: false });
     } catch (error) {
       toast({
-        title: t('status.error'),
+        title: 'Fehler',
         description: 'Konnte nicht speichern',
         variant: 'destructive',
       });
@@ -425,7 +424,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
               disabled={isSavingGemini || isTestingGemini || !hasGeminiChanged()}
             >
               <FontAwesomeIcon icon={isSavingGemini ? faSpinner : faSave} className={`mr-2 ${isSavingGemini ? 'animate-spin' : ''}`} />
-              {isSavingGemini ? 'Speichert...' : t('save')}
+              {isSavingGemini ? 'Speichert...' : 'Speichern'}
             </Button>
             {geminiData.tested && (
               <span className="flex items-center text-sm text-green-600">
@@ -633,7 +632,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
               disabled={isSavingDocAI || isTestingDocAI || !hasDocumentAIChanged()}
             >
               <FontAwesomeIcon icon={isSavingDocAI ? faSpinner : faSave} className={`mr-2 ${isSavingDocAI ? 'animate-spin' : ''}`} />
-              {isSavingDocAI ? 'Speichert...' : t('save')}
+              {isSavingDocAI ? 'Speichert...' : 'Speichern'}
             </Button>
             {documentAIData.tested && (
               <span className="flex items-center text-sm text-green-600">

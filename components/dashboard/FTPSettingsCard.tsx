@@ -1,6 +1,5 @@
 "use client"
 
-import { useTranslations } from 'next-intl';
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -150,7 +149,7 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
       });
 
       toast({
-        title: t('saved'),
+        title: 'Gespeichert',
         description: 'FTP-Server Einstellungen werden übernommen...',
         variant: 'success',
       });
@@ -166,7 +165,7 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
       setFtpData({ ...ftpData, tested: false });
     } catch (error) {
       toast({
-        title: t('status.error'),
+        title: 'Fehler',
         description: 'Konnte nicht speichern',
         variant: 'destructive',
       });
@@ -263,7 +262,7 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
                   onChange={(e) => {
                     setFtpData({ ...ftpData, password: e.target.value, tested: false });
                   }}
-                  placeholder={t('password')}
+                  placeholder="Passwort"
                 />
                 <Button
                   variant="outline"
@@ -322,7 +321,7 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
             className={cn(!ftpData.enabled && 'opacity-50 cursor-not-allowed')}
           >
             <FontAwesomeIcon icon={isSaving ? faSpinner : faSave} className={`mr-2 ${isSaving ? 'animate-spin' : ''}`} />
-            {isSaving ? 'Speichert...' : t('save')}
+            {isSaving ? 'Speichert...' : 'Speichern'}
           </Button>
           {ftpData.tested && (
             <span className="flex items-center text-sm text-green-600">

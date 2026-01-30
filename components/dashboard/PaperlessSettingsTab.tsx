@@ -1,6 +1,5 @@
 "use client"
 
-import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -68,7 +67,7 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
   const testPaperless = async () => {
     if (!paperlessData.url || !paperlessData.token) {
       toast({
-        title: t('status.error'),
+        title: 'Fehler',
         description: 'Bitte URL und Token angeben',
         variant: 'destructive',
       });
@@ -129,7 +128,7 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
       });
 
       toast({
-        title: t('saved'),
+        title: 'Gespeichert',
         description: 'Paperless-NGX Einstellungen gespeichert',
         variant: 'success',
       });
@@ -137,7 +136,7 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
       setPaperlessData({ ...paperlessData, tested: false });
     } catch (error) {
       toast({
-        title: t('status.error'),
+        title: 'Fehler',
         description: 'Konnte nicht speichern',
         variant: 'destructive',
       });
@@ -170,14 +169,14 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
         }
       } else {
         toast({
-          title: t('status.error'),
+          title: 'Fehler',
           description: result.error || 'Konnte OCR-Einstellungen nicht prüfen',
           variant: 'destructive',
         });
       }
     } catch (error) {
       toast({
-        title: t('status.error'),
+        title: 'Fehler',
         description: 'Netzwerkfehler beim Prüfen der OCR-Einstellungen',
         variant: 'destructive',
       });
@@ -198,13 +197,13 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
       });
 
       toast({
-        title: t('saved'),
+        title: 'Gespeichert',
         description: 'Integration Einstellungen gespeichert',
         variant: 'success',
       });
     } catch (error) {
       toast({
-        title: t('status.error'),
+        title: 'Fehler',
         description: 'Konnte nicht speichern',
         variant: 'destructive',
       });
@@ -223,13 +222,13 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
       });
 
       toast({
-        title: t('saved'),
+        title: 'Gespeichert',
         description: 'Polling Einstellungen gespeichert',
         variant: 'success',
       });
     } catch (error) {
       toast({
-        title: t('status.error'),
+        title: 'Fehler',
         description: 'Konnte nicht speichern',
         variant: 'destructive',
       });
@@ -276,7 +275,7 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
             </Button>
             <Button onClick={savePaperless} disabled={testing || saving}>
               <FontAwesomeIcon icon={saving ? faSpinner : faSave} className={`mr-2 ${saving ? 'animate-spin' : ''}`} />
-              {saving ? 'Speichert...' : t('save')}
+              {saving ? 'Speichert...' : 'Speichern'}
             </Button>
           </div>
         </CardContent>

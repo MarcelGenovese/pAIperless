@@ -1,6 +1,5 @@
 "use client"
 
-import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -300,7 +299,7 @@ export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
                       });
                     } catch (error) {
                       toast({
-                        title: t('status.error'),
+                        title: "Fehler",
                         description: "Kopieren fehlgeschlagen. Bitte manuell kopieren.",
                         variant: "destructive",
                       });
