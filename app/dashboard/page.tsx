@@ -18,6 +18,7 @@ import FTPSettingsCard from '@/components/dashboard/FTPSettingsCard';
 import EmailSettingsCard from '@/components/dashboard/EmailSettingsCard';
 import AdvancedSettingsTab from '@/components/dashboard/AdvancedSettingsTab';
 import SystemCheckModal from '@/components/dashboard/SystemCheckModal';
+import WebhookApiKeyDisplay from '@/components/dashboard/WebhookApiKeyDisplay';
 import Footer from '@/components/Footer';
 
 export default function DashboardPage() {
@@ -148,6 +149,9 @@ export default function DashboardPage() {
               <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">
                 {session?.user?.name || 'User'}
               </span>
+              <div className="hidden md:block">
+                <WebhookApiKeyDisplay />
+              </div>
               <Button variant="outline" size="sm" onClick={() => setSystemCheckOpen(true)}>
                 <FontAwesomeIcon icon={faStethoscope} className="mr-2" />
                 <span className="hidden sm:inline">System Check</span>
