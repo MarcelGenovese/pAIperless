@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -12,6 +13,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRight, faEye, faEyeSlash, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 export default function LoginPage() {
+  const t = useTranslations('auth');
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -33,7 +36,7 @@ export default function LoginPage() {
       if (result?.error) {
         const errorMessage = result.error.includes('Admin-Rechte')
           ? 'Login fehlgeschlagen: Admin-Rechte erforderlich'
-          : 'Ungültiger Benutzername oder Passwort';
+          : t('invalidCredentials');
 
         toast({
           title: 'Anmeldung fehlgeschlagen',

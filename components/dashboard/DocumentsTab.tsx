@@ -143,7 +143,7 @@ export default function DocumentsTab() {
 
       if (response.ok) {
         toast({
-          title: 'Erfolgreich gelöscht',
+          title: t('deleteSuccess'),
           description: `${selectedIds.length} Dokument(e) gelöscht`,
           variant: 'success',
         });
@@ -155,8 +155,8 @@ export default function DocumentsTab() {
       }
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Dokumente konnten nicht gelöscht werden',
+        title: t('status.error'),
+        description: t('deleteError'),
         variant: 'destructive',
       });
     } finally {
@@ -197,14 +197,14 @@ export default function DocumentsTab() {
 
   const getStatusText = (status: string) => {
     const statusMap: Record<string, string> = {
-      'PENDING': 'Ausstehend',
-      'PREPROCESSING_COMPLETE': 'Vorverarbeitung abgeschlossen',
-      'OCR_IN_PROGRESS': 'OCR läuft',
-      'OCR_COMPLETE': 'OCR abgeschlossen',
-      'UPLOADED_TO_PAPERLESS': 'An Paperless übertragen',
-      'COMPLETED': 'Abgeschlossen',
-      'ERROR': 'Fehler',
-      'PENDING_CONFIGURATION': 'Konfiguration ausstehend',
+      'PENDING': t('status.pending'),
+      'PREPROCESSING_COMPLETE': t('status.preprocessingComplete'),
+      'OCR_IN_PROGRESS': t('status.ocrInProgress'),
+      'OCR_COMPLETE': t('status.ocrComplete'),
+      'UPLOADED_TO_PAPERLESS': t('ocrTab.uploadedToPaperless'),
+      'COMPLETED': t('status.completed'),
+      'ERROR': t('status.error'),
+      'PENDING_CONFIGURATION': t('status.pendingConfiguration'),
     };
     return statusMap[status] || status;
   };
@@ -311,7 +311,7 @@ export default function DocumentsTab() {
                             <button
                               onClick={(e) => openInPaperless(doc.paperlessId!, e)}
                               className="text-blue-600 hover:text-blue-800 transition-colors"
-                              title="In Paperless öffnen"
+                              title={t('ocrTab.openInPaperless')}
                             >
                               <FontAwesomeIcon icon={faExternalLinkAlt} className="text-xs" />
                             </button>
@@ -346,7 +346,7 @@ export default function DocumentsTab() {
                               <span
                                 className="inline-flex items-center px-2 py-0.5 rounded bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs cursor-pointer hover:bg-green-200 dark:hover:bg-green-800 transition-colors"
                                 onClick={(e) => openInPaperless(doc.paperlessId!, e)}
-                                title="In Paperless öffnen"
+                                title={t('ocrTab.openInPaperless')}
                               >
                                 <FontAwesomeIcon icon={faCheckCircle} className="mr-1" />
                                 Paperless #{doc.paperlessId}

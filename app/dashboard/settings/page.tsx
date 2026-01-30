@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
@@ -19,6 +20,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 export default function SettingsPage() {
+  const t = useTranslations('settings');
+
   const { data: session } = useSession();
   const router = useRouter();
   const { toast } = useToast();
@@ -35,8 +38,8 @@ export default function SettingsPage() {
 
       if (response.ok) {
         toast({
-          title: "Setup zurückgesetzt",
-          description: "Sie werden zum Setup-Wizard weitergeleitet...",
+          title: t('setupWizard.resetSuccess'),
+          description: t('setupWizard.resetSuccessMessage'),
         });
 
         // Redirect to setup after a short delay
@@ -48,8 +51,8 @@ export default function SettingsPage() {
       }
     } catch (error) {
       toast({
-        title: "Fehler",
-        description: "Setup konnte nicht zurückgesetzt werden.",
+        title: t('status.error'),
+        description: t('setupWizard.resetError'),
         variant: "destructive",
       });
       setIsResettingSetup(false);
@@ -147,7 +150,7 @@ export default function SettingsPage() {
                           disabled={isResettingSetup}
                           size="sm"
                         >
-                          {isResettingSetup ? 'Wird zurückgesetzt...' : 'Ja, Setup starten'}
+                          {isResettingSetup ? t('setupWizard.resetting') : t('setupWizard.resetConfirm')}
                         </Button>
                         <Button
                           variant="outline"
@@ -186,7 +189,7 @@ export default function SettingsPage() {
                 <div className="flex justify-between py-2">
                   <span className="text-gray-600">Environment</span>
                   <span className="font-medium">
-                    {process.env.NODE_ENV === 'production' ? 'Production' : 'Development'}
+                    {process.env.NODE_ENV === 'production' ? t('systemInfo.production') : t('systemInfo.development')}
                   </span>
                 </div>
               </div>

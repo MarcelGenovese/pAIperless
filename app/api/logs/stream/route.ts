@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
@@ -91,7 +92,7 @@ export async function GET(request: NextRequest) {
  * Extract source from log message
  */
 function extractSource(message: string): string {
-  if (message.includes('[FTP]')) return 'FTP';
+  if (message.includes('[FTP]')) return t('ftp');
   if (message.includes('[Email]') || message.includes('[SMTP]')) return 'Email';
   if (message.includes('[Worker]')) return 'Worker';
   if (message.includes('[Middleware]')) return 'Middleware';

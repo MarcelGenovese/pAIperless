@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,6 +20,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 
 export default function AdvancedSettingsTab() {
+  const tCommon = useTranslations('common');
+  const t = useTranslations('settings');
+
   const router = useRouter();
   const { toast } = useToast();
 
@@ -80,8 +84,8 @@ export default function AdvancedSettingsTab() {
       if (response.ok) {
         setCurrentLanguage(language);
         toast({
-          title: 'Sprache gespeichert',
-          description: 'Die Seite wird neu geladen...',
+          title: t('language.saved'),
+          description: t('language.savedDescription'),
           variant: 'success',
         });
 
@@ -94,8 +98,8 @@ export default function AdvancedSettingsTab() {
       }
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Konnte Sprache nicht speichern',
+        title: t('status.error'),
+        description: t('language.saveError'),
         variant: 'destructive',
       });
     } finally {
@@ -146,8 +150,8 @@ export default function AdvancedSettingsTab() {
           document.documentElement.classList.remove('dark');
         }
         toast({
-          title: 'Design gespeichert',
-          description: checked ? 'Dark Mode aktiviert' : 'Light Mode aktiviert',
+          title: t('darkMode.saved'),
+          description: checked ? t('darkMode.enabled') : t('darkMode.disabled'),
           variant: 'success',
         });
       } else {
@@ -155,8 +159,8 @@ export default function AdvancedSettingsTab() {
       }
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Konnte Design nicht speichern',
+        title: t('status.error'),
+        description: t('darkMode.saveError'),
         variant: 'destructive',
       });
     } finally {
@@ -195,7 +199,7 @@ export default function AdvancedSettingsTab() {
       }
     } catch (error) {
       toast({
-        title: 'Fehler',
+        title: t('status.error'),
         description: 'Konnte Standard-Prompt nicht laden',
         variant: 'destructive',
       });
@@ -216,7 +220,7 @@ export default function AdvancedSettingsTab() {
       if (response.ok) {
         setInitialPromptTemplate(promptTemplate);
         toast({
-          title: 'Gespeichert',
+          title: t('saved'),
           description: 'Prompt-Template gespeichert',
           variant: 'success',
         });
@@ -225,7 +229,7 @@ export default function AdvancedSettingsTab() {
       }
     } catch (error) {
       toast({
-        title: 'Fehler',
+        title: t('status.error'),
         description: 'Konnte Prompt-Template nicht speichern',
         variant: 'destructive',
       });
@@ -247,8 +251,8 @@ export default function AdvancedSettingsTab() {
 
       if (response.ok) {
         toast({
-          title: "Setup zurückgesetzt",
-          description: "Sie werden zum Setup-Wizard weitergeleitet...",
+          title: t('setupWizard.resetSuccess'),
+          description: t('setupWizard.resetSuccessMessage'),
         });
 
         setTimeout(() => {
@@ -259,8 +263,8 @@ export default function AdvancedSettingsTab() {
       }
     } catch (error) {
       toast({
-        title: "Fehler",
-        description: "Setup konnte nicht zurückgesetzt werden.",
+        title: t('status.error'),
+        description: t('setupWizard.resetError'),
         variant: "destructive",
       });
       setIsResettingSetup(false);
@@ -307,7 +311,7 @@ export default function AdvancedSettingsTab() {
                       disabled={isResettingSetup}
                       size="sm"
                     >
-                      {isResettingSetup ? 'Wird zurückgesetzt...' : 'Ja, Setup starten'}
+                      {isResettingSetup ? t('setupWizard.resetting') : t('setupWizard.resetConfirm')}
                     </Button>
                     <Button
                       variant="outline"
@@ -420,7 +424,7 @@ export default function AdvancedSettingsTab() {
                 icon={isSavingPrompt ? faSpinner : faSave}
                 className={`mr-2 ${isSavingPrompt ? 'animate-spin' : ''}`}
               />
-              {isSavingPrompt ? 'Speichert...' : 'Speichern'}
+              {isSavingPrompt ? 'Speichert...' : t('save')}
             </Button>
             <Button
               variant="outline"
@@ -431,7 +435,7 @@ export default function AdvancedSettingsTab() {
                 icon={isRestoringDefault ? faSpinner : faRotateLeft}
                 className={`mr-2 ${isRestoringDefault ? 'animate-spin' : ''}`}
               />
-              {isRestoringDefault ? 'Lädt...' : 'Standard wiederherstellen'}
+              {isRestoringDefault ? tCommon('loading') : 'Standard wiederherstellen'}
             </Button>
           </div>
         </CardContent>
@@ -460,7 +464,7 @@ export default function AdvancedSettingsTab() {
             <div className="flex justify-between py-2 border-b">
               <span className="text-gray-600 dark:text-gray-400">Environment</span>
               <span className="font-medium">
-                {process.env.NODE_ENV === 'production' ? 'Production' : 'Development'}
+                {process.env.NODE_ENV === 'production' ? t('systemInfo.production') : t('systemInfo.development')}
               </span>
             </div>
             <div className="flex justify-between py-2">

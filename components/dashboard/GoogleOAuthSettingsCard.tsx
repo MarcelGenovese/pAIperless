@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -62,7 +63,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
   const handleAuthorize = async () => {
     if (!oauthData.clientId || !oauthData.clientSecret) {
       toast({
-        title: 'Fehler',
+        title: t('status.error'),
         description: 'Bitte Client ID und Secret angeben',
         variant: 'destructive',
       });
@@ -95,7 +96,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
       }
     } catch (error) {
       toast({
-        title: 'Fehler',
+        title: t('status.error'),
         description: 'Konnte OAuth nicht starten',
         variant: 'destructive',
       });
@@ -122,7 +123,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
       }
     } catch (error) {
       toast({
-        title: 'Fehler',
+        title: t('status.error'),
         description: 'Konnte Ressourcen nicht laden',
         variant: 'destructive',
       });
@@ -134,7 +135,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
   const testOAuth = async () => {
     if (!oauthData.calendarId || !oauthData.taskListId) {
       toast({
-        title: 'Fehler',
+        title: t('status.error'),
         description: 'Bitte Kalender und Aufgabenliste auswählen',
         variant: 'destructive',
       });
@@ -198,7 +199,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
       });
 
       toast({
-        title: 'Gespeichert',
+        title: t('saved'),
         description: 'Google OAuth Einstellungen gespeichert',
         variant: 'success',
       });
@@ -206,7 +207,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
       setOAuthData({ ...oauthData, tested: false });
     } catch (error) {
       toast({
-        title: 'Fehler',
+        title: t('status.error'),
         description: 'Konnte nicht speichern',
         variant: 'destructive',
       });
@@ -359,7 +360,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
             <>
               <Button onClick={loadResources} variant="outline" disabled={isLoadingResources}>
                 <FontAwesomeIcon icon={isLoadingResources ? faSpinner : faCheckCircle} className={`mr-2 ${isLoadingResources ? 'animate-spin' : ''}`} />
-                {isLoadingResources ? 'Lädt...' : 'Neu laden'}
+                {isLoadingResources ? tCommon('loading') : t('reload')}
               </Button>
               <Button
                 onClick={testOAuth}
@@ -385,7 +386,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
             disabled={!oauthData.clientId || !oauthData.clientSecret || isSaving}
           >
             <FontAwesomeIcon icon={isSaving ? faSpinner : faSave} className={`mr-2 ${isSaving ? 'animate-spin' : ''}`} />
-            {isSaving ? 'Speichert...' : 'Speichern'}
+            {isSaving ? 'Speichert...' : t('save')}
           </Button>
           {oauthData.tested && (
             <span className="flex items-center text-sm text-green-600">

@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from 'next-intl';
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,8 @@ interface LogEntry {
 }
 
 export default function LogsTab() {
+  const t = useTranslations('documents');
+
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [paused, setPaused] = useState(false);
   const [autoScroll, setAutoScroll] = useState(true);
@@ -145,7 +148,7 @@ export default function LogsTab() {
       }
     } catch (error: any) {
       toast({
-        title: 'Fehler',
+        title: t('status.error'),
         description: error.message || 'Cleanup fehlgeschlagen',
         variant: 'destructive',
       });

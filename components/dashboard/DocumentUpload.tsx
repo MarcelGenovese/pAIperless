@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from 'next-intl';
 import { useState, useRef, DragEvent } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -207,7 +208,7 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
         }
 
         toast({
-          title: 'Upload erfolgreich',
+          title: t('uploadSuccess'),
           description: result.message || `${result.uploaded.length} Datei(en) hochgeladen`,
         });
 
@@ -272,7 +273,7 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
               return {
                 ...f,
                 status: 'error' as const,
-                error: error?.error || 'Upload fehlgeschlagen',
+                error: error?.error || t('uploadError'),
                 progress: undefined,
               } as UploadFile;
             })
@@ -289,7 +290,7 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
           return; // Don't throw, we've handled the error
         } else {
           console.error('[Upload] Complete failure:', result.error);
-          throw new Error(result.error || 'Upload fehlgeschlagen');
+          throw new Error(result.error || t('uploadError'));
         }
       }
     } catch (error: any) {
@@ -304,8 +305,8 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
       );
 
       toast({
-        title: 'Upload fehlgeschlagen',
-        description: error.message || 'Ein Fehler ist aufgetreten',
+        title: t('uploadError'),
+        description: error.message || t('genericError'),
         variant: 'destructive',
       });
     } finally {

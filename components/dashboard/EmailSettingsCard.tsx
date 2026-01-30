@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -131,7 +132,7 @@ export default function EmailSettingsCard({ initialData = {} }: EmailSettingsCar
       });
 
       toast({
-        title: 'Gespeichert',
+        title: t('saved'),
         description: 'Email-Einstellungen gespeichert',
         variant: 'success',
       });
@@ -139,7 +140,7 @@ export default function EmailSettingsCard({ initialData = {} }: EmailSettingsCar
       setEmailData({ ...emailData, tested: false });
     } catch (error) {
       toast({
-        title: 'Fehler',
+        title: t('status.error'),
         description: 'Konnte nicht speichern',
         variant: 'destructive',
       });
@@ -295,7 +296,7 @@ export default function EmailSettingsCard({ initialData = {} }: EmailSettingsCar
             className={cn(!emailData.enabled && 'opacity-50 cursor-not-allowed')}
           >
             <FontAwesomeIcon icon={isSaving ? faSpinner : faSave} className={`mr-2 ${isSaving ? 'animate-spin' : ''}`} />
-            {isSaving ? 'Speichert...' : 'Speichern'}
+            {isSaving ? 'Speichert...' : t('save')}
           </Button>
           {emailData.tested && (
             <span className="flex items-center text-sm text-green-600">
