@@ -1,4 +1,7 @@
-import { getConfig, CONFIG_KEYS } from './config';
+import { getConfig, getConfigSecure, CONFIG_KEYS } from './config';
+import { createLogger } from './logger';
+
+const logger = createLogger('Gemini');
 
 export interface GeminiResponse {
   title?: string;
@@ -67,7 +70,7 @@ export class GeminiClient {
           parsedResponse = JSON.parse(text);
         }
       } catch (parseError) {
-        console.error('Failed to parse Gemini response as JSON:', text);
+        await logger.error('Failed to parse Gemini response as JSON', { text, parseError });
         throw new Error('Invalid JSON response from Gemini');
       }
 
@@ -82,14 +85,15 @@ export class GeminiClient {
         tokensUsed,
       };
     } catch (error) {
-      console.error('Error calling Gemini API:', error);
+      await logger.error('Error calling Gemini API', error);
       throw error;
     }
   }
 }
 
 export async function getGeminiClient(): Promise<GeminiClient> {
-  const apiKey = await getConfig(CONFIG_KEYS.GEMINI_API_KEY);
+  // API Key is stored encrypted, must use getConfigSecure
+  const apiKey = await getConfigSecure(CONFIG_KEYS.GEMINI_API_KEY);
   const model = await getConfig(CONFIG_KEYS.GEMINI_MODEL);
 
   if (!apiKey || !model) {
