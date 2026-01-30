@@ -25,40 +25,32 @@ export async function GET(request: NextRequest) {
     // Split search query into terms
     const searchTerms = query.toLowerCase().trim().split(/\s+/);
 
-    // Build where clause based on search mode
-    let whereClause: any;
-
-    if (mode === 'AND') {
-      // All terms must match (in message, level, or meta)
-      whereClause = {
-        AND: searchTerms.map(term => ({
-          OR: [
-            { message: { contains: term, mode: 'insensitive' } },
-            { level: { contains: term, mode: 'insensitive' } },
-            { meta: { contains: term, mode: 'insensitive' } },
-          ],
-        })),
-      };
-    } else {
-      // At least one term must match
-      whereClause = {
-        OR: searchTerms.flatMap(term => [
-          { message: { contains: term, mode: 'insensitive' } },
-          { level: { contains: term, mode: 'insensitive' } },
-          { meta: { contains: term, mode: 'insensitive' } },
-        ]),
-      };
-    }
-
-    // Search in database
-    const logs = await prisma.log.findMany({
-      where: whereClause,
+    // Get all logs first, then filter by timestamp in JavaScript
+    // (Prisma/SQLite doesn't support searching in formatted date strings)
+    const allLogs = await prisma.log.findMany({
       orderBy: { createdAt: 'desc' },
-      take: limit,
     });
 
+    // Filter logs that match search terms
+    const matchedLogs = allLogs.filter(log => {
+      // Format timestamp as searchable string (YYYY-MM-DD HH:mm:ss)
+      const timestampStr = log.createdAt.toISOString().replace('T', ' ').substring(0, 19).toLowerCase();
+      const logText = `${timestampStr} ${log.message} ${log.level} ${log.meta || ''}`.toLowerCase();
+
+      if (mode === 'AND') {
+        // All terms must match
+        return searchTerms.every(term => logText.includes(term));
+      } else {
+        // At least one term must match
+        return searchTerms.some(term => logText.includes(term));
+      }
+    });
+
+    // Take only the requested limit
+    const logs = matchedLogs.slice(0, limit);
+
     // Get total count
-    const total = await prisma.log.count({ where: whereClause });
+    const total = matchedLogs.length;
 
     // Format logs for frontend
     const formattedLogs = logs.map(log => ({

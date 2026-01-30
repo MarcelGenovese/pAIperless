@@ -343,13 +343,13 @@ export default function LogsTab() {
           <div className="mt-4 pt-4 border-t">
             <Label className="text-sm font-semibold mb-2 block">
               <FontAwesomeIcon icon={faSearch} className="mr-2" />
-              Datenbank-Suche (durchsucht ALLE Logs)
+              Datenbank-Suche (durchsucht ALLE Logs + Datum/Uhrzeit)
             </Label>
             <div className="flex gap-3">
               <div className="flex-1">
                 <Input
                   type="text"
-                  placeholder="Suchbegriffe eingeben (durch Leerzeichen getrennt)..."
+                  placeholder="Suchbegriffe eingeben (z.B. 2026-01-30, 10:15, error, worker)..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   onKeyDown={(e) => {
@@ -392,12 +392,12 @@ export default function LogsTab() {
             <p className="text-xs text-muted-foreground mt-2">
               {searchResults !== null ? (
                 <span className="text-blue-600 dark:text-blue-400 font-medium">
-                  🔍 Suchergebnisse aus der Datenbank (alle Logs)
+                  🔍 Suchergebnisse aus der Datenbank (alle Logs inkl. Datum/Uhrzeit)
                 </span>
               ) : searchMode === 'OR' ? (
-                'Durchsucht alle Logs in der Datenbank - zeigt Einträge mit mindestens einem Suchbegriff'
+                'Durchsucht alle Logs (Nachricht, Level, Datum/Uhrzeit) - zeigt Einträge mit mindestens einem Suchbegriff'
               ) : (
-                'Durchsucht alle Logs in der Datenbank - zeigt Einträge mit allen Suchbegriffen'
+                'Durchsucht alle Logs (Nachricht, Level, Datum/Uhrzeit) - zeigt Einträge mit allen Suchbegriffen'
               )}
             </p>
           </div>
