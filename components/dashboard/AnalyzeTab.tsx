@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBrain, faSpinner, faSave, faCode, faListCheck, faPlus, faTag, faRefresh, faFileLines } from '@fortawesome/free-solid-svg-icons';
+import { faBrain, faSpinner, faSave, faCode, faListCheck, faPlus, faTag, faRefresh, faFileLines, faCopy } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/hooks/use-toast';
 
 interface PaperlessMetadata {
@@ -26,6 +26,7 @@ export default function AnalyzeTab() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingPaperless, setSavingPaperless] = useState(false);
   const [creatingTag, setCreatingTag] = useState(false);
   const [creatingField, setCreatingField] = useState(false);
   const [metadata, setMetadata] = useState<PaperlessMetadata | null>(null);
@@ -42,6 +43,7 @@ export default function AnalyzeTab() {
   const [strictStoragePaths, setStrictStoragePaths] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
   const [hasChanges, setHasChanges] = useState(false);
+  const [systemLanguage, setSystemLanguage] = useState('de');
 
   // New tag creation
   const [newTagName, setNewTagName] = useState('');
@@ -70,6 +72,10 @@ export default function AnalyzeTab() {
       const config2Res = await fetch('/api/setup/load-config?step=2');
       const config2Data = await config2Res.json();
 
+      // Load system language
+      const config0Res = await fetch('/api/setup/load-config?step=0');
+      const config0Data = await config0Res.json();
+
       setTagAiTodo(config1Data.tagAiTodo || 'ai_todo');
       setTagActionRequired(config1Data.tagActionRequired || 'action_required');
       setFieldActionDescription(config1Data.fieldActionDescription || 'action_description');
@@ -81,6 +87,8 @@ export default function AnalyzeTab() {
       setStrictCorrespondents(config2Data.geminiStrictCorrespondents === 'true');
       setStrictDocumentTypes(config2Data.geminiStrictDocumentTypes === 'true');
       setStrictStoragePaths(config2Data.geminiStrictStoragePaths === 'true');
+
+      setSystemLanguage(config0Data.locale || 'de');
     } catch (error) {
       console.error('Failed to load data:', error);
       toast({
@@ -93,8 +101,8 @@ export default function AnalyzeTab() {
     }
   };
 
-  const handleSave = async () => {
-    setSaving(true);
+  const handleSavePaperless = async () => {
+    setSavingPaperless(true);
     try {
       // Save paperless integration config (step 6)
       await fetch('/api/setup', {
@@ -111,6 +119,24 @@ export default function AnalyzeTab() {
         }),
       });
 
+      toast({
+        title: 'Gespeichert',
+        description: 'Paperless Integration Einstellungen wurden gespeichert',
+      });
+    } catch (error) {
+      toast({
+        title: 'Fehler',
+        description: 'Einstellungen konnten nicht gespeichert werden',
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingPaperless(false);
+    }
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
       // Save gemini config (step 2)
       await fetch('/api/setup', {
         method: 'POST',
@@ -130,7 +156,7 @@ export default function AnalyzeTab() {
 
       toast({
         title: 'Gespeichert',
-        description: 'Analyse-Einstellungen wurden gespeichert',
+        description: 'KI-Verhalten Einstellungen wurden gespeichert',
       });
       setHasChanges(false);
     } catch (error) {
@@ -232,6 +258,40 @@ export default function AnalyzeTab() {
     }
   };
 
+  const copyToClipboard = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: 'Kopiert',
+        description: `${label} wurde in die Zwischenablage kopiert`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Fehler',
+        description: 'Konnte nicht in Zwischenablage kopieren',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const refreshMetadata = async () => {
+    try {
+      const metadataRes = await fetch('/api/paperless/metadata');
+      const metadataData = await metadataRes.json();
+      setMetadata(metadataData);
+      toast({
+        title: 'Aktualisiert',
+        description: 'Metadaten wurden neu geladen',
+      });
+    } catch (error) {
+      toast({
+        title: 'Fehler',
+        description: 'Konnte Metadaten nicht laden',
+        variant: 'destructive',
+      });
+    }
+  };
+
   // Generate expected JSON structure
   const generateJSONStructure = () => {
     if (!metadata) return '{}';
@@ -289,19 +349,28 @@ export default function AnalyzeTab() {
   const generateFullPrompt = () => {
     if (!metadata) return '';
 
+    const languageNames: Record<string, string> = {
+      'de': 'German',
+      'en': 'English',
+    };
+    const languageName = languageNames[systemLanguage] || 'German';
+
     let prompt = `You are a document analysis AI. Analyze the provided document and extract metadata in the following JSON format:\n\n`;
     prompt += generateJSONStructure();
     prompt += '\n\n';
 
+    // Language instruction
+    prompt += `**IMPORTANT - Response Language:**\n`;
+    prompt += `- All text fields in your JSON response (title, tags, correspondent, document_type, storage_path, custom field values) MUST be in ${languageName}\n`;
+    prompt += `- Use ${languageName} for all generated text, descriptions, and metadata\n\n`;
+
     // Tag instructions based on mode
     prompt += '**Tag Generation Rules:**\n';
     if (tagMode === 'strict') {
-      prompt += `- You MUST ONLY use tags from the following list (max ${maxTags} tags):\n`;
-      metadata.tags.forEach(t => prompt += `  - ${t.name}\n`);
+      prompt += `- You MUST ONLY use tags from the following list (max ${maxTags} tags): [${metadata.tags.map(t => t.name).join(', ')}]\n`;
       prompt += '- Do NOT create new tags\n';
     } else if (tagMode === 'flexible') {
-      prompt += `- You should prefer using existing tags from this list (max ${maxTags} tags):\n`;
-      metadata.tags.forEach(t => prompt += `  - ${t.name}\n`);
+      prompt += `- You should prefer using existing tags from this list (max ${maxTags} tags): [${metadata.tags.map(t => t.name).join(', ')}]\n`;
       prompt += '- You MAY create new tags if existing ones do not fit well\n';
       prompt += '- Only create new tags when truly necessary\n';
     } else { // free
@@ -311,27 +380,48 @@ export default function AnalyzeTab() {
 
     // Correspondents (only show list if strict mode is enabled)
     if (strictCorrespondents && metadata.correspondents.length > 0) {
-      prompt += '**Available Correspondents (you MUST choose one from this list or use null):**\n';
-      metadata.correspondents.forEach(c => prompt += `- ${c.name}\n`);
+      prompt += `**Available Correspondents (you MUST choose one from this list or use null):** [${metadata.correspondents.map(c => c.name).join(', ')}]\n`;
       prompt += '- Do NOT create new correspondents\n';
       prompt += '\n';
     }
 
     // Document Types (only show list if strict mode is enabled)
     if (strictDocumentTypes && metadata.documentTypes.length > 0) {
-      prompt += '**Available Document Types (you MUST choose one from this list or use null):**\n';
-      metadata.documentTypes.forEach(t => prompt += `- ${t.name}\n`);
+      prompt += `**Available Document Types (you MUST choose one from this list or use null):** [${metadata.documentTypes.map(t => t.name).join(', ')}]\n`;
       prompt += '- Do NOT create new document types\n';
       prompt += '\n';
     }
 
     // Storage Paths (only show list if strict mode is enabled)
     if (strictStoragePaths && metadata.storagePaths.length > 0) {
-      prompt += '**Available Storage Paths (you MUST choose one from this list or use null):**\n';
-      metadata.storagePaths.forEach(p => prompt += `- ${p.name}\n`);
+      prompt += `**Available Storage Paths (you MUST choose one from this list or use null):** [${metadata.storagePaths.map(p => p.name).join(', ')}]\n`;
       prompt += '- Do NOT create new storage paths\n';
       prompt += '\n';
     }
+
+    // Action description field instruction
+    prompt += '**Action Detection - CRITICAL:**\n';
+    prompt += `- Carefully analyze if the document requires MANDATORY user action with deadlines or consequences\n`;
+    prompt += `- If action is required, you MUST fill the custom field "${fieldActionDescription}" with a SHORT description\n`;
+    prompt += '\n';
+    prompt += '**Examples of MANDATORY actions that require the action field:**\n';
+    prompt += '  • Payment deadlines (invoice must be paid by date, late fees apply)\n';
+    prompt += '  • Cancellation deadlines (contract/subscription must be cancelled before renewal)\n';
+    prompt += '  • Response deadlines (must respond to inquiry, appeal, or request by date)\n';
+    prompt += '  • Appointment scheduling (must schedule appointment or confirm attendance)\n';
+    prompt += '  • Document submission (forms, applications, documents must be submitted)\n';
+    prompt += '  • Signature required (contract, agreement, form needs signature)\n';
+    prompt += '  • Registration deadlines (must register for event, course, service)\n';
+    prompt += '  • Renewal reminders (license, membership, subscription expiring)\n';
+    prompt += '  • Compliance actions (regulatory requirements, tax filings, legal obligations)\n';
+    prompt += '\n';
+    prompt += '**Action description format:**\n';
+    prompt += `  • Keep it SHORT and actionable (max 100 characters)\n`;
+    prompt += `  • Examples: "Pay invoice by 2024-03-15", "Cancel before renewal on 2024-04-01", "Submit application by 2024-05-10"\n`;
+    prompt += '\n';
+    prompt += '**Due date field:**\n';
+    prompt += `  • If there is a specific deadline, set the custom field "${fieldDueDate}" with the date in YYYY-MM-DD format\n`;
+    prompt += `  • Extract the date from the document (payment due date, cancellation deadline, response deadline, etc.)\n\n`;
 
     // Add custom prompt
     if (customPrompt.trim()) {
@@ -340,7 +430,12 @@ export default function AnalyzeTab() {
       prompt += '\n\n';
     }
 
-    prompt += 'Respond ONLY with valid JSON. Do not include any other text or markdown.';
+    prompt += '**Final Instructions:**\n';
+    prompt += '- Respond ONLY with valid JSON. Do not include any other text or markdown.\n';
+    prompt += '- Ensure all text is in the specified language\n\n';
+
+    prompt += '**Document to analyze:**\n\n';
+    prompt += '{{ DOCUMENT_CONTENT }}';
 
     return prompt;
   };
@@ -490,6 +585,26 @@ export default function AnalyzeTab() {
               </p>
             </div>
           </div>
+
+          {/* Save Button */}
+          <div className="flex justify-end pt-4 border-t">
+            <Button
+              onClick={handleSavePaperless}
+              disabled={savingPaperless}
+            >
+              {savingPaperless ? (
+                <>
+                  <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
+                  Speichern...
+                </>
+              ) : (
+                <>
+                  <FontAwesomeIcon icon={faSave} className="mr-2" />
+                  Speichern
+                </>
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -526,6 +641,13 @@ export default function AnalyzeTab() {
                 <FontAwesomeIcon icon={faPlus} className="mr-2" />
               )}
               Erstellen
+            </Button>
+            <Button
+              variant="outline"
+              onClick={refreshMetadata}
+            >
+              <FontAwesomeIcon icon={faRefresh} className="mr-2" />
+              Neu laden
             </Button>
           </div>
         </CardContent>
@@ -576,6 +698,13 @@ export default function AnalyzeTab() {
               )}
               Erstellen
             </Button>
+            <Button
+              variant="outline"
+              onClick={refreshMetadata}
+            >
+              <FontAwesomeIcon icon={faRefresh} className="mr-2" />
+              Neu laden
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -608,6 +737,17 @@ export default function AnalyzeTab() {
               Keine benutzerdefinierten Felder gefunden. Erstellen Sie welche oben.
             </p>
           )}
+
+          {/* Refresh Button */}
+          <div className="flex justify-end pt-4 border-t mt-4">
+            <Button
+              variant="outline"
+              onClick={refreshMetadata}
+            >
+              <FontAwesomeIcon icon={faRefresh} className="mr-2" />
+              Neu laden
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -628,6 +768,17 @@ export default function AnalyzeTab() {
             readOnly
             className="font-mono text-xs h-64 bg-gray-50 dark:bg-gray-900"
           />
+
+          {/* Copy Button */}
+          <div className="flex justify-end pt-4 border-t mt-4">
+            <Button
+              variant="outline"
+              onClick={() => copyToClipboard(generateJSONStructure(), 'JSON-Struktur')}
+            >
+              <FontAwesomeIcon icon={faCopy} className="mr-2" />
+              Kopieren
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -812,6 +963,17 @@ export default function AnalyzeTab() {
           <p className="text-xs text-muted-foreground mt-2">
             Prompt-Länge: {generateFullPrompt().length} Zeichen
           </p>
+
+          {/* Copy Button */}
+          <div className="flex justify-end pt-4 border-t mt-4">
+            <Button
+              variant="outline"
+              onClick={() => copyToClipboard(generateFullPrompt(), 'Vollständiger Prompt')}
+            >
+              <FontAwesomeIcon icon={faCopy} className="mr-2" />
+              Kopieren
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

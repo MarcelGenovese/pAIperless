@@ -1,0 +1,179 @@
+import { PaperlessClient } from './paperless';
+import { getConfig, CONFIG_KEYS } from './config';
+
+interface PromptConfig {
+  tagMode: 'strict' | 'flexible' | 'free';
+  maxTags: number;
+  strictCorrespondents: boolean;
+  strictDocumentTypes: boolean;
+  strictStoragePaths: boolean;
+  customPrompt?: string;
+  fieldActionDescription: string;
+  fieldDueDate: string;
+  systemLanguage: string;
+}
+
+export async function generateAnalysisPrompt(
+  paperlessClient: PaperlessClient,
+  documentContent: string
+): Promise<string> {
+  // Load configuration
+  const tagMode = (await getConfig(CONFIG_KEYS.GEMINI_TAG_MODE) || 'flexible') as 'strict' | 'flexible' | 'free';
+  const maxTags = parseInt(await getConfig(CONFIG_KEYS.GEMINI_MAX_TAGS) || '5');
+  const strictCorrespondents = (await getConfig(CONFIG_KEYS.GEMINI_STRICT_CORRESPONDENTS)) === 'true';
+  const strictDocumentTypes = (await getConfig(CONFIG_KEYS.GEMINI_STRICT_DOCUMENT_TYPES)) === 'true';
+  const strictStoragePaths = (await getConfig(CONFIG_KEYS.GEMINI_STRICT_STORAGE_PATHS)) === 'true';
+  const customPrompt = await getConfig(CONFIG_KEYS.GEMINI_PROMPT_TEMPLATE) || '';
+  const fieldActionDescription = await getConfig(CONFIG_KEYS.FIELD_ACTION_DESCRIPTION) || 'action_description';
+  const fieldDueDate = await getConfig(CONFIG_KEYS.FIELD_DUE_DATE) || 'due_date';
+  const systemLanguage = await getConfig(CONFIG_KEYS.SETUP_LOCALE) || 'de';
+
+  // Load metadata from Paperless
+  const [tags, correspondents, documentTypes, customFields, storagePaths] = await Promise.all([
+    paperlessClient.getTags(),
+    paperlessClient.getCorrespondents(),
+    paperlessClient.getDocumentTypes(),
+    paperlessClient.getCustomFields(),
+    paperlessClient.getStoragePaths(),
+  ]);
+
+  const languageNames: Record<string, string> = {
+    'de': 'German',
+    'en': 'English',
+  };
+  const languageName = languageNames[systemLanguage] || 'German';
+
+  // Generate JSON structure
+  const structure: any = {
+    title: "string (suggested document title)",
+    tags: ["array", "of", "tag", "names"],
+    correspondent: "correspondent name or null",
+    document_type: "document type name or null",
+    storage_path: "storage path name or null",
+  };
+
+  // Add custom fields
+  if (customFields.length > 0) {
+    structure.custom_fields = {};
+    customFields.forEach(field => {
+      let exampleValue: any;
+      switch (field.data_type) {
+        case 'string':
+        case 'text':
+          exampleValue = 'string value';
+          break;
+        case 'integer':
+          exampleValue = 123;
+          break;
+        case 'float':
+          exampleValue = 123.45;
+          break;
+        case 'boolean':
+          exampleValue = true;
+          break;
+        case 'date':
+          exampleValue = 'YYYY-MM-DD';
+          break;
+        case 'url':
+          exampleValue = 'https://example.com';
+          break;
+        case 'documentlink':
+          exampleValue = 123;
+          break;
+        case 'select':
+          exampleValue = 'option value';
+          break;
+        default:
+          exampleValue = 'string value';
+      }
+      structure.custom_fields[field.name] = `${field.data_type}: ${JSON.stringify(exampleValue)}`;
+    });
+  }
+
+  const jsonStructure = JSON.stringify(structure, null, 2);
+
+  // Build prompt
+  let prompt = `You are a document analysis AI. Analyze the provided document and extract metadata in the following JSON format:\n\n`;
+  prompt += jsonStructure;
+  prompt += '\n\n';
+
+  // Language instruction
+  prompt += `**IMPORTANT - Response Language:**\n`;
+  prompt += `- All text fields in your JSON response (title, tags, correspondent, document_type, storage_path, custom field values) MUST be in ${languageName}\n`;
+  prompt += `- Use ${languageName} for all generated text, descriptions, and metadata\n\n`;
+
+  // Tag instructions based on mode
+  prompt += '**Tag Generation Rules:**\n';
+  if (tagMode === 'strict') {
+    prompt += `- You MUST ONLY use tags from the following list (max ${maxTags} tags): [${tags.map(t => t.name).join(', ')}]\n`;
+    prompt += '- Do NOT create new tags\n';
+  } else if (tagMode === 'flexible') {
+    prompt += `- You should prefer using existing tags from this list (max ${maxTags} tags): [${tags.map(t => t.name).join(', ')}]\n`;
+    prompt += '- You MAY create new tags if existing ones do not fit well\n';
+    prompt += '- Only create new tags when truly necessary\n';
+  } else { // free
+    prompt += `- You can create any tags that describe the document (max ${maxTags} tags)\n`;
+  }
+  prompt += '\n';
+
+  // Correspondents (only show list if strict mode is enabled)
+  if (strictCorrespondents && correspondents.length > 0) {
+    prompt += `**Available Correspondents (you MUST choose one from this list or use null):** [${correspondents.map(c => c.name).join(', ')}]\n`;
+    prompt += '- Do NOT create new correspondents\n';
+    prompt += '\n';
+  }
+
+  // Document Types (only show list if strict mode is enabled)
+  if (strictDocumentTypes && documentTypes.length > 0) {
+    prompt += `**Available Document Types (you MUST choose one from this list or use null):** [${documentTypes.map(t => t.name).join(', ')}]\n`;
+    prompt += '- Do NOT create new document types\n';
+    prompt += '\n';
+  }
+
+  // Storage Paths (only show list if strict mode is enabled)
+  if (strictStoragePaths && storagePaths.length > 0) {
+    prompt += `**Available Storage Paths (you MUST choose one from this list or use null):** [${storagePaths.map(p => p.name).join(', ')}]\n`;
+    prompt += '- Do NOT create new storage paths\n';
+    prompt += '\n';
+  }
+
+  // Action description field instruction
+  prompt += '**Action Detection - CRITICAL:**\n';
+  prompt += `- Carefully analyze if the document requires MANDATORY user action with deadlines or consequences\n`;
+  prompt += `- If action is required, you MUST fill the custom field "${fieldActionDescription}" with a SHORT description\n`;
+  prompt += '\n';
+  prompt += '**Examples of MANDATORY actions that require the action field:**\n';
+  prompt += '  • Payment deadlines (invoice must be paid by date, late fees apply)\n';
+  prompt += '  • Cancellation deadlines (contract/subscription must be cancelled before renewal)\n';
+  prompt += '  • Response deadlines (must respond to inquiry, appeal, or request by date)\n';
+  prompt += '  • Appointment scheduling (must schedule appointment or confirm attendance)\n';
+  prompt += '  • Document submission (forms, applications, documents must be submitted)\n';
+  prompt += '  • Signature required (contract, agreement, form needs signature)\n';
+  prompt += '  • Registration deadlines (must register for event, course, service)\n';
+  prompt += '  • Renewal reminders (license, membership, subscription expiring)\n';
+  prompt += '  • Compliance actions (regulatory requirements, tax filings, legal obligations)\n';
+  prompt += '\n';
+  prompt += '**Action description format:**\n';
+  prompt += `  • Keep it SHORT and actionable (max 100 characters)\n`;
+  prompt += `  • Examples: "Pay invoice by 2024-03-15", "Cancel before renewal on 2024-04-01", "Submit application by 2024-05-10"\n`;
+  prompt += '\n';
+  prompt += '**Due date field:**\n';
+  prompt += `  • If there is a specific deadline, set the custom field "${fieldDueDate}" with the date in YYYY-MM-DD format\n`;
+  prompt += `  • Extract the date from the document (payment due date, cancellation deadline, response deadline, etc.)\n\n`;
+
+  // Add custom prompt
+  if (customPrompt.trim()) {
+    prompt += '**Additional Instructions:**\n';
+    prompt += customPrompt.trim();
+    prompt += '\n\n';
+  }
+
+  prompt += '**Final Instructions:**\n';
+  prompt += '- Respond ONLY with valid JSON. Do not include any other text or markdown.\n';
+  prompt += '- Ensure all text is in the specified language\n\n';
+
+  prompt += '**Document to analyze:**\n\n';
+  prompt += documentContent;
+
+  return prompt;
+}

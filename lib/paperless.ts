@@ -265,6 +265,220 @@ export class PaperlessClient {
       return [];
     }
   }
+
+  /**
+   * Get documents with a specific tag
+   */
+  async getDocumentsByTag(tagId: number): Promise<Array<any>> {
+    try {
+      const data = await this.fetch(`/api/documents/?tags__id__in=${tagId}&page_size=100`);
+      return data.results || [];
+    } catch (error) {
+      console.error(`Error fetching documents with tag ${tagId}:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * Get document content (text) by ID
+   */
+  async getDocumentContent(documentId: number): Promise<string> {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/documents/${documentId}/download/`, {
+        headers: {
+          'Authorization': `Token ${this.token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to download document: ${response.status}`);
+      }
+
+      // For now, we'll get the text from the metadata endpoint
+      // Paperless stores extracted text in the document metadata
+      const docData = await this.fetch(`/api/documents/${documentId}/`);
+      return docData.content || '';
+    } catch (error) {
+      console.error(`Error fetching document ${documentId} content:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update a document with new metadata
+   */
+  async updateDocument(documentId: number, updates: {
+    title?: string;
+    tags?: number[];
+    correspondent?: number | null;
+    document_type?: number | null;
+    storage_path?: number | null;
+    custom_fields?: Array<{ field: number; value: any }>;
+  }): Promise<void> {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/documents/${documentId}/`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Token ${this.token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to update document: ${response.status} - ${errorText}`);
+      }
+    } catch (error) {
+      console.error(`Error updating document ${documentId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a new tag
+   */
+  async createTag(name: string, color?: string): Promise<number> {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/tags/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${this.token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, color: color || '#3498db' }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to create tag: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.id;
+    } catch (error) {
+      console.error(`Error creating tag ${name}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create or get correspondent by name
+   */
+  async createOrGetCorrespondent(name: string): Promise<number> {
+    try {
+      // First try to find existing
+      const correspondents = await this.getCorrespondents();
+      const existing = correspondents.find(c => c.name.toLowerCase() === name.toLowerCase());
+      if (existing) {
+        return existing.id;
+      }
+
+      // Create new
+      const response = await fetch(`${this.baseUrl}/api/correspondents/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${this.token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to create correspondent: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.id;
+    } catch (error) {
+      console.error(`Error creating correspondent ${name}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create or get document type by name
+   */
+  async createOrGetDocumentType(name: string): Promise<number> {
+    try {
+      // First try to find existing
+      const types = await this.getDocumentTypes();
+      const existing = types.find(t => t.name.toLowerCase() === name.toLowerCase());
+      if (existing) {
+        return existing.id;
+      }
+
+      // Create new
+      const response = await fetch(`${this.baseUrl}/api/document_types/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${this.token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to create document type: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.id;
+    } catch (error) {
+      console.error(`Error creating document type ${name}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create or get storage path by name
+   */
+  async createOrGetStoragePath(name: string): Promise<number> {
+    try {
+      // First try to find existing
+      const paths = await this.getStoragePaths();
+      const existing = paths.find(p => p.name.toLowerCase() === name.toLowerCase());
+      if (existing) {
+        return existing.id;
+      }
+
+      // Create new
+      const response = await fetch(`${this.baseUrl}/api/storage_paths/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${this.token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, path: name }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to create storage path: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.id;
+    } catch (error) {
+      console.error(`Error creating storage path ${name}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create or get tag by name
+   */
+  async createOrGetTag(name: string): Promise<number> {
+    try {
+      const tagId = await this.getTagId(name);
+      if (tagId) {
+        return tagId;
+      }
+
+      return await this.createTag(name);
+    } catch (error) {
+      console.error(`Error creating/getting tag ${name}:`, error);
+      throw error;
+    }
+  }
 }
 
 export async function getPaperlessClient(): Promise<PaperlessClient> {
