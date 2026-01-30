@@ -129,10 +129,22 @@ export class PaperlessClient {
       }
 
       const data = await response.json();
+      console.log(`[Paperless] getTagId("${tagName}") returned ${data.results?.length || 0} results:`, JSON.stringify(data.results?.slice(0, 3)));
+
       if (data.results && data.results.length > 0) {
+        // Found tags - check for exact match
+        const exactMatch = data.results.find((tag: any) => tag.name === tagName);
+        if (exactMatch) {
+          console.log(`[Paperless] Exact match for "${tagName}": ID ${exactMatch.id}`);
+          return exactMatch.id;
+        }
+
+        // No exact match, return first result (partial match)
+        console.log(`[Paperless] No exact match for "${tagName}", using first result: "${data.results[0].name}" (ID ${data.results[0].id})`);
         return data.results[0].id;
       }
 
+      console.log(`[Paperless] No tag found for "${tagName}"`);
       return null;
     } catch (error) {
       console.error(`[Paperless] Error fetching tag ${tagName}:`, error);
@@ -182,6 +194,24 @@ export class PaperlessClient {
     }
 
     const data = await response.json();
+    console.log(`[Paperless] Upload response:`, JSON.stringify(data));
+
+    // Paperless post_document can return:
+    // 1. A task ID string (async processing)
+    // 2. An object with { task_id: "..." } or { id: ... }
+    if (typeof data === 'string') {
+      // Task ID returned as plain string
+      console.log(`[Paperless] Document upload task created: ${data}`);
+      // Document will be processed async, we can't get document ID yet
+      // Return null to indicate async processing
+      return null as any; // Worker will handle null paperlessId
+    }
+
+    if (data.task_id) {
+      console.log(`[Paperless] Document upload task created: ${data.task_id}`);
+      return null as any;
+    }
+
     return data.id;
   }
 
@@ -276,6 +306,19 @@ export class PaperlessClient {
     } catch (error) {
       console.error(`Error fetching documents with tag ${tagId}:`, error);
       return [];
+    }
+  }
+
+  /**
+   * Get a single document by ID
+   */
+  async getDocument(documentId: number): Promise<any | null> {
+    try {
+      const data = await this.fetch(`/api/documents/${documentId}/`);
+      return data;
+    } catch (error) {
+      console.error(`Error fetching document ${documentId}:`, error);
+      return null;
     }
   }
 
@@ -468,16 +511,326 @@ export class PaperlessClient {
    */
   async createOrGetTag(name: string): Promise<number> {
     try {
-      const tagId = await this.getTagId(name);
-      if (tagId) {
-        return tagId;
+      // Fetch all tags and search in-memory (Paperless API name filter doesn't work reliably)
+      const allTags = await this.getTags();
+      const existingTag = allTags.find(tag => tag.name.toLowerCase() === name.toLowerCase());
+
+      if (existingTag) {
+        console.log(`[Paperless] Found existing tag "${name}" with ID ${existingTag.id}`);
+        return existingTag.id;
       }
 
+      console.log(`[Paperless] Creating new tag "${name}"`);
       return await this.createTag(name);
     } catch (error) {
       console.error(`Error creating/getting tag ${name}:`, error);
       throw error;
     }
+  }
+
+  /**
+   * Get all workflows from Paperless
+   */
+  async getWorkflows(): Promise<Array<any>> {
+    try {
+      const data = await this.fetch('/api/workflows/?page_size=1000');
+      return data.results || [];
+    } catch (error) {
+      console.error('Error fetching workflows:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get a specific workflow by ID
+   */
+  async getWorkflow(workflowId: number): Promise<any> {
+    try {
+      const data = await this.fetch(`/api/workflows/${workflowId}/`);
+      return data;
+    } catch (error) {
+      console.error(`Error fetching workflow ${workflowId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update a workflow
+   */
+  async updateWorkflow(workflowId: number, updates: any): Promise<void> {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/workflows/${workflowId}/`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Token ${this.token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to update workflow: ${response.status} - ${errorText}`);
+      }
+    } catch (error) {
+      console.error(`Error updating workflow ${workflowId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check if webhook API keys in workflows match expected key
+   * Returns list of workflows with their API key status
+   */
+  async checkWorkflowApiKeys(expectedApiKey: string): Promise<{
+    valid: boolean;
+    workflows: Array<{
+      id: number;
+      name: string;
+      hasWebhook: boolean;
+      apiKeyMatch: boolean;
+      currentApiKey?: string;
+    }>;
+  }> {
+    try {
+      const workflows = await this.getWorkflows();
+      const paiperlessWorkflows = workflows.filter((w: any) =>
+        w.name?.includes('paiperless') || w.name?.includes('pAIperless')
+      );
+
+      const results = paiperlessWorkflows.map((workflow: any) => {
+        // Check if workflow has HTTP actions
+        const actions = workflow.actions || [];
+        const webhookAction = actions.find((action: any) =>
+          action.type === 'webhook' || action.type === 'http'
+        );
+
+        if (!webhookAction) {
+          return {
+            id: workflow.id,
+            name: workflow.name,
+            hasWebhook: false,
+            apiKeyMatch: false,
+          };
+        }
+
+        // Check headers for x-api-key
+        const headers = webhookAction.headers || {};
+        const currentApiKey = headers['x-api-key'] || headers['X-Api-Key'] || headers['X-API-KEY'];
+
+        return {
+          id: workflow.id,
+          name: workflow.name,
+          hasWebhook: true,
+          apiKeyMatch: currentApiKey === expectedApiKey,
+          currentApiKey: currentApiKey,
+        };
+      });
+
+      const allValid = results.every((r: any) => !r.hasWebhook || r.apiKeyMatch);
+
+      return {
+        valid: allValid,
+        workflows: results,
+      };
+    } catch (error) {
+      console.error('Error checking workflow API keys:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update webhook API key in a specific workflow
+   */
+  async updateWorkflowApiKey(workflowId: number, newApiKey: string): Promise<void> {
+    try {
+      const workflow = await this.getWorkflow(workflowId);
+
+      // Update all webhook actions with new API key
+      const updatedActions = (workflow.actions || []).map((action: any) => {
+        if (action.type === 'webhook' || action.type === 'http') {
+          return {
+            ...action,
+            headers: {
+              ...(action.headers || {}),
+              'x-api-key': newApiKey,
+            },
+          };
+        }
+        return action;
+      });
+
+      await this.updateWorkflow(workflowId, {
+        actions: updatedActions,
+      });
+    } catch (error) {
+      console.error(`Error updating API key in workflow ${workflowId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update webhook API key in all pAIperless workflows
+   */
+  async updateAllWorkflowApiKeys(newApiKey: string): Promise<{
+    success: boolean;
+    updated: number;
+    failed: Array<{ id: number; name: string; error: string }>;
+  }> {
+    try {
+      const check = await this.checkWorkflowApiKeys(newApiKey);
+      const workflowsToUpdate = check.workflows.filter(w => w.hasWebhook && !w.apiKeyMatch);
+
+      const failed: Array<{ id: number; name: string; error: string }> = [];
+      let updated = 0;
+
+      for (const workflow of workflowsToUpdate) {
+        try {
+          await this.updateWorkflowApiKey(workflow.id, newApiKey);
+          updated++;
+        } catch (error: any) {
+          failed.push({
+            id: workflow.id,
+            name: workflow.name,
+            error: error.message,
+          });
+        }
+      }
+
+      return {
+        success: failed.length === 0,
+        updated,
+        failed,
+      };
+    } catch (error) {
+      console.error('Error updating all workflow API keys:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create pAIperless webhooks automatically
+   * Creates two workflows: document_added and document_updated
+   */
+  async createPaiperlessWorkflows(webhookApiKey: string, paiperlessUrl: string): Promise<{
+    success: boolean;
+    created: Array<{ name: string; id: number }>;
+    existing: Array<{ name: string; id: number }>;
+    failed: Array<{ name: string; error: string }>;
+  }> {
+    const created: Array<{ name: string; id: number }> = [];
+    const existing: Array<{ name: string; id: number }> = [];
+    const failed: Array<{ name: string; error: string }> = [];
+
+    const workflows = [
+      {
+        name: 'paiperless_document_added',
+        triggerType: 2, // DOCUMENT_ADDED
+        actionType: 4,  // WEBHOOK
+        url: `${paiperlessUrl}/api/webhooks/paperless/document-added`,
+        description: 'Triggers AI analysis when a new document is added',
+      },
+      {
+        name: 'paiperless_document_updated',
+        triggerType: 3, // DOCUMENT_UPDATED
+        actionType: 4,  // WEBHOOK
+        url: `${paiperlessUrl}/api/webhooks/paperless/document-updated`,
+        description: 'Triggers action processing when a document is updated',
+      },
+    ];
+
+    for (const workflow of workflows) {
+      try {
+        // Check if workflow already exists
+        const existingWorkflows = await this.getWorkflows();
+        const existingWorkflow = existingWorkflows.find((w: any) => w.name === workflow.name);
+
+        if (existingWorkflow) {
+          // Workflow exists, update the API key if needed
+          const actions = existingWorkflow.actions || [];
+          const webhookAction = actions.find((a: any) => a.type === 'webhook' || a.type === 'http');
+
+          if (webhookAction) {
+            const currentApiKey = webhookAction.headers?.['x-api-key'];
+            if (currentApiKey !== webhookApiKey) {
+              // Update API key
+              await this.updateWorkflowApiKey(existingWorkflow.id, webhookApiKey);
+              existing.push({ name: workflow.name, id: existingWorkflow.id });
+            } else {
+              existing.push({ name: workflow.name, id: existingWorkflow.id });
+            }
+          } else {
+            existing.push({ name: workflow.name, id: existingWorkflow.id });
+          }
+          continue;
+        }
+
+        // Create new workflow
+        const response = await fetch(`${this.baseUrl}/api/workflows/`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Token ${this.token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: workflow.name,
+            enabled: true,
+            order: 0,
+            triggers: [
+              {
+                type: workflow.triggerType, // Integer: 2 for DOCUMENT_ADDED, 3 for DOCUMENT_UPDATED
+                sources: [],
+                filter_filename: null,
+                filter_path: null,
+                filter_mailrule: null,
+                filter_has_tags: [],
+                filter_has_document_type: null,
+                filter_has_correspondent: null,
+                matching_algorithm: 0, // NONE
+              },
+            ],
+            actions: [
+              {
+                type: workflow.actionType, // Integer: 4 for WEBHOOK
+                webhook: {
+                  url: workflow.url,
+                  use_params: false,
+                  as_json: true,
+                  params: {},
+                  body: '',
+                  headers: {
+                    'x-api-key': webhookApiKey,
+                    'Content-Type': 'application/json',
+                  },
+                  include_document: false,
+                },
+              },
+            ],
+          }),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Failed to create workflow: ${response.status} - ${errorText}`);
+        }
+
+        const data = await response.json();
+        created.push({ name: workflow.name, id: data.id });
+      } catch (error: any) {
+        console.error(`Error creating workflow ${workflow.name}:`, error);
+        failed.push({
+          name: workflow.name,
+          error: error.message,
+        });
+      }
+    }
+
+    return {
+      success: failed.length === 0,
+      created,
+      existing,
+      failed,
+    };
   }
 }
 

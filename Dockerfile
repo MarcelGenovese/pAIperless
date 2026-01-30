@@ -68,6 +68,18 @@ RUN npx prisma generate
 ENV NEXT_TELEMETRY_DISABLED 1
 RUN npm run build
 
+# Bundle TypeScript lib files that aren't included in standalone (with all dependencies)
+# Only keep Prisma external since it has native bindings
+RUN npx esbuild lib/action-polling.ts lib/google-calendar-tasks.ts \
+    --bundle \
+    --platform=node \
+    --target=node20 \
+    --format=cjs \
+    --outdir=lib \
+    --external:@prisma/client \
+    --external:.prisma/client \
+    || echo "Bundle completed with warnings"
+
 # Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
@@ -87,6 +99,9 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Copy lib files (needed for server-side modules not in standalone)
+COPY --from=builder /app/lib ./lib
+
 # Copy Prisma files and CLI
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
@@ -95,7 +110,7 @@ COPY --from=builder /app/prisma ./prisma
 
 # Copy management scripts
 COPY --from=builder /app/scripts ./scripts
-RUN chmod +x /app/scripts/cli.js /app/scripts/cleanup-logs.js /app/scripts/init-config-defaults.js /app/scripts/embed-ocr-layer.py
+RUN chmod +x /app/scripts/cli.js /app/scripts/cleanup-logs.js /app/scripts/init-config-defaults.js /app/scripts/clear-locks.js /app/scripts/embed-ocr-layer.py
 
 # Create storage directories with proper permissions
 RUN mkdir -p /app/storage/consume /app/storage/processing /app/storage/error \

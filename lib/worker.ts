@@ -10,6 +10,7 @@ import { getConfig, CONFIG_KEYS } from './config';
 import { getPDFInfo, detectAndRotatePDF, removeOCRLayer, exceedsLimits } from './pdf-processor';
 import { canProcessWithDocumentAI, reserveDocumentAIPages } from './cost-tracking';
 import { startAiTodoPolling, stopAiTodoPolling } from './polling';
+import { startActionPolling, stopActionPolling } from './action-polling';
 import { acquireLock, releaseLock, updateLockActivity } from './process-lock';
 import { checkEmergencyStop } from './emergency-stop';
 
@@ -295,6 +296,9 @@ export async function startWorker() {
 
   // Start AI_TODO polling (if enabled)
   await startAiTodoPolling();
+
+  // Start Action polling (if enabled)
+  await startActionPolling();
 }
 
 export async function stopWorker() {
@@ -314,4 +318,7 @@ export async function stopWorker() {
 
   // Stop AI_TODO polling
   await stopAiTodoPolling();
+
+  // Stop Action polling
+  await stopActionPolling();
 }

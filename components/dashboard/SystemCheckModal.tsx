@@ -29,6 +29,7 @@ export default function SystemCheckModal({ isOpen, onClose }: SystemCheckModalPr
   const [tests, setTests] = useState<TestResult[]>([
     { name: 'Paperless-NGX Verbindung', status: 'pending' },
     { name: 'Paperless Workflows', status: 'pending' },
+    { name: 'Webhook API Keys', status: 'pending' },
     { name: 'Paperless OCR-Einstellungen', status: 'pending' },
     { name: 'Google OAuth', status: 'pending' },
     { name: 'Gemini AI', status: 'pending' },
@@ -94,13 +95,43 @@ export default function SystemCheckModal({ isOpen, onClose }: SystemCheckModalPr
       ));
     }
 
-    // Test 3: Paperless OCR
+    // Test 3: Webhook API Keys
     setTests(prev => prev.map((t, i) => i === 2 ? { ...t, status: 'running' } : t));
+    try {
+      const res = await fetch('/api/webhooks/validate');
+      const data = await res.json();
+      if (data.valid) {
+        setTests(prev => prev.map((t, i) =>
+          i === 2 ? {
+            ...t,
+            status: 'success',
+            message: 'Alle Webhook API Keys sind aktuell'
+          } : t
+        ));
+      } else {
+        const invalidCount = data.workflows?.filter((w: any) => w.hasWebhook && !w.apiKeyMatch).length || 0;
+        setTests(prev => prev.map((t, i) =>
+          i === 2 ? {
+            ...t,
+            status: 'error',
+            message: `${invalidCount} Workflow(s) mit veraltetem API Key`,
+            detail: 'Bitte API Key in Workflows aktualisieren oder auf "Aktualisieren" klicken'
+          } : t
+        ));
+      }
+    } catch (error: any) {
+      setTests(prev => prev.map((t, i) =>
+        i === 2 ? { ...t, status: 'error', message: 'Prüfung fehlgeschlagen' } : t
+      ));
+    }
+
+    // Test 4: Paperless OCR
+    setTests(prev => prev.map((t, i) => i === 3 ? { ...t, status: 'running' } : t));
     try {
       const res = await fetch('/api/paperless/check-ocr');
       const data = await res.json();
       setTests(prev => prev.map((t, i) =>
-        i === 2 ? {
+        i === 3 ? {
           ...t,
           status: data.valid ? 'success' : 'error',
           message: data.message
@@ -108,22 +139,22 @@ export default function SystemCheckModal({ isOpen, onClose }: SystemCheckModalPr
       ));
     } catch (error: any) {
       setTests(prev => prev.map((t, i) =>
-        i === 2 ? { ...t, status: 'error', message: 'Prüfung fehlgeschlagen' } : t
+        i === 3 ? { ...t, status: 'error', message: 'Prüfung fehlgeschlagen' } : t
       ));
     }
 
-    // Test 4: Google OAuth
-    setTests(prev => prev.map((t, i) => i === 3 ? { ...t, status: 'running' } : t));
+    // Test 5: Google OAuth
+    setTests(prev => prev.map((t, i) => i === 4 ? { ...t, status: 'running' } : t));
     try {
       const res = await fetch('/api/auth/google/test', { method: 'POST' });
       const data = await res.json();
       if (data.inactive) {
         setTests(prev => prev.map((t, i) =>
-          i === 3 ? { ...t, status: 'inactive', message: 'Nicht konfiguriert' } : t
+          i === 4 ? { ...t, status: 'inactive', message: 'Nicht konfiguriert' } : t
         ));
       } else {
         setTests(prev => prev.map((t, i) =>
-          i === 3 ? {
+          i === 4 ? {
             ...t,
             status: res.ok ? 'success' : 'error',
             message: res.ok ? 'OAuth erfolgreich' : data.error || 'OAuth fehlgeschlagen'
@@ -132,12 +163,12 @@ export default function SystemCheckModal({ isOpen, onClose }: SystemCheckModalPr
       }
     } catch (error: any) {
       setTests(prev => prev.map((t, i) =>
-        i === 3 ? { ...t, status: 'error', message: 'Test fehlgeschlagen' } : t
+        i === 4 ? { ...t, status: 'error', message: 'Test fehlgeschlagen' } : t
       ));
     }
 
-    // Test 5: Gemini AI
-    setTests(prev => prev.map((t, i) => i === 4 ? { ...t, status: 'running' } : t));
+    // Test 6: Gemini AI
+    setTests(prev => prev.map((t, i) => i === 5 ? { ...t, status: 'running' } : t));
     try {
       const res = await fetch('/api/setup/test-gemini', {
         method: 'POST',
@@ -146,7 +177,7 @@ export default function SystemCheckModal({ isOpen, onClose }: SystemCheckModalPr
       });
       const data = await res.json();
       setTests(prev => prev.map((t, i) =>
-        i === 4 ? {
+        i === 5 ? {
           ...t,
           status: res.ok ? 'success' : 'error',
           message: res.ok ? 'API funktioniert' : data.error || 'API fehlgeschlagen'
@@ -154,12 +185,12 @@ export default function SystemCheckModal({ isOpen, onClose }: SystemCheckModalPr
       ));
     } catch (error: any) {
       setTests(prev => prev.map((t, i) =>
-        i === 4 ? { ...t, status: 'error', message: 'Test fehlgeschlagen' } : t
+        i === 5 ? { ...t, status: 'error', message: 'Test fehlgeschlagen' } : t
       ));
     }
 
-    // Test 6: Document AI
-    setTests(prev => prev.map((t, i) => i === 5 ? { ...t, status: 'running' } : t));
+    // Test 7: Document AI
+    setTests(prev => prev.map((t, i) => i === 6 ? { ...t, status: 'running' } : t));
     try {
       const res = await fetch('/api/setup/test-document-ai', {
         method: 'POST',
@@ -169,11 +200,11 @@ export default function SystemCheckModal({ isOpen, onClose }: SystemCheckModalPr
       const data = await res.json();
       if (data.inactive) {
         setTests(prev => prev.map((t, i) =>
-          i === 5 ? { ...t, status: 'inactive', message: 'Deaktiviert' } : t
+          i === 6 ? { ...t, status: 'inactive', message: 'Deaktiviert' } : t
         ));
       } else {
         setTests(prev => prev.map((t, i) =>
-          i === 5 ? {
+          i === 6 ? {
             ...t,
             status: res.ok ? 'success' : 'error',
             message: res.ok ? 'Verbindung erfolgreich' : data.error || 'Verbindung fehlgeschlagen'
@@ -182,22 +213,22 @@ export default function SystemCheckModal({ isOpen, onClose }: SystemCheckModalPr
       }
     } catch (error: any) {
       setTests(prev => prev.map((t, i) =>
-        i === 5 ? { ...t, status: 'error', message: 'Test fehlgeschlagen' } : t
+        i === 6 ? { ...t, status: 'error', message: 'Test fehlgeschlagen' } : t
       ));
     }
 
-    // Test 7: FTP Server
-    setTests(prev => prev.map((t, i) => i === 6 ? { ...t, status: 'running' } : t));
+    // Test 8: FTP Server
+    setTests(prev => prev.map((t, i) => i === 7 ? { ...t, status: 'running' } : t));
     try {
       const res = await fetch('/api/services/status');
       const data = await res.json();
       if (!data.ftp?.enabled) {
         setTests(prev => prev.map((t, i) =>
-          i === 6 ? { ...t, status: 'inactive', message: 'Deaktiviert' } : t
+          i === 7 ? { ...t, status: 'inactive', message: 'Deaktiviert' } : t
         ));
       } else {
         setTests(prev => prev.map((t, i) =>
-          i === 6 ? {
+          i === 7 ? {
             ...t,
             status: data.ftp?.running ? 'success' : 'error',
             message: data.ftp?.running ? `Läuft auf Port ${data.ftp.port}` : 'Server nicht aktiv'
@@ -206,25 +237,25 @@ export default function SystemCheckModal({ isOpen, onClose }: SystemCheckModalPr
       }
     } catch (error: any) {
       setTests(prev => prev.map((t, i) =>
-        i === 6 ? { ...t, status: 'error', message: 'Statusprüfung fehlgeschlagen' } : t
+        i === 7 ? { ...t, status: 'error', message: 'Statusprüfung fehlgeschlagen' } : t
       ));
     }
 
-    // Test 8: Email
-    setTests(prev => prev.map((t, i) => i === 7 ? { ...t, status: 'running' } : t));
+    // Test 9: Email
+    setTests(prev => prev.map((t, i) => i === 8 ? { ...t, status: 'running' } : t));
     try {
       const res = await fetch('/api/email/status');
       const data = await res.json();
       if (!data.enabled) {
         setTests(prev => prev.map((t, i) =>
-          i === 7 ? { ...t, status: 'inactive', message: 'Deaktiviert' } : t
+          i === 8 ? { ...t, status: 'inactive', message: 'Deaktiviert' } : t
         ));
       } else {
         // Test SMTP connection
         const testRes = await fetch('/api/email/test', { method: 'POST' });
         const testData = await testRes.json();
         setTests(prev => prev.map((t, i) =>
-          i === 7 ? {
+          i === 8 ? {
             ...t,
             status: testRes.ok ? 'success' : 'error',
             message: testRes.ok ? 'SMTP-Verbindung erfolgreich' : testData.error || 'Verbindung fehlgeschlagen'
@@ -233,7 +264,7 @@ export default function SystemCheckModal({ isOpen, onClose }: SystemCheckModalPr
       }
     } catch (error: any) {
       setTests(prev => prev.map((t, i) =>
-        i === 7 ? { ...t, status: 'error', message: 'Test fehlgeschlagen' } : t
+        i === 8 ? { ...t, status: 'error', message: 'Test fehlgeschlagen' } : t
       ));
     }
 

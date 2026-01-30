@@ -31,6 +31,7 @@ export default function Step1Paperless({ onNext, onBack, data }: Step1PaperlessP
   const [testingWebhooks, setTestingWebhooks] = useState(false);
   const [webhooksExist, setWebhooksExist] = useState<boolean | null>(null);
   const [generatingKey, setGeneratingKey] = useState(false);
+  const [creatingWorkflows, setCreatingWorkflows] = useState(false);
 
   useEffect(() => {
     // Auto-detect base URL for webhook instructions
@@ -72,6 +73,11 @@ export default function Step1Paperless({ onNext, onBack, data }: Step1PaperlessP
           title: 'Connection Successful',
           description: result.message || 'Successfully connected to Paperless-NGX',
         });
+
+        // Automatically create workflows after successful connection
+        setTimeout(async () => {
+          await handleCreateWorkflows();
+        }, 500);
       } else {
         console.error('Paperless connection error:', result);
         const errorMsg = result.error || 'Failed to connect to Paperless-NGX';
@@ -135,11 +141,62 @@ export default function Step1Paperless({ onNext, onBack, data }: Step1PaperlessP
     }
   };
 
+  const handleCreateWorkflows = async () => {
+    setCreatingWorkflows(true);
+
+    try {
+      const response = await fetch('/api/webhooks/create-workflows', {
+        method: 'POST',
+      });
+
+      const result = await response.json();
+      console.log('Workflow creation result:', result);
+
+      if (result.success) {
+        const createdCount = result.created?.length || 0;
+        const existingCount = result.existing?.length || 0;
+        const totalCount = createdCount + existingCount;
+
+        if (createdCount > 0) {
+          toast({
+            title: 'Workflows Created',
+            description: `${createdCount} workflow(s) created successfully${existingCount > 0 ? `, ${existingCount} already existed` : ''}`,
+          });
+        } else {
+          toast({
+            title: 'Workflows Already Exist',
+            description: `All ${existingCount} required workflows already exist`,
+          });
+        }
+
+        // Automatically verify workflows after creation
+        await handleTestWebhooks();
+      } else {
+        const failedCount = result.failed?.length || 0;
+        toast({
+          title: 'Workflow Creation Failed',
+          description: `Failed to create ${failedCount} workflow(s). ${result.error || 'Please check the logs.'}`,
+          variant: 'destructive',
+        });
+      }
+    } catch (error: any) {
+      console.error('Workflow creation exception:', error);
+      toast({
+        title: 'Creation Error',
+        description: error.message || 'An error occurred while creating workflows',
+        variant: 'destructive',
+      });
+    } finally {
+      setCreatingWorkflows(false);
+    }
+  };
+
   const handleTestWebhooks = async () => {
     setTestingWebhooks(true);
     setWebhooksExist(null);
 
     try {
+      // First, check if webhooks exist
       const response = await fetch('/api/setup/test-webhooks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -150,11 +207,36 @@ export default function Step1Paperless({ onNext, onBack, data }: Step1PaperlessP
       console.log('Webhooks test result:', result);
 
       if (response.ok && result.webhooksExist) {
-        setWebhooksExist(true);
-        toast({
-          title: 'Webhooks Found',
-          description: 'Required webhooks are configured correctly',
-        });
+        // Webhooks exist, now check API keys
+        try {
+          const apiKeyResponse = await fetch('/api/webhooks/validate');
+          const apiKeyResult = await apiKeyResponse.json();
+          console.log('Webhook API key validation:', apiKeyResult);
+
+          if (apiKeyResult.valid) {
+            setWebhooksExist(true);
+            toast({
+              title: 'Webhooks Configured',
+              description: 'Webhooks are configured correctly with matching API keys',
+            });
+          } else {
+            const invalidCount = apiKeyResult.workflows?.filter((w: any) => w.hasWebhook && !w.apiKeyMatch).length || 0;
+            setWebhooksExist(false);
+            toast({
+              title: 'API Key Mismatch',
+              description: `Webhooks found but ${invalidCount} workflow(s) have outdated API keys. Please update the x-api-key header in your workflows.`,
+              variant: 'destructive',
+            });
+          }
+        } catch (apiKeyError: any) {
+          console.warn('Could not validate API keys:', apiKeyError);
+          // Still consider webhooks valid if they exist, even if API key check fails
+          setWebhooksExist(true);
+          toast({
+            title: 'Webhooks Found',
+            description: 'Required webhooks are configured. API key validation skipped.',
+          });
+        }
       } else {
         setWebhooksExist(false);
         console.error('Webhooks test error:', result);
@@ -363,7 +445,10 @@ export default function Step1Paperless({ onNext, onBack, data }: Step1PaperlessP
                       Configure Webhooks in Paperless-NGX
                     </h3>
                     <p className="text-sm text-blue-800 mb-3">
-                      You need to create two webhooks in Paperless-NGX (Settings → Workflows):
+                      <strong>Option 1 (Recommended):</strong> Click "Auto-Create Workflows" below to automatically create the required webhooks.
+                    </p>
+                    <p className="text-sm text-blue-800 mb-3">
+                      <strong>Option 2 (Manual):</strong> Create two webhooks manually in Paperless-NGX (Settings → Workflows):
                     </p>
                   </div>
 
@@ -423,11 +508,20 @@ export default function Step1Paperless({ onNext, onBack, data }: Step1PaperlessP
                 </div>
               </Card>
 
-              {/* Test Webhooks */}
+              {/* Create & Test Webhooks */}
               <div className="flex gap-4">
                 <Button
+                  onClick={handleCreateWorkflows}
+                  disabled={creatingWorkflows || testingWebhooks}
+                  variant="default"
+                  className="flex-1"
+                >
+                  <FontAwesomeIcon icon={creatingWorkflows ? faSpinner : faCheckCircle} className={`mr-2 ${creatingWorkflows ? 'animate-spin' : ''}`} />
+                  {creatingWorkflows ? 'Creating...' : 'Auto-Create Workflows'}
+                </Button>
+                <Button
                   onClick={handleTestWebhooks}
-                  disabled={testingWebhooks}
+                  disabled={testingWebhooks || creatingWorkflows}
                   variant="outline"
                   className="flex-1"
                 >

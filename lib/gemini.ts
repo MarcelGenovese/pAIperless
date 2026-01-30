@@ -21,11 +21,24 @@ export class GeminiClient {
     this.model = model;
   }
 
-  async analyzeDocument(prompt: string): Promise<{
+  async analyzeDocument(prompt: string, schema?: any): Promise<{
     response: GeminiResponse;
     tokensUsed: { input: number; output: number };
   }> {
     try {
+      const generationConfig: any = {
+        temperature: 0.1,
+        topK: 32,
+        topP: 1,
+        maxOutputTokens: 2048,
+        responseMimeType: "application/json",  // Force JSON output
+      };
+
+      // Add schema if provided
+      if (schema) {
+        generationConfig.responseSchema = schema;
+      }
+
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`,
         {
@@ -39,12 +52,7 @@ export class GeminiClient {
                 text: prompt,
               }],
             }],
-            generationConfig: {
-              temperature: 0.1,
-              topK: 32,
-              topP: 1,
-              maxOutputTokens: 2048,
-            },
+            generationConfig,
           }),
         }
       );
@@ -62,15 +70,30 @@ export class GeminiClient {
       // Parse JSON from response
       let parsedResponse: GeminiResponse = {};
       try {
-        // Try to find JSON in the response (in case there's markdown or other text)
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        // Remove markdown code blocks if present
+        let cleanText = text.trim();
+
+        // Remove ```json and ``` markers
+        if (cleanText.startsWith('```json')) {
+          cleanText = cleanText.replace(/^```json\s*/i, '').replace(/```\s*$/, '');
+        } else if (cleanText.startsWith('```')) {
+          cleanText = cleanText.replace(/^```\s*/, '').replace(/```\s*$/, '');
+        }
+
+        // Try to find JSON object in the text
+        const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           parsedResponse = JSON.parse(jsonMatch[0]);
         } else {
-          parsedResponse = JSON.parse(text);
+          parsedResponse = JSON.parse(cleanText);
         }
       } catch (parseError) {
-        await logger.error('Failed to parse Gemini response as JSON', { text, parseError });
+        // Log the full response for debugging
+        await logger.error('Failed to parse Gemini response as JSON', {
+          text: text.substring(0, 500) + (text.length > 500 ? '...' : ''),
+          fullTextLength: text.length,
+          parseError
+        });
         throw new Error('Invalid JSON response from Gemini');
       }
 

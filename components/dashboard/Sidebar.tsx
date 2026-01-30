@@ -18,6 +18,7 @@ import {
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import EmergencyStopButton from './EmergencyStopButton';
+import ProcessingStatusIndicator from './ProcessingStatusIndicator';
 import { Button } from '@/components/ui/button';
 
 interface SidebarProps {
@@ -135,6 +136,11 @@ export default function Sidebar({ activeTab, onTabChange, onSystemCheckOpen }: S
               System Check
             </Button>
           )}
+        </div>
+
+        {/* Processing Status */}
+        <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+          <ProcessingStatusIndicator />
         </div>
       </nav>
     </div>

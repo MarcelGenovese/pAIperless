@@ -32,7 +32,9 @@ export default function WebhookApiKeyDisplay() {
   const loadApiKey = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/webhook-api-key');
+      const response = await fetch('/api/webhook-api-key', {
+        credentials: 'include',
+      });
       const data = await response.json();
       if (data.apiKey) {
         setApiKey(data.apiKey);
@@ -55,7 +57,28 @@ export default function WebhookApiKeyDisplay() {
   const handleClick = async () => {
     // Copy to clipboard on click
     try {
-      await navigator.clipboard.writeText(apiKey);
+      // Try modern Clipboard API first
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(apiKey);
+      } else {
+        // Fallback for browsers without Clipboard API or insecure contexts
+        const textArea = document.createElement('textarea');
+        textArea.value = apiKey;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+
+        if (!successful) {
+          throw new Error('execCommand failed');
+        }
+      }
+
       setCopied(true);
 
       toast({
@@ -68,7 +91,7 @@ export default function WebhookApiKeyDisplay() {
       console.error('Failed to copy to clipboard:', error);
       toast({
         title: 'Fehler',
-        description: 'Konnte nicht in Zwischenablage kopieren',
+        description: 'Konnte nicht in Zwischenablage kopieren. Bitte manuell kopieren.',
         variant: 'destructive',
       });
     }
@@ -81,16 +104,35 @@ export default function WebhookApiKeyDisplay() {
     try {
       const response = await fetch('/api/webhook-api-key/regenerate', {
         method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
 
       const data = await response.json();
 
       if (data.success && data.apiKey) {
         setApiKey(data.apiKey);
-        toast({
-          title: 'API Key neu generiert',
-          description: 'Der Webhook API Key wurde erfolgreich neu generiert. Bitte aktualisieren Sie die Paperless Workflows.',
-        });
+
+        // Show appropriate message based on workflow update result
+        if (data.workflowUpdate?.success) {
+          toast({
+            title: 'API Key neu generiert',
+            description: `Der Webhook API Key wurde erfolgreich neu generiert und in ${data.workflowUpdate.updated} Workflow(s) aktualisiert.`,
+          });
+        } else if (data.workflowUpdate?.error) {
+          toast({
+            title: 'API Key neu generiert',
+            description: 'API Key generiert, aber Workflows konnten nicht automatisch aktualisiert werden. Bitte manuell in Paperless aktualisieren.',
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: 'API Key neu generiert',
+            description: 'Der Webhook API Key wurde erfolgreich neu generiert. Bitte aktualisieren Sie die Paperless Workflows.',
+          });
+        }
       } else {
         throw new Error('Failed to regenerate API key');
       }

@@ -4,8 +4,10 @@ import { getGeminiClient } from './gemini';
 import { generateAnalysisPrompt } from './prompt-generator';
 import { prisma } from './prisma';
 import { createLogger } from './logger';
-import { withLock, isLocked } from './process-lock';
+import { withLock, isLocked, updateLockProgress } from './process-lock';
 import { checkEmergencyStop } from './emergency-stop';
+import { canProcessWithGemini } from './cost-tracking';
+import { sendDocumentProcessedEmail, sendDocumentErrorEmail } from './email';
 
 const logger = createLogger('Polling');
 
@@ -52,6 +54,8 @@ export async function processAiTodoDocuments(): Promise<{
       return { total: 0, successful: 0, failed: 0, results: [] };
     }
 
+    await logger.info(`[AI Polling] AI_TODO tag "${tagAiTodoName}" has ID: ${tagAiTodoId}`);
+
     // Query Paperless for documents with AI_TODO tag
     const documents = await paperlessClient.getDocumentsByTag(tagAiTodoId);
     await logger.info(`[AI Polling] Found ${documents.length} documents with tag "${tagAiTodoName}"`);
@@ -59,6 +63,13 @@ export async function processAiTodoDocuments(): Promise<{
     if (documents.length === 0) {
       return { total: 0, successful: 0, failed: 0, results: [] };
     }
+
+    // Update progress: starting
+    await updateLockProgress('AI_DOCUMENT_PROCESSING', {
+      current: 0,
+      total: documents.length,
+      message: `Starte Verarbeitung von ${documents.length} Dokument(en)`,
+    });
 
     // Get Gemini client
     const geminiClient = await getGeminiClient();
@@ -70,9 +81,20 @@ export async function processAiTodoDocuments(): Promise<{
 
     // Process each document
     const results = [];
+    let currentIndex = 0;
     for (const doc of documents) {
       try {
+        currentIndex++;
         await logger.info(`[AI Polling] Processing document ${doc.id}: "${doc.title}"`);
+        await logger.info(`[AI Polling] Document ${doc.id} current tags: ${JSON.stringify(doc.tags)}`);
+
+        // Update progress
+        await updateLockProgress('AI_DOCUMENT_PROCESSING', {
+          current: currentIndex,
+          total: documents.length,
+          currentItem: doc.title || `Dokument ${doc.id}`,
+          message: `Verarbeite ${currentIndex}/${documents.length}`,
+        });
 
         // Get document content
         const content = await paperlessClient.getDocumentContent(doc.id);
@@ -87,12 +109,61 @@ export async function processAiTodoDocuments(): Promise<{
           continue;
         }
 
-        // Generate prompt
-        const prompt = await generateAnalysisPrompt(paperlessClient, content);
+        // Check if we can process with Gemini (cost limit check)
+        const estimatedTokens = Math.ceil(content.length / 4); // Rough estimate
+        const limitCheck = await canProcessWithGemini(estimatedTokens);
+        if (!limitCheck.allowed) {
+          await logger.error(`[AI Polling] Monthly Gemini token limit reached, stopping processing`);
+          await logger.error(`[AI Polling] ${limitCheck.reason}`);
 
-        // Call Gemini AI
-        await logger.info(`[AI Polling] Sending document ${doc.id} to Gemini for analysis`);
-        const { response, tokensUsed } = await geminiClient.analyzeDocument(prompt);
+          // Update document status to show limit reached
+          await prisma.log.create({
+            data: {
+              level: 'ERROR',
+              message: `Document ${doc.id} skipped - Token limit reached`,
+              meta: JSON.stringify({
+                documentId: doc.id,
+                reason: limitCheck.reason,
+              }),
+            },
+          });
+
+          results.push({
+            documentId: doc.id,
+            status: 'skipped',
+            reason: 'Token limit reached',
+          });
+
+          // Stop processing further documents
+          break;
+        }
+
+        // Generate prompt and schema
+        const { prompt, schema } = await generateAnalysisPrompt(paperlessClient, content);
+
+        // Call Gemini AI with retry logic
+        await logger.info(`[AI Polling] Sending document ${doc.id} to Gemini for analysis (with JSON schema validation)`);
+
+        let response;
+        let tokensUsed;
+        let retryCount = 0;
+        const maxRetries = 2;
+
+        while (retryCount <= maxRetries) {
+          try {
+            const result = await geminiClient.analyzeDocument(prompt, schema);
+            response = result.response;
+            tokensUsed = result.tokensUsed;
+            break; // Success, exit retry loop
+          } catch (error: any) {
+            retryCount++;
+            if (retryCount > maxRetries) {
+              throw error; // Max retries reached, throw error
+            }
+            await logger.warn(`[AI Polling] Gemini failed for document ${doc.id}, retry ${retryCount}/${maxRetries}`, { error: error.message });
+            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount)); // Exponential backoff
+          }
+        }
 
         await logger.info(`[AI Polling] Gemini response for document ${doc.id}:`, JSON.stringify(response, null, 2));
         await logger.info(`[AI Polling] Tokens used - Input: ${tokensUsed.input}, Output: ${tokensUsed.output}`);
@@ -107,14 +178,27 @@ export async function processAiTodoDocuments(): Promise<{
 
         // Tags - convert tag names to IDs, create new tags if needed
         if (response.tags && Array.isArray(response.tags)) {
+          await logger.info(`[AI Polling] Gemini suggested tags for document ${doc.id}: ${JSON.stringify(response.tags)}`);
+
+          // Filter out AI_TODO tag from Gemini suggestions (it should never suggest this tag)
+          const filteredTags = response.tags.filter((tagName: string) => tagName.toLowerCase() !== tagAiTodoName.toLowerCase());
+          if (filteredTags.length !== response.tags.length) {
+            await logger.warn(`[AI Polling] Gemini incorrectly suggested "${tagAiTodoName}" tag, filtering it out`);
+          }
+
           const tagIds: number[] = [];
-          for (const tagName of response.tags) {
+          for (const tagName of filteredTags) {
+            await logger.info(`[AI Polling] Getting/creating tag: "${tagName}"`);
             const tagId = await paperlessClient.createOrGetTag(tagName);
+            await logger.info(`[AI Polling] Tag "${tagName}" has ID: ${tagId}`);
             tagIds.push(tagId);
           }
 
           // Add existing tags from document (except AI_TODO)
           const existingTags = doc.tags || [];
+          await logger.info(`[AI Polling] Document ${doc.id} existing tags before filter: ${JSON.stringify(existingTags)}`);
+          await logger.info(`[AI Polling] Filtering out AI_TODO tag with ID: ${tagAiTodoId}`);
+
           for (const existingTagId of existingTags) {
             if (existingTagId !== tagAiTodoId && !tagIds.includes(existingTagId)) {
               tagIds.push(existingTagId);
@@ -124,16 +208,21 @@ export async function processAiTodoDocuments(): Promise<{
           // Add ACTION_REQUIRED tag if action description is present
           if (response.custom_fields && response.custom_fields[fieldActionDescription]) {
             const actionRequiredTagId = await paperlessClient.createOrGetTag(tagActionRequiredName);
+            await logger.info(`[AI Polling] Adding ACTION_REQUIRED tag (ID: ${actionRequiredTagId}) to document ${doc.id}`);
             if (!tagIds.includes(actionRequiredTagId)) {
               tagIds.push(actionRequiredTagId);
             }
           }
 
           updates.tags = tagIds;
+          await logger.info(`[AI Polling] Final tag IDs for document ${doc.id}: ${JSON.stringify(tagIds)}`);
         } else {
           // Keep existing tags but remove AI_TODO
           const existingTags = doc.tags || [];
+          await logger.info(`[AI Polling] No tags from Gemini, keeping existing tags except AI_TODO`);
+          await logger.info(`[AI Polling] Document ${doc.id} existing tags before filter: ${JSON.stringify(existingTags)}`);
           updates.tags = existingTags.filter((id: number) => id !== tagAiTodoId);
+          await logger.info(`[AI Polling] Final tag IDs for document ${doc.id} after removing AI_TODO: ${JSON.stringify(updates.tags)}`);
         }
 
         // Correspondent
@@ -176,9 +265,20 @@ export async function processAiTodoDocuments(): Promise<{
 
         // Update document in Paperless
         await logger.info(`[AI Polling] Updating document ${doc.id} in Paperless with:`, JSON.stringify(updates, null, 2));
-        await paperlessClient.updateDocument(doc.id, updates);
 
-        // Track token usage in database
+        try {
+          await paperlessClient.updateDocument(doc.id, updates);
+          await logger.info(`[AI Polling] Successfully updated document ${doc.id} in Paperless`);
+
+          // Verify tags were updated by fetching the document again
+          const updatedDoc = await paperlessClient.getDocument(doc.id);
+          await logger.info(`[AI Polling] Document ${doc.id} tags after update: ${JSON.stringify(updatedDoc.tags)}`);
+        } catch (updateError: any) {
+          await logger.error(`[AI Polling] Failed to update document ${doc.id} in Paperless:`, updateError);
+          throw updateError;
+        }
+
+        // Track token usage in database - both in logs AND document table
         await prisma.log.create({
           data: {
             level: 'INFO',
@@ -192,6 +292,68 @@ export async function processAiTodoDocuments(): Promise<{
           },
         });
 
+        // Update token usage in Document table AND costTracking table
+        const existingDoc = await prisma.document.findFirst({
+          where: { paperlessId: doc.id },
+        });
+
+        if (existingDoc) {
+          // Update existing document
+          await prisma.document.updateMany({
+            where: { paperlessId: doc.id },
+            data: {
+              geminiTokensSent: tokensUsed.input,
+              geminiTokensRecv: tokensUsed.output,
+            },
+          });
+        } else {
+          // Create new record for tracking
+          await prisma.document.create({
+            data: {
+              paperlessId: doc.id,
+              originalFilename: doc.title || `document-${doc.id}`,
+              fileHash: `paperless-${doc.id}`,
+              status: 'COMPLETED',
+              geminiTokensSent: tokensUsed.input,
+              geminiTokensRecv: tokensUsed.output,
+            },
+          });
+        }
+
+        // Update costTracking table for monthly usage tracking
+        const tracking = await prisma.costTracking.findFirst({
+          where: {
+            month: {
+              startsWith: new Date().toISOString().slice(0, 7) // Current month YYYY-MM
+            }
+          }
+        });
+
+        if (tracking) {
+          await prisma.costTracking.update({
+            where: { id: tracking.id },
+            data: {
+              geminiTokensSent: {
+                increment: tokensUsed.input
+              },
+              geminiTokensReceived: {
+                increment: tokensUsed.output
+              }
+            }
+          });
+        } else {
+          // Create tracking record if it doesn't exist
+          await prisma.costTracking.create({
+            data: {
+              month: new Date().toISOString().slice(0, 7),
+              geminiTokensSent: tokensUsed.input,
+              geminiTokensReceived: tokensUsed.output,
+              documentAIPagesLimit: 5000,
+              geminiTokensLimit: 1000000,
+            }
+          });
+        }
+
         results.push({
           documentId: doc.id,
           status: 'success',
@@ -199,8 +361,22 @@ export async function processAiTodoDocuments(): Promise<{
         });
 
         await logger.info(`[AI Polling] Successfully processed document ${doc.id}`);
+
+        // Send email notification for successful processing
+        await sendDocumentProcessedEmail(
+          doc.title || `Dokument ${doc.id}`,
+          doc.id,
+          tokensUsed.input + tokensUsed.output
+        );
       } catch (error: any) {
         await logger.error(`[AI Polling] Error processing document ${doc.id}:`, error);
+
+        // Send email notification for error
+        await sendDocumentErrorEmail(
+          doc.title || `Dokument ${doc.id}`,
+          error.message || 'Unknown error',
+          doc.id
+        );
 
         await prisma.log.create({
           data: {

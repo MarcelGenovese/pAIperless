@@ -45,6 +45,10 @@ echo "✅ Database ready"
 echo "⚙️  Initializing default configuration..."
 gosu nextjs node /app/scripts/init-config-defaults.js || echo "⚠️  Config init warning"
 
+# Clear process locks on startup
+echo "🔓 Clearing process locks..."
+gosu nextjs node /app/scripts/clear-locks.js || echo "⚠️  Lock clear warning"
+
 # Setup cron job for log cleanup (runs daily at 3 AM)
 echo "⏰ Setting up cron job for log cleanup..."
 echo "0 3 * * * cd /app && /usr/local/bin/node /app/scripts/cleanup-logs.js >> /app/storage/logs/cleanup-cron.log 2>&1" | crontab -u nextjs -

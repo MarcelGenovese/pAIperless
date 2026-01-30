@@ -11,7 +11,8 @@ const logger = createLogger('ProcessLock');
 export type ProcessType =
   | 'AI_DOCUMENT_PROCESSING'  // Manual AI processing or webhook processing
   | 'DOCUMENT_UPLOAD'         // File upload to Paperless
-  | 'WORKER_CONSUME';         // Worker processing consume folder
+  | 'WORKER_CONSUME'          // Worker processing consume folder
+  | 'ACTION_TASK_POLLING';    // Polling for completed Google Tasks
 
 export interface ProcessLock {
   type: ProcessType;
@@ -19,10 +20,16 @@ export interface ProcessLock {
   startedAt: Date | null;
   lastActivity: Date | null;
   details?: string;
+  progress?: {
+    current?: number;
+    total?: number;
+    currentItem?: string;
+    message?: string;
+  };
 }
 
-// Lock timeout in milliseconds (10 minutes)
-const LOCK_TIMEOUT = 10 * 60 * 1000;
+// Lock timeout in milliseconds (5 minutes)
+const LOCK_TIMEOUT = 5 * 60 * 1000;
 
 /**
  * Try to acquire a lock for a process
@@ -133,6 +140,38 @@ export async function updateLockActivity(type: ProcessType): Promise<void> {
 }
 
 /**
+ * Update lock progress information
+ */
+export async function updateLockProgress(
+  type: ProcessType,
+  progress: {
+    current?: number;
+    total?: number;
+    currentItem?: string;
+    message?: string;
+  }
+): Promise<void> {
+  try {
+    const existing = await prisma.config.findUnique({
+      where: { key: `LOCK_${type}` },
+    });
+
+    if (!existing) return;
+
+    const lockData: ProcessLock = JSON.parse(existing.value);
+    lockData.lastActivity = new Date();
+    lockData.progress = progress;
+
+    await prisma.config.update({
+      where: { key: `LOCK_${type}` },
+      data: { value: JSON.stringify(lockData) },
+    });
+  } catch (error) {
+    await logger.error(`[${type}] Failed to update lock progress`, error);
+  }
+}
+
+/**
  * Check if a process is currently locked
  */
 export async function isLocked(type: ProcessType): Promise<boolean> {
@@ -233,19 +272,23 @@ export async function withLock<T>(
     throw new Error(`Failed to acquire lock for ${type} - process already running`);
   }
 
+  let activityInterval: NodeJS.Timeout | null = null;
+
   try {
     // Set up periodic activity updates
-    const activityInterval = setInterval(async () => {
+    activityInterval = setInterval(async () => {
       await updateLockActivity(type);
     }, 30000); // Update every 30 seconds
 
     const result = await fn();
 
-    clearInterval(activityInterval);
+    if (activityInterval) clearInterval(activityInterval);
     await releaseLock(type);
 
     return result;
   } catch (error) {
+    // CRITICAL: Clean up interval even on error
+    if (activityInterval) clearInterval(activityInterval);
     await releaseLock(type);
     throw error;
   }

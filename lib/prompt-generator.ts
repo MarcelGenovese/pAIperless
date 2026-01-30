@@ -13,10 +13,97 @@ interface PromptConfig {
   systemLanguage: string;
 }
 
+/**
+ * Generate JSON schema for Gemini API response validation
+ * Note: Gemini uses OpenAPI 3.0 schema format, not standard JSON Schema
+ */
+export async function generateResponseSchema(
+  paperlessClient: PaperlessClient
+): Promise<any> {
+  const customFields = await paperlessClient.getCustomFields();
+
+  const schema: any = {
+    type: "OBJECT",
+    properties: {
+      title: {
+        type: "STRING",
+        description: "Suggested document title",
+        nullable: false
+      },
+      tags: {
+        type: "ARRAY",
+        items: { type: "STRING" },
+        description: "Array of tag names",
+        nullable: false
+      },
+      correspondent: {
+        type: "STRING",
+        description: "Correspondent name",
+        nullable: true
+      },
+      document_type: {
+        type: "STRING",
+        description: "Document type name",
+        nullable: true
+      },
+      storage_path: {
+        type: "STRING",
+        description: "Storage path name",
+        nullable: true
+      }
+    },
+    required: ["title", "tags"]
+  };
+
+  // Add custom fields to schema
+  if (customFields.length > 0) {
+    schema.properties.custom_fields = {
+      type: "OBJECT",
+      properties: {},
+      description: "Custom field values",
+      nullable: true
+    };
+
+    customFields.forEach(field => {
+      let fieldSchema: any = { nullable: true };
+
+      switch (field.data_type) {
+        case 'string':
+        case 'text':
+        case 'url':
+        case 'select':
+          fieldSchema.type = "STRING";
+          break;
+        case 'integer':
+        case 'documentlink':
+          fieldSchema.type = "INTEGER";
+          break;
+        case 'float':
+          fieldSchema.type = "NUMBER";
+          break;
+        case 'boolean':
+          fieldSchema.type = "BOOLEAN";
+          break;
+        case 'date':
+          fieldSchema.type = "STRING";
+          fieldSchema.format = "date";
+          fieldSchema.description = "Date in YYYY-MM-DD format";
+          break;
+        default:
+          fieldSchema.type = "STRING";
+      }
+
+      schema.properties.custom_fields.properties[field.name] = fieldSchema;
+    });
+  }
+
+  return schema;
+}
+
 export async function generateAnalysisPrompt(
   paperlessClient: PaperlessClient,
   documentContent: string
-): Promise<string> {
+): Promise<{ prompt: string; schema: any }> {
   // Load configuration
   const tagMode = (await getConfig(CONFIG_KEYS.GEMINI_TAG_MODE) || 'flexible') as 'strict' | 'flexible' | 'free';
   const maxTags = parseInt(await getConfig(CONFIG_KEYS.GEMINI_MAX_TAGS) || '5');
@@ -102,6 +189,9 @@ export async function generateAnalysisPrompt(
   prompt += `- All text fields in your JSON response (title, tags, correspondent, document_type, storage_path, custom field values) MUST be in ${languageName}\n`;
   prompt += `- Use ${languageName} for all generated text, descriptions, and metadata\n\n`;
 
+  // Get AI_TODO tag name from config to exclude it
+  const tagAiTodoName = await getConfig(CONFIG_KEYS.TAG_AI_TODO) || 'ai_todo';
+
   // Tag instructions based on mode
   prompt += '**Tag Generation Rules:**\n';
   if (tagMode === 'strict') {
@@ -114,6 +204,7 @@ export async function generateAnalysisPrompt(
   } else { // free
     prompt += `- You can create any tags that describe the document (max ${maxTags} tags)\n`;
   }
+  prompt += `- **NEVER include the tag "${tagAiTodoName}" in your response** - it is a system tag\n`;
   prompt += '\n';
 
   // Correspondents (only show list if strict mode is enabled)
@@ -169,11 +260,17 @@ export async function generateAnalysisPrompt(
   }
 
   prompt += '**Final Instructions:**\n';
-  prompt += '- Respond ONLY with valid JSON. Do not include any other text or markdown.\n';
-  prompt += '- Ensure all text is in the specified language\n\n';
+  prompt += '- Your response MUST be valid JSON only\n';
+  prompt += '- Do NOT include markdown code blocks (```json), explanations, or any text outside the JSON\n';
+  prompt += '- Do NOT truncate the JSON - ensure it is complete and valid\n';
+  prompt += '- Ensure all text is in the specified language\n';
+  prompt += '- All fields are optional except "title" and "tags"\n\n';
 
   prompt += '**Document to analyze:**\n\n';
   prompt += documentContent;
 
-  return prompt;
+  // Generate response schema for strict validation
+  const schema = await generateResponseSchema(paperlessClient);
+
+  return { prompt, schema };
 }

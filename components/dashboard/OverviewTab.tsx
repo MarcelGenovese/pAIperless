@@ -21,6 +21,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
+import QueueCards from './QueueCards';
 
 interface ServiceStatus {
   status: 'connected' | 'error' | 'checking' | 'not_configured';
@@ -141,6 +142,9 @@ export default function OverviewTab() {
 
   return (
     <div className="space-y-6">
+      {/* Queue Status Cards */}
+      <QueueCards />
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>

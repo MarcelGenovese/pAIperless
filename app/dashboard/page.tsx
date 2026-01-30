@@ -19,7 +19,7 @@ import EmailSettingsCard from '@/components/dashboard/EmailSettingsCard';
 import AdvancedSettingsTab from '@/components/dashboard/AdvancedSettingsTab';
 import SystemCheckModal from '@/components/dashboard/SystemCheckModal';
 import WebhookApiKeyDisplay from '@/components/dashboard/WebhookApiKeyDisplay';
-import ProcessingStatusIndicator from '@/components/dashboard/ProcessingStatusIndicator';
+import WebhookValidationWarning from '@/components/dashboard/WebhookValidationWarning';
 import Footer from '@/components/Footer';
 
 export default function DashboardPage() {
@@ -147,9 +147,9 @@ export default function DashboardPage() {
               />
             </div>
 
-            {/* Processing Status Indicator */}
-            <div className="flex-1 flex justify-center">
-              <ProcessingStatusIndicator />
+            {/* Webhook Validation Warning */}
+            <div className="flex-1 flex justify-center items-center gap-3">
+              <WebhookValidationWarning />
             </div>
 
             <div className="flex items-center gap-3">
