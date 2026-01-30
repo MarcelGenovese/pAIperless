@@ -11,6 +11,7 @@ import { getPDFInfo, detectAndRotatePDF, removeOCRLayer, exceedsLimits } from '.
 import { canProcessWithDocumentAI, reserveDocumentAIPages } from './cost-tracking';
 import { startAiTodoPolling, stopAiTodoPolling } from './polling';
 import { acquireLock, releaseLock, updateLockActivity } from './process-lock';
+import { checkEmergencyStop } from './emergency-stop';
 
 const logger = createLogger('Worker');
 
@@ -54,6 +55,14 @@ function calculateFileHash(filePath: string): string {
 async function processFile(filePath: string) {
   const fileName = filePath.split('/').pop() || 'unknown';
   await logger.info(`📄 Processing file: ${fileName}`);
+
+  // Check emergency stop
+  try {
+    await checkEmergencyStop('File processing');
+  } catch (error) {
+    await logger.warn(`🚨 File processing blocked by emergency stop: ${fileName}`);
+    return;
+  }
 
   let processingPath: string | null = null;
   let rotatedPath: string | null = null;

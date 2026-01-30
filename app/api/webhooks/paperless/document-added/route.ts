@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getConfig, CONFIG_KEYS } from '@/lib/config';
 import { processAiTodoDocuments } from '@/lib/polling';
+import { checkEmergencyStop } from '@/lib/emergency-stop';
 
 export const runtime = 'nodejs';
 
@@ -15,7 +16,18 @@ export const runtime = 'nodejs';
  */
 export async function POST(request: NextRequest) {
   try {
-    // 1. Validate webhook API key
+    // 1. Check emergency stop first
+    try {
+      await checkEmergencyStop('Webhook processing');
+    } catch (error) {
+      console.warn('[Webhook] Blocked by emergency stop');
+      return NextResponse.json(
+        { message: 'Processing blocked by emergency stop', processed: 0 },
+        { status: 503 }
+      );
+    }
+
+    // 2. Validate webhook API key
     const apiKey = request.headers.get('x-api-key');
     const expectedApiKey = await getConfig(CONFIG_KEYS.WEBHOOK_API_KEY);
 

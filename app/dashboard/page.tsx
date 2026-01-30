@@ -20,6 +20,7 @@ import AdvancedSettingsTab from '@/components/dashboard/AdvancedSettingsTab';
 import SystemCheckModal from '@/components/dashboard/SystemCheckModal';
 import WebhookApiKeyDisplay from '@/components/dashboard/WebhookApiKeyDisplay';
 import ProcessingStatusIndicator from '@/components/dashboard/ProcessingStatusIndicator';
+import EmergencyStopButton from '@/components/dashboard/EmergencyStopButton';
 import Footer from '@/components/Footer';
 
 export default function DashboardPage() {
@@ -159,6 +160,7 @@ export default function DashboardPage() {
               <div className="hidden md:block">
                 <WebhookApiKeyDisplay />
               </div>
+              <EmergencyStopButton />
               <Button variant="outline" size="sm" onClick={() => setSystemCheckOpen(true)}>
                 <FontAwesomeIcon icon={faStethoscope} className="mr-2" />
                 <span className="hidden sm:inline">System Check</span>

@@ -5,6 +5,7 @@ import { generateAnalysisPrompt } from './prompt-generator';
 import { prisma } from './prisma';
 import { createLogger } from './logger';
 import { withLock, isLocked } from './process-lock';
+import { checkEmergencyStop } from './emergency-stop';
 
 const logger = createLogger('Polling');
 
@@ -20,6 +21,14 @@ export async function processAiTodoDocuments(): Promise<{
   failed: number;
   results: Array<any>;
 }> {
+  // Check emergency stop first
+  try {
+    await checkEmergencyStop('AI document processing');
+  } catch (error) {
+    await logger.warn('[AI Polling] Blocked by emergency stop');
+    return { total: 0, successful: 0, failed: 0, results: [] };
+  }
+
   // Check if already processing
   if (await isLocked('AI_DOCUMENT_PROCESSING')) {
     await logger.warn('[AI Polling] AI processing already running, skipping');
@@ -249,10 +258,10 @@ export async function startAiTodoPolling() {
 
   await logger.info(`[AI Polling] Starting AI_TODO polling (interval: ${intervalMinutes} minutes)`);
 
-  // Run immediately on startup
+  // Run immediately on startup (will check emergency stop internally)
   await processAiTodoDocuments();
 
-  // Schedule recurring polling
+  // Schedule recurring polling (each iteration will check emergency stop)
   pollInterval = setInterval(async () => {
     await processAiTodoDocuments();
   }, intervalMs);
