@@ -10,6 +10,7 @@ import { getConfig, CONFIG_KEYS } from './config';
 import { getPDFInfo, detectAndRotatePDF, removeOCRLayer, exceedsLimits } from './pdf-processor';
 import { canProcessWithDocumentAI, reserveDocumentAIPages } from './cost-tracking';
 import { startAiTodoPolling, stopAiTodoPolling } from './polling';
+import { acquireLock, releaseLock, updateLockActivity } from './process-lock';
 
 const logger = createLogger('Worker');
 
@@ -244,6 +245,13 @@ export async function startWorker() {
     return;
   }
 
+  // Acquire worker lock
+  const lockAcquired = await acquireLock('WORKER_CONSUME', 'File watcher active');
+  if (!lockAcquired) {
+    await logger.warn('Worker lock already held, cannot start worker');
+    return;
+  }
+
   // Ensure directories exist
   ensureDirectories();
 
@@ -268,15 +276,31 @@ export async function startWorker() {
 
   await logger.info('Worker started successfully');
 
+  // Update worker lock activity periodically (every 30 seconds)
+  const lockUpdateInterval = setInterval(async () => {
+    await updateLockActivity('WORKER_CONSUME');
+  }, 30000);
+
+  // Store interval ID for cleanup
+  (watcher as any).lockUpdateInterval = lockUpdateInterval;
+
   // Start AI_TODO polling (if enabled)
   await startAiTodoPolling();
 }
 
 export async function stopWorker() {
   if (watcher) {
+    // Clear lock update interval
+    if ((watcher as any).lockUpdateInterval) {
+      clearInterval((watcher as any).lockUpdateInterval);
+    }
+
     watcher.close();
     watcher = null;
     await logger.info('Worker stopped');
+
+    // Release worker lock
+    await releaseLock('WORKER_CONSUME');
   }
 
   // Stop AI_TODO polling

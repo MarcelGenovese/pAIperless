@@ -19,6 +19,7 @@ import EmailSettingsCard from '@/components/dashboard/EmailSettingsCard';
 import AdvancedSettingsTab from '@/components/dashboard/AdvancedSettingsTab';
 import SystemCheckModal from '@/components/dashboard/SystemCheckModal';
 import WebhookApiKeyDisplay from '@/components/dashboard/WebhookApiKeyDisplay';
+import ProcessingStatusIndicator from '@/components/dashboard/ProcessingStatusIndicator';
 import Footer from '@/components/Footer';
 
 export default function DashboardPage() {
@@ -145,6 +146,12 @@ export default function DashboardPage() {
                 priority
               />
             </div>
+
+            {/* Processing Status Indicator */}
+            <div className="flex-1 flex justify-center">
+              <ProcessingStatusIndicator />
+            </div>
+
             <div className="flex items-center gap-3">
               <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">
                 {session?.user?.name || 'User'}

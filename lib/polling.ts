@@ -4,6 +4,7 @@ import { getGeminiClient } from './gemini';
 import { generateAnalysisPrompt } from './prompt-generator';
 import { prisma } from './prisma';
 import { createLogger } from './logger';
+import { withLock, isLocked } from './process-lock';
 
 const logger = createLogger('Polling');
 
@@ -19,8 +20,16 @@ export async function processAiTodoDocuments(): Promise<{
   failed: number;
   results: Array<any>;
 }> {
-  try {
-    await logger.info('[AI Polling] Starting AI_TODO document processing');
+  // Check if already processing
+  if (await isLocked('AI_DOCUMENT_PROCESSING')) {
+    await logger.warn('[AI Polling] AI processing already running, skipping');
+    return { total: 0, successful: 0, failed: 0, results: [] };
+  }
+
+  // Use lock to prevent concurrent processing
+  return withLock('AI_DOCUMENT_PROCESSING', 'Processing AI_TODO documents', async () => {
+    try {
+      await logger.info('[AI Polling] Starting AI_TODO document processing');
 
     // Get Paperless client
     const paperlessClient = await getPaperlessClient();
@@ -209,16 +218,17 @@ export async function processAiTodoDocuments(): Promise<{
 
     await logger.info(`[AI Polling] Completed processing ${documents.length} documents. Success: ${successCount}, Errors: ${failedCount}`);
 
-    return {
-      total: documents.length,
-      successful: successCount,
-      failed: failedCount,
-      results,
-    };
-  } catch (error: any) {
-    await logger.error('[AI Polling] Unexpected error:', error);
-    return { total: 0, successful: 0, failed: 0, results: [] };
-  }
+      return {
+        total: documents.length,
+        successful: successCount,
+        failed: failedCount,
+        results,
+      };
+    } catch (error: any) {
+      await logger.error('[AI Polling] Unexpected error:', error);
+      return { total: 0, successful: 0, failed: 0, results: [] };
+    }
+  });
 }
 
 /**

@@ -30,6 +30,7 @@ export default function AnalyzeTab() {
   const [creatingTag, setCreatingTag] = useState(false);
   const [creatingField, setCreatingField] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [isProcessingLocked, setIsProcessingLocked] = useState(false);
   const [metadata, setMetadata] = useState<PaperlessMetadata | null>(null);
 
   // Config state
@@ -56,6 +57,27 @@ export default function AnalyzeTab() {
   // Load metadata and config
   useEffect(() => {
     loadData();
+  }, []);
+
+  // Check processing lock status periodically
+  useEffect(() => {
+    const checkLockStatus = async () => {
+      try {
+        const response = await fetch('/api/processing-status');
+        const data = await response.json();
+        const hasAiProcessing = data.activeProcesses?.some(
+          (p: any) => p.type === 'AI_DOCUMENT_PROCESSING'
+        );
+        setIsProcessingLocked(hasAiProcessing || false);
+      } catch (error) {
+        console.error('Failed to check lock status:', error);
+      }
+    };
+
+    checkLockStatus();
+    const interval = setInterval(checkLockStatus, 3000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const loadData = async () => {
@@ -507,10 +529,10 @@ export default function AnalyzeTab() {
             variant="default"
             size="sm"
             onClick={handleManualProcess}
-            disabled={processing}
+            disabled={processing || isProcessingLocked}
           >
-            <FontAwesomeIcon icon={processing ? faSpinner : faPlay} spin={processing} className="mr-2" />
-            {processing ? 'Verarbeite...' : 'Jetzt verarbeiten'}
+            <FontAwesomeIcon icon={processing || isProcessingLocked ? faSpinner : faPlay} spin={processing || isProcessingLocked} className="mr-2" />
+            {processing || isProcessingLocked ? 'Verarbeite...' : 'Jetzt verarbeiten'}
           </Button>
         </div>
       </div>
@@ -533,12 +555,17 @@ export default function AnalyzeTab() {
           </p>
           <Button
             onClick={handleManualProcess}
-            disabled={processing}
+            disabled={processing || isProcessingLocked}
             className="w-full"
           >
-            <FontAwesomeIcon icon={processing ? faSpinner : faPlay} spin={processing} className="mr-2" />
-            {processing ? 'Verarbeite Dokumente...' : 'AI-Analyse jetzt starten'}
+            <FontAwesomeIcon icon={processing || isProcessingLocked ? faSpinner : faPlay} spin={processing || isProcessingLocked} className="mr-2" />
+            {processing || isProcessingLocked ? 'Verarbeite Dokumente...' : 'AI-Analyse jetzt starten'}
           </Button>
+          {isProcessingLocked && !processing && (
+            <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+              ⚠️ Eine AI-Verarbeitung läuft bereits. Bitte warten Sie, bis diese abgeschlossen ist.
+            </p>
+          )}
         </CardContent>
       </Card>
 
