@@ -101,20 +101,15 @@ export default function EmergencyStopButton() {
         size="sm"
         onClick={() => handleConfirm(isActive ? 'deactivate' : 'activate')}
         disabled={toggling}
-        className={isActive ? 'animate-pulse' : ''}
+        className={`w-full justify-start ${isActive ? 'animate-pulse' : ''}`}
         title={isActive ? 'Emergency Stop ist AKTIV - klicken zum Deaktivieren' : 'Emergency Stop aktivieren'}
       >
         <FontAwesomeIcon
-          icon={toggling ? faSpinner : isActive ? faHandPaper : faPlay}
+          icon={toggling ? faSpinner : isActive ? faHandPaper : faHandPaper}
           spin={toggling}
-          className="mr-2"
+          className="mr-2 w-4 h-4"
         />
-        <span className="hidden sm:inline">
-          {isActive ? '🚨 STOP AKTIV' : 'Emergency Stop'}
-        </span>
-        <span className="sm:hidden">
-          {isActive ? '🚨' : 'E-Stop'}
-        </span>
+        {isActive ? '🚨 STOP AKTIV' : 'Emergency Stop'}
       </Button>
 
       {/* Confirmation Dialog */}

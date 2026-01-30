@@ -12,13 +12,18 @@ import {
   faTerminal,
   faInfoCircle,
   faBrain,
+  faStethoscope,
+  faHandPaper,
 } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import EmergencyStopButton from './EmergencyStopButton';
+import { Button } from '@/components/ui/button';
 
 interface SidebarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  onSystemCheckOpen?: () => void;
 }
 
 interface NavItem {
@@ -43,7 +48,7 @@ const settingsNavItems: NavItem[] = [
   { id: 'advanced', label: 'Erweitert', icon: faSlidersH },
 ];
 
-export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
+export default function Sidebar({ activeTab, onTabChange, onSystemCheckOpen }: SidebarProps) {
   return (
     <div className="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col h-full overflow-hidden">
       {/* Main Navigation */}
@@ -105,6 +110,31 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             <FontAwesomeIcon icon={faInfoCircle} className="w-4 h-4 shrink-0" />
             <span className="truncate">Info & Kontakt</span>
           </Link>
+        </div>
+
+        {/* System Controls */}
+        <div className="p-4 border-t border-gray-200 dark:border-gray-800 space-y-2">
+          <h3 className="px-3 mb-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            System
+          </h3>
+
+          {/* Emergency Stop */}
+          <div className="w-full">
+            <EmergencyStopButton />
+          </div>
+
+          {/* System Check */}
+          {onSystemCheckOpen && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full justify-start"
+              onClick={onSystemCheckOpen}
+            >
+              <FontAwesomeIcon icon={faStethoscope} className="mr-2 w-4 h-4" />
+              System Check
+            </Button>
+          )}
         </div>
       </nav>
     </div>

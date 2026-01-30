@@ -46,19 +46,32 @@ export default function WebhookApiKeyDisplay() {
 
   const handleMouseEnter = async () => {
     setIsHovered(true);
-
-    // Copy to clipboard on hover
-    try {
-      await navigator.clipboard.writeText(apiKey);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      console.error('Failed to copy to clipboard:', error);
-    }
   };
 
   const handleMouseLeave = () => {
     setIsHovered(false);
+  };
+
+  const handleClick = async () => {
+    // Copy to clipboard on click
+    try {
+      await navigator.clipboard.writeText(apiKey);
+      setCopied(true);
+
+      toast({
+        title: 'In Zwischenablage kopiert',
+        description: 'Webhook API Key wurde erfolgreich kopiert',
+      });
+
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy to clipboard:', error);
+      toast({
+        title: 'Fehler',
+        description: 'Konnte nicht in Zwischenablage kopieren',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleRegenerate = async () => {
@@ -113,7 +126,8 @@ export default function WebhookApiKeyDisplay() {
           className="relative flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md cursor-pointer transition-all hover:bg-blue-100 dark:hover:bg-blue-900"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
-          title="Hover to reveal and copy to clipboard"
+          onClick={handleClick}
+          title="Klicken zum Kopieren in Zwischenablage"
         >
           <FontAwesomeIcon
             icon={copied ? faCopy : faKey}
@@ -121,7 +135,7 @@ export default function WebhookApiKeyDisplay() {
           />
           <code
             className={`text-xs font-mono transition-all duration-200 ${
-              isHovered ? 'blur-none' : 'blur-md select-none'
+              isHovered ? 'blur-none' : 'blur-sm select-none'
             }`}
           >
             {apiKey}

@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSignOutAlt, faBars, faTimes, faStethoscope } from '@fortawesome/free-solid-svg-icons';
+import { faSignOutAlt, faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
 
 import Sidebar from '@/components/dashboard/Sidebar';
 import OverviewTab from '@/components/dashboard/OverviewTab';
@@ -20,7 +20,6 @@ import AdvancedSettingsTab from '@/components/dashboard/AdvancedSettingsTab';
 import SystemCheckModal from '@/components/dashboard/SystemCheckModal';
 import WebhookApiKeyDisplay from '@/components/dashboard/WebhookApiKeyDisplay';
 import ProcessingStatusIndicator from '@/components/dashboard/ProcessingStatusIndicator';
-import EmergencyStopButton from '@/components/dashboard/EmergencyStopButton';
 import Footer from '@/components/Footer';
 
 export default function DashboardPage() {
@@ -160,11 +159,6 @@ export default function DashboardPage() {
               <div className="hidden md:block">
                 <WebhookApiKeyDisplay />
               </div>
-              <EmergencyStopButton />
-              <Button variant="outline" size="sm" onClick={() => setSystemCheckOpen(true)}>
-                <FontAwesomeIcon icon={faStethoscope} className="mr-2" />
-                <span className="hidden sm:inline">System Check</span>
-              </Button>
               <Button variant="outline" size="sm" onClick={() => signOut({ callbackUrl: '/auth/login' })}>
                 <FontAwesomeIcon icon={faSignOutAlt} className="mr-2" />
                 <span className="hidden sm:inline">Logout</span>
@@ -178,7 +172,11 @@ export default function DashboardPage() {
       <div className="flex flex-1 overflow-hidden min-h-0">
         {/* Sidebar - Desktop */}
         <aside className="hidden lg:block w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 overflow-y-auto shrink-0">
-          <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+          <Sidebar
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onSystemCheckOpen={() => setSystemCheckOpen(true)}
+          />
         </aside>
 
         {/* Sidebar - Mobile (Overlay) */}
@@ -202,6 +200,10 @@ export default function DashboardPage() {
                 activeTab={activeTab}
                 onTabChange={(tab) => {
                   setActiveTab(tab);
+                  setSidebarOpen(false);
+                }}
+                onSystemCheckOpen={() => {
+                  setSystemCheckOpen(true);
                   setSidebarOpen(false);
                 }}
               />
