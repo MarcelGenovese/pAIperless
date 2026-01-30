@@ -212,6 +212,7 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
 
   const savePolling = async () => {
     try {
+      // Save polling settings
       await fetch('/api/setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -221,9 +222,14 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
         }),
       });
 
+      // Restart polling with new settings
+      await fetch('/api/polling/restart', {
+        method: 'POST',
+      });
+
       toast({
         title: 'Gespeichert',
-        description: 'Polling Einstellungen gespeichert',
+        description: 'Polling Einstellungen gespeichert und Polling neu gestartet',
         variant: 'success',
       });
     } catch (error) {

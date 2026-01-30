@@ -265,3 +265,13 @@ export async function stopAiTodoPolling() {
 export function isPollingActive(): boolean {
   return pollInterval !== null;
 }
+
+/**
+ * Restart polling with new settings
+ * This should be called when polling settings are changed
+ */
+export async function restartAiTodoPolling() {
+  await logger.info('[AI Polling] Restarting polling with new settings...');
+  await stopAiTodoPolling();
+  await startAiTodoPolling();
+}
