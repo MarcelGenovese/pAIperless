@@ -11,6 +11,11 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "pAIperless - AI-powered Document Processing",
   description: "AI-powered extension for Paperless-NGX with intelligent document processing, automated tagging, and action tracking.",
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
 };
 
 export default async function RootLayout({
