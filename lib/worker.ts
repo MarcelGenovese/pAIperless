@@ -9,6 +9,7 @@ import { createLogger } from './logger';
 import { getConfig, CONFIG_KEYS } from './config';
 import { getPDFInfo, detectAndRotatePDF, removeOCRLayer, exceedsLimits } from './pdf-processor';
 import { canProcessWithDocumentAI, reserveDocumentAIPages } from './cost-tracking';
+import { startAiTodoPolling, stopAiTodoPolling } from './polling';
 
 const logger = createLogger('Worker');
 
@@ -266,6 +267,9 @@ export async function startWorker() {
   });
 
   await logger.info('Worker started successfully');
+
+  // Start AI_TODO polling (if enabled)
+  await startAiTodoPolling();
 }
 
 export async function stopWorker() {
@@ -274,4 +278,7 @@ export async function stopWorker() {
     watcher = null;
     await logger.info('Worker stopped');
   }
+
+  // Stop AI_TODO polling
+  await stopAiTodoPolling();
 }

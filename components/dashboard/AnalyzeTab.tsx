@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBrain, faSpinner, faSave, faCode, faListCheck, faPlus, faTag, faRefresh, faFileLines, faCopy } from '@fortawesome/free-solid-svg-icons';
+import { faBrain, faSpinner, faSave, faCode, faListCheck, faPlus, faTag, faRefresh, faFileLines, faCopy, faPlay } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/hooks/use-toast';
 
 interface PaperlessMetadata {
@@ -29,6 +29,7 @@ export default function AnalyzeTab() {
   const [savingPaperless, setSavingPaperless] = useState(false);
   const [creatingTag, setCreatingTag] = useState(false);
   const [creatingField, setCreatingField] = useState(false);
+  const [processing, setProcessing] = useState(false);
   const [metadata, setMetadata] = useState<PaperlessMetadata | null>(null);
 
   // Config state
@@ -131,6 +132,38 @@ export default function AnalyzeTab() {
       });
     } finally {
       setSavingPaperless(false);
+    }
+  };
+
+  const handleManualProcess = async () => {
+    setProcessing(true);
+    try {
+      const response = await fetch('/api/process-ai-documents', {
+        method: 'POST',
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: 'Verarbeitung abgeschlossen',
+          description: `${result.successful} von ${result.total} Dokumenten erfolgreich verarbeitet`,
+        });
+      } else {
+        toast({
+          title: 'Fehler',
+          description: result.error || 'Verarbeitung fehlgeschlagen',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Fehler',
+        description: 'Verarbeitung konnte nicht gestartet werden',
+        variant: 'destructive',
+      });
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -461,15 +494,53 @@ export default function AnalyzeTab() {
             Konfigurieren Sie, wie die KI Dokumente analysiert und Metadaten extrahiert
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => loadData()}
-        >
-          <FontAwesomeIcon icon={faRefresh} className="mr-2" />
-          Neu laden
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => loadData()}
+          >
+            <FontAwesomeIcon icon={faRefresh} className="mr-2" />
+            Neu laden
+          </Button>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handleManualProcess}
+            disabled={processing}
+          >
+            <FontAwesomeIcon icon={processing ? faSpinner : faPlay} spin={processing} className="mr-2" />
+            {processing ? 'Verarbeite...' : 'Jetzt verarbeiten'}
+          </Button>
+        </div>
       </div>
+
+      {/* Manual Processing Info */}
+      <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <FontAwesomeIcon icon={faPlay} className="text-blue-600" />
+            Manuelle Verarbeitung
+          </CardTitle>
+          <CardDescription>
+            Verarbeiten Sie sofort alle Dokumente mit dem Tag "{tagAiTodo || 'ai_todo'}"
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-3">
+            Dieser Button triggert die AI-Analyse für alle Dokumente in Paperless, die das Tag "{tagAiTodo || 'ai_todo'}" haben.
+            Dies ist nützlich zum Testen oder wenn Webhooks/Polling nicht funktionieren.
+          </p>
+          <Button
+            onClick={handleManualProcess}
+            disabled={processing}
+            className="w-full"
+          >
+            <FontAwesomeIcon icon={processing ? faSpinner : faPlay} spin={processing} className="mr-2" />
+            {processing ? 'Verarbeite Dokumente...' : 'AI-Analyse jetzt starten'}
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Paperless Integration Config */}
       <Card>
