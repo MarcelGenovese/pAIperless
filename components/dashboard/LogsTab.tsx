@@ -26,6 +26,9 @@ export default function LogsTab() {
   const [cleaningUp, setCleaningUp] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [searchMode, setSearchMode] = useState<'AND' | 'OR'>('OR');
+  const [searching, setSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<LogEntry[] | null>(null);
+  const [searchTotal, setSearchTotal] = useState(0);
   const logsEndRef = useRef<HTMLDivElement>(null);
   const logsContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -155,7 +158,8 @@ export default function LogsTab() {
   };
 
   const downloadLogs = () => {
-    const logText = logs
+    const logsToDownload = searchResults || logs;
+    const logText = logsToDownload
       .map((log) => `[${log.timestamp}] [${log.level}] [${log.source}] ${log.message}`)
       .join('\n');
     const blob = new Blob([logText], { type: 'text/plain' });
@@ -165,6 +169,50 @@ export default function LogsTab() {
     a.download = `paiperless-logs-${new Date().toISOString()}.txt`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const searchInDatabase = async () => {
+    if (!searchText.trim()) {
+      // Clear search results
+      setSearchResults(null);
+      setSearchTotal(0);
+      return;
+    }
+
+    setSearching(true);
+    try {
+      const response = await fetch(
+        `/api/logs/search?q=${encodeURIComponent(searchText)}&mode=${searchMode}&limit=1000`
+      );
+      const data = await response.json();
+
+      if (response.ok) {
+        setSearchResults(data.logs || []);
+        setSearchTotal(data.total || 0);
+
+        toast({
+          title: 'Suche abgeschlossen',
+          description: `${data.showing} von ${data.total} Logs gefunden`,
+        });
+      } else {
+        throw new Error(data.message || 'Search failed');
+      }
+    } catch (error) {
+      console.error('Failed to search logs:', error);
+      toast({
+        title: 'Suche fehlgeschlagen',
+        description: 'Konnte nicht in Logs suchen',
+        variant: 'destructive',
+      });
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchText('');
+    setSearchResults(null);
+    setSearchTotal(0);
   };
 
   const getLogLevelColor = (level: string) => {
@@ -209,24 +257,8 @@ export default function LogsTab() {
     }
   };
 
-  const filteredLogs = logs.filter((log) => {
-    // If no search text, show all logs
-    if (!searchText.trim()) {
-      return true;
-    }
-
-    // Split search text into individual terms
-    const searchTerms = searchText.toLowerCase().trim().split(/\s+/);
-    const logText = `${log.message} ${log.source} ${log.level}`.toLowerCase();
-
-    if (searchMode === 'AND') {
-      // All terms must match
-      return searchTerms.every(term => logText.includes(term));
-    } else {
-      // At least one term must match
-      return searchTerms.some(term => logText.includes(term));
-    }
-  });
+  // Use search results if available, otherwise show live logs
+  const displayLogs = searchResults !== null ? searchResults : logs;
 
   return (
     <div className="space-y-4">
@@ -301,7 +333,9 @@ export default function LogsTab() {
 
             {/* Log count */}
             <span className="text-sm text-muted-foreground">
-              {filteredLogs.length} / {logs.length} Einträge
+              {searchResults !== null
+                ? `${displayLogs.length} von ${searchTotal} Suchergebnissen`
+                : `${displayLogs.length} Live Einträge`}
             </span>
           </div>
 
@@ -309,7 +343,7 @@ export default function LogsTab() {
           <div className="mt-4 pt-4 border-t">
             <Label className="text-sm font-semibold mb-2 block">
               <FontAwesomeIcon icon={faSearch} className="mr-2" />
-              Text-Filter
+              Datenbank-Suche (durchsucht ALLE Logs)
             </Label>
             <div className="flex gap-3">
               <div className="flex-1">
@@ -318,6 +352,11 @@ export default function LogsTab() {
                   placeholder="Suchbegriffe eingeben (durch Leerzeichen getrennt)..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      searchInDatabase();
+                    }
+                  }}
                   className="w-full"
                 />
               </div>
@@ -330,11 +369,36 @@ export default function LogsTab() {
                   <SelectItem value="AND">UND</SelectItem>
                 </SelectContent>
               </Select>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={searchInDatabase}
+                disabled={searching || !searchText.trim()}
+              >
+                <FontAwesomeIcon icon={faSearch} className="mr-2" />
+                {searching ? 'Suche...' : 'Suchen'}
+              </Button>
+              {searchResults !== null && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearSearch}
+                >
+                  <FontAwesomeIcon icon={faTrash} className="mr-2" />
+                  Zurücksetzen
+                </Button>
+              )}
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              {searchMode === 'OR'
-                ? 'Zeigt Logs, die mindestens einen der Suchbegriffe enthalten'
-                : 'Zeigt Logs, die alle Suchbegriffe enthalten'}
+              {searchResults !== null ? (
+                <span className="text-blue-600 dark:text-blue-400 font-medium">
+                  🔍 Suchergebnisse aus der Datenbank (alle Logs)
+                </span>
+              ) : searchMode === 'OR' ? (
+                'Durchsucht alle Logs in der Datenbank - zeigt Einträge mit mindestens einem Suchbegriff'
+              ) : (
+                'Durchsucht alle Logs in der Datenbank - zeigt Einträge mit allen Suchbegriffen'
+              )}
             </p>
           </div>
         </CardContent>
@@ -348,12 +412,12 @@ export default function LogsTab() {
             className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono text-xs h-[600px] overflow-y-auto p-4 space-y-1 border-t"
             style={{ fontFamily: 'ui-monospace, monospace' }}
           >
-            {filteredLogs.length === 0 ? (
+            {displayLogs.length === 0 ? (
               <div className="text-gray-500 text-center py-20">
-                {paused ? 'Logs pausiert' : 'Warte auf Logs...'}
+                {searchResults !== null ? 'Keine Suchergebnisse gefunden' : paused ? 'Logs pausiert' : 'Warte auf Logs...'}
               </div>
             ) : (
-              filteredLogs.map((log, index) => (
+              displayLogs.map((log, index) => (
                 <div key={index} className="flex gap-2 hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1 rounded">
                   <span className="text-gray-500 shrink-0">{log.timestamp}</span>
                   <span className={cn('font-semibold shrink-0 w-16', getLogLevelColor(log.level))}>
