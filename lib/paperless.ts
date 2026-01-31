@@ -155,9 +155,9 @@ export class PaperlessClient {
   /**
    * Poll task status until completion and return the document ID
    */
-  private async waitForTask(taskId: string, maxWaitMs: number = 30000): Promise<number | null> {
+  private async waitForTask(taskId: string, maxWaitMs: number = 60000): Promise<number | null> {
     const startTime = Date.now();
-    const pollInterval = 500; // Poll every 500ms
+    const pollInterval = 1000; // Poll every 1000ms
 
     while (Date.now() - startTime < maxWaitMs) {
       try {
@@ -192,6 +192,47 @@ export class PaperlessClient {
 
     console.warn(`[Paperless] Task ${taskId} polling timeout after ${maxWaitMs}ms`);
     return null;
+  }
+
+  /**
+   * Try to find recently uploaded document by filename
+   * Used as fallback when task polling times out
+   */
+  private async findRecentDocumentByFilename(originalFilename: string): Promise<number | null> {
+    try {
+      // Get documents from the last 5 minutes, ordered by creation date
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+      const data = await this.fetch(
+        `/api/documents/?created__gte=${fiveMinutesAgo}&ordering=-created&page_size=20`
+      );
+
+      if (data.results && data.results.length > 0) {
+        // Try to match by original filename (without extension and processing suffixes)
+        const baseFilename = originalFilename
+          .replace(/_searchable\.pdf$/, '')
+          .replace(/_no_ocr\.pdf$/, '')
+          .replace(/\.pdf$/, '');
+
+        for (const doc of data.results) {
+          const docTitle = doc.title || doc.original_file_name || '';
+          if (docTitle.includes(baseFilename) || baseFilename.includes(docTitle.replace(/\.pdf$/, ''))) {
+            console.log(`[Paperless] Found document by filename match: ID ${doc.id}, title: "${docTitle}"`);
+            return doc.id;
+          }
+        }
+
+        // If no filename match, return the most recent one as best guess
+        console.warn(`[Paperless] No exact filename match, using most recent document: ID ${data.results[0].id}`);
+        return data.results[0].id;
+      }
+
+      console.warn(`[Paperless] No recent documents found`);
+      return null;
+    } catch (error) {
+      console.error(`[Paperless] Error finding recent document:`, error);
+      return null;
+    }
   }
 
   async uploadDocument(filePath: string, tagNames: string[] = []): Promise<number | null> {
@@ -259,7 +300,19 @@ export class PaperlessClient {
     // If we have a task ID, poll for completion
     if (taskId) {
       console.log(`[Paperless] Polling task ${taskId} for document ID...`);
-      const documentId = await this.waitForTask(taskId, 30000);
+      const documentId = await this.waitForTask(taskId, 60000);
+
+      // If polling timed out, try to find the document by filename
+      if (documentId === null) {
+        console.log(`[Paperless] Task polling timed out, attempting to find document by filename...`);
+        const foundId = await this.findRecentDocumentByFilename(fileName);
+        if (foundId) {
+          console.log(`[Paperless] Successfully found document via fallback: ID ${foundId}`);
+          return foundId;
+        }
+        console.warn(`[Paperless] Could not find document via fallback method`);
+      }
+
       return documentId;
     }
 
