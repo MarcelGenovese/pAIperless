@@ -32,6 +32,7 @@ model Document {
   ocrPageCount      Int?      // Number of pages processed by Document AI
   geminiTokensSent  Int?      // Tokens sent to Gemini for this document
   geminiTokensRecv  Int?      // Tokens received from Gemini
+  processingDetails String?   // JSON: { rotatedPages, usedDocumentAI, ocrLayerRemoved, etc. }
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 }

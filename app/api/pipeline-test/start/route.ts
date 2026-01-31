@@ -262,6 +262,14 @@ async function processPipeline(testId: string, filePath: string, originalFileNam
               '',
               '🔍 Manuelle Prüfung erforderlich'
             ]);
+
+            // Mark test as completed (with error) so polling stops
+            const testStatus = testStore.get(testId);
+            if (testStatus) {
+              testStatus.status = 'completed';
+              testStatus.completedAt = new Date().toISOString();
+              testStore.set(testId, testStatus);
+            }
             break;
           }
         } else if (doc.status === 'ERROR') {
