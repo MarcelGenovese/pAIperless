@@ -27,25 +27,25 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 8%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 8%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 213 100% 50%; /* Lighter blue for dark mode */
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 215 55% 35%; /* Slightly lighter accent for dark mode */
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 213 100% 50%;
+    --background: 0 0% 7%; /* Pure dark gray background */
+    --foreground: 0 0% 95%; /* Light gray text */
+    --card: 0 0% 12%; /* Dark gray cards */
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 12%; /* Dark gray popovers */
+    --popover-foreground: 0 0% 95%;
+    --primary: 213 100% 55%; /* Blue for buttons/links */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 18%; /* Gray secondary */
+    --secondary-foreground: 0 0% 90%;
+    --muted: 0 0% 18%; /* Gray muted areas */
+    --muted-foreground: 0 0% 60%; /* Medium gray text */
+    --accent: 213 100% 55%; /* Blue accent for highlights */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 70% 45%; /* Red for errors */
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 22%; /* Dark gray borders */
+    --input: 0 0% 16%; /* Dark gray input backgrounds */
+    --ring: 213 100% 55%; /* Blue focus ring */
   }
 
   * {
@@ -71,8 +71,8 @@
   .dark .gradient-form {
     background: linear-gradient(
       135deg,
-      hsl(222, 84%, 8%) 0%,
-      hsl(222, 84%, 6%) 100%
+      hsl(0, 0%, 12%) 0%,
+      hsl(0, 0%, 7%) 100%
     );
   }
 
@@ -87,8 +87,8 @@
   .dark .gradient-subtle {
     background: linear-gradient(
       180deg,
-      hsl(222, 84%, 8%) 0%,
-      hsl(222, 84%, 6%) 100%
+      hsl(0, 0%, 12%) 0%,
+      hsl(0, 0%, 7%) 100%
     );
   }
 
@@ -98,7 +98,7 @@
   }
 
   .dark .logo-container {
-    @apply bg-gray-800 rounded-lg p-4 inline-block;
+    @apply bg-[hsl(0,0%,12%)] rounded-lg p-4 inline-block;
   }
 
   /* Card hover effect */
