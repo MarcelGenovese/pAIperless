@@ -49,6 +49,56 @@ function ensureDirectories() {
   });
 }
 
+/**
+ * Clean up orphaned documents in database
+ * Documents with PENDING/PROCESSING status but no file in filesystem
+ */
+async function cleanupOrphanedDocuments() {
+  try {
+    const processingDocs = await prisma.document.findMany({
+      where: {
+        status: {
+          in: ['PENDING', 'PENDING_CONFIGURATION', 'PREPROCESSING', 'OCR_IN_PROGRESS', 'OCR_COMPLETE', 'UPLOADING_TO_PAPERLESS']
+        },
+        filePath: {
+          not: null
+        }
+      }
+    });
+
+    if (processingDocs.length === 0) {
+      return;
+    }
+
+    let cleaned = 0;
+    for (const doc of processingDocs) {
+      if (!doc.filePath) continue;
+
+      // Check if file exists
+      if (!existsSync(doc.filePath)) {
+        await logger.warn(`Orphaned document found: ${doc.originalFilename} (ID: ${doc.id}), file not found at: ${doc.filePath}`);
+
+        // Update document status to ERROR
+        await prisma.document.update({
+          where: { id: doc.id },
+          data: {
+            status: 'ERROR',
+            errorMessage: 'Datei wurde nicht gefunden - möglicherweise manuell gelöscht oder verschoben'
+          }
+        });
+
+        cleaned++;
+      }
+    }
+
+    if (cleaned > 0) {
+      await logger.info(`✅ Cleaned up ${cleaned} orphaned document(s)`);
+    }
+  } catch (error: any) {
+    await logger.error('Failed to cleanup orphaned documents', error);
+  }
+}
+
 function calculateFileHash(filePath: string): string {
   const buffer = readFileSync(filePath);
   return createHash('sha256').update(buffer).digest('hex');
@@ -487,6 +537,9 @@ export async function startWorker() {
 
   // Ensure directories exist
   ensureDirectories();
+
+  // Clean up orphaned documents (documents in processing state but files don't exist)
+  await cleanupOrphanedDocuments();
 
   await logger.info(`Starting worker, watching: ${CONSUME_DIR}`);
 
