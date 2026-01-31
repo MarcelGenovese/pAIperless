@@ -58,6 +58,13 @@ export const CONFIG_KEYS = {
   EMAIL_SENDER: 'EMAIL_SENDER',
   EMAIL_RECIPIENTS: 'EMAIL_RECIPIENTS',
 
+  // Email Notification Settings
+  EMAIL_NOTIFY_SUCCESS: 'EMAIL_NOTIFY_SUCCESS', // Send email on successful processing
+  EMAIL_NOTIFY_ERROR: 'EMAIL_NOTIFY_ERROR', // Send email on errors
+  EMAIL_NOTIFY_API_LIMIT: 'EMAIL_NOTIFY_API_LIMIT', // Send email when API limit reached
+  EMAIL_NOTIFY_API_WARNING: 'EMAIL_NOTIFY_API_WARNING', // Send email when approaching limit
+  EMAIL_API_WARNING_THRESHOLD: 'EMAIL_API_WARNING_THRESHOLD', // Percentage threshold for warnings (default 80)
+
   // FTP
   FTP_ENABLED: 'FTP_ENABLED',
   FTP_USERNAME: 'FTP_USERNAME',

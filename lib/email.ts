@@ -77,8 +77,16 @@ export async function sendDocumentProcessedEmail(
   paperlessId: number,
   tokensUsed: number
 ) {
+  // Check if success notifications are enabled
+  const notifySuccess = await getConfig(CONFIG_KEYS.EMAIL_NOTIFY_SUCCESS);
+  if (notifySuccess !== 'true') {
+    return;
+  }
+
   const paperlessUrl = await getConfig(CONFIG_KEYS.PAPERLESS_URL);
+  const baseUrl = await getConfig(CONFIG_KEYS.BASE_URL);
   const documentUrl = `${paperlessUrl}/documents/${paperlessId}`;
+  const dashboardUrl = baseUrl ? `${baseUrl}/dashboard?tab=documents` : null;
 
   const subject = `Dokument verarbeitet: ${documentTitle}`;
   const html = `
@@ -86,7 +94,8 @@ export async function sendDocumentProcessedEmail(
     <p><strong>Titel:</strong> ${documentTitle}</p>
     <p><strong>Paperless ID:</strong> ${paperlessId}</p>
     <p><strong>Tokens verwendet:</strong> ${tokensUsed.toLocaleString('de-DE')}</p>
-    <p><a href="${documentUrl}">Dokument in Paperless öffnen</a></p>
+    <p><a href="${documentUrl}" style="color: #0066CC;">Dokument in Paperless öffnen</a></p>
+    ${dashboardUrl ? `<p><a href="${dashboardUrl}" style="color: #0066CC;">Dashboard öffnen</a></p>` : ''}
     <hr>
     <p style="color: #666; font-size: 12px;">Diese Nachricht wurde automatisch von pAIperless gesendet.</p>
   `;
@@ -102,14 +111,24 @@ export async function sendDocumentErrorEmail(
   errorMessage: string,
   documentId?: number
 ) {
+  // Check if error notifications are enabled
+  const notifyError = await getConfig(CONFIG_KEYS.EMAIL_NOTIFY_ERROR);
+  if (notifyError !== 'true') {
+    return;
+  }
+
+  const baseUrl = await getConfig(CONFIG_KEYS.BASE_URL);
+  const dashboardUrl = baseUrl ? `${baseUrl}/dashboard?tab=documents` : null;
+
   const subject = `⚠️ Fehler bei Dokumentverarbeitung: ${documentTitle}`;
   const html = `
     <h2>❌ Fehler bei Dokumentverarbeitung</h2>
     <p><strong>Titel:</strong> ${documentTitle}</p>
     ${documentId ? `<p><strong>Document ID:</strong> ${documentId}</p>` : ''}
     <p><strong>Fehler:</strong></p>
-    <pre style="background: #f5f5f5; padding: 10px; border-radius: 5px;">${errorMessage}</pre>
+    <pre style="background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto;">${errorMessage}</pre>
     <p>Das Dokument wurde in den Fehler-Status verschoben und kann über das Dashboard erneut verarbeitet werden.</p>
+    ${dashboardUrl ? `<p><a href="${dashboardUrl}" style="display: inline-block; padding: 10px 20px; background: #DC2626; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">Dashboard öffnen und Problem beheben</a></p>` : ''}
     <hr>
     <p style="color: #666; font-size: 12px;">Diese Nachricht wurde automatisch von pAIperless gesendet.</p>
   `;
@@ -182,6 +201,84 @@ export async function sendMonthlySummaryEmail(
     <p><strong>Dokumente verarbeitet:</strong> ${documentsProcessed}</p>
     <p><strong>Tokens verwendet:</strong> ${tokensUsed.toLocaleString('de-DE')}</p>
     <p><strong>Geschätzte Kosten:</strong> $${estimatedCost.toFixed(2)}</p>
+    <hr>
+    <p style="color: #666; font-size: 12px;">Diese Nachricht wurde automatisch von pAIperless gesendet.</p>
+  `;
+
+  await sendEmail(subject, html);
+}
+
+/**
+ * Send notification when API limit reached
+ */
+export async function sendAPILimitReachedEmail(
+  apiType: 'gemini' | 'documentai',
+  currentUsage: number,
+  limit: number,
+  month: string
+) {
+  // Check if API limit notifications are enabled
+  const notifyLimit = await getConfig(CONFIG_KEYS.EMAIL_NOTIFY_API_LIMIT);
+  if (notifyLimit !== 'true') {
+    return;
+  }
+
+  const apiName = apiType === 'gemini' ? 'Gemini API (Tokens)' : 'Document AI (Seiten)';
+  const baseUrl = await getConfig(CONFIG_KEYS.BASE_URL);
+  const dashboardUrl = baseUrl ? `${baseUrl}/dashboard?tab=advanced` : null;
+
+  const subject = `🚨 API-Limit erreicht: ${apiName}`;
+  const html = `
+    <h2 style="color: #DC2626;">🚨 API-Limit erreicht</h2>
+    <p><strong>API:</strong> ${apiName}</p>
+    <p><strong>Monat:</strong> ${month}</p>
+    <p><strong>Aktuelle Nutzung:</strong> ${currentUsage.toLocaleString('de-DE')}</p>
+    <p><strong>Limit:</strong> ${limit.toLocaleString('de-DE')}</p>
+    <p><strong>Auslastung:</strong> ${((currentUsage / limit) * 100).toFixed(1)}%</p>
+    <hr>
+    <p style="color: #DC2626; font-weight: bold;">Warnung: Das monatliche API-Limit wurde erreicht!</p>
+    <p>Weitere Dokumente können möglicherweise nicht mehr verarbeitet werden, bis das Limit erhöht wird oder der nächste Monat beginnt.</p>
+    ${dashboardUrl ? `<p><a href="${dashboardUrl}" style="display: inline-block; padding: 10px 20px; background: #DC2626; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">Dashboard öffnen und Limit anpassen</a></p>` : ''}
+    <hr>
+    <p style="color: #666; font-size: 12px;">Diese Nachricht wurde automatisch von pAIperless gesendet.</p>
+  `;
+
+  await sendEmail(subject, html);
+}
+
+/**
+ * Send notification when approaching API limit
+ */
+export async function sendAPILimitWarningEmail(
+  apiType: 'gemini' | 'documentai',
+  currentUsage: number,
+  limit: number,
+  percentage: number,
+  month: string
+) {
+  // Check if API warning notifications are enabled
+  const notifyWarning = await getConfig(CONFIG_KEYS.EMAIL_NOTIFY_API_WARNING);
+  if (notifyWarning !== 'true') {
+    return;
+  }
+
+  const apiName = apiType === 'gemini' ? 'Gemini API (Tokens)' : 'Document AI (Seiten)';
+  const baseUrl = await getConfig(CONFIG_KEYS.BASE_URL);
+  const dashboardUrl = baseUrl ? `${baseUrl}/dashboard?tab=advanced` : null;
+  const remaining = limit - currentUsage;
+
+  const subject = `⚠️ API-Limit-Warnung: ${apiName} bei ${percentage.toFixed(0)}%`;
+  const html = `
+    <h2 style="color: #F59E0B;">⚠️ API-Limit-Warnung</h2>
+    <p><strong>API:</strong> ${apiName}</p>
+    <p><strong>Monat:</strong> ${month}</p>
+    <p><strong>Aktuelle Nutzung:</strong> ${currentUsage.toLocaleString('de-DE')}</p>
+    <p><strong>Limit:</strong> ${limit.toLocaleString('de-DE')}</p>
+    <p><strong>Verbleibend:</strong> ${remaining.toLocaleString('de-DE')}</p>
+    <p><strong>Auslastung:</strong> <span style="color: #F59E0B; font-weight: bold;">${percentage.toFixed(1)}%</span></p>
+    <hr>
+    <p>Sie nähern sich dem monatlichen API-Limit. Bitte überwachen Sie die Nutzung oder erhöhen Sie das Limit bei Bedarf.</p>
+    ${dashboardUrl ? `<p><a href="${dashboardUrl}" style="display: inline-block; padding: 10px 20px; background: #F59E0B; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">Dashboard öffnen</a></p>` : ''}
     <hr>
     <p style="color: #666; font-size: 12px;">Diese Nachricht wurde automatisch von pAIperless gesendet.</p>
   `;
