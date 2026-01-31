@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import Image from 'next/image';
+import Logo from '@/components/Logo';
 import WelcomeScreen from '@/components/setup/WelcomeScreen';
 import Step1Paperless from '@/components/setup/Step1Paperless';
 import Step2Gemini from '@/components/setup/Step2Gemini';
@@ -142,9 +142,9 @@ export default function SetupPage() {
           <div className="bg-card shadow-lg h-full flex flex-col">
             {/* Header with Logo - only for steps > 0 */}
             {currentStep > 0 && (
-              <div className="bg-card border-b px-6 py-4 flex-shrink-0">
+              <div className="bg-card border-b dark:border-[hsl(0,0%,20%)] px-6 py-4 flex-shrink-0">
                 <div className="flex items-center justify-between">
-                  <Image
+                  <Logo
                     src="/logo_complete.png"
                     alt="pAIperless"
                     width={300}

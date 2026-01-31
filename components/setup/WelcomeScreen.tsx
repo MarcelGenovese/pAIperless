@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
+import Logo from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -53,7 +53,7 @@ export default function WelcomeScreen({ onNext }: WelcomeScreenProps) {
     <div className="w-full max-w-md mx-auto space-y-6">
       {/* Logo */}
       <div className="text-center">
-        <Image
+        <Logo
           src="/logo_complete.png"
           alt="pAIperless"
           width={300}
@@ -64,7 +64,7 @@ export default function WelcomeScreen({ onNext }: WelcomeScreenProps) {
         <h2 className="text-2xl font-bold text-accent mb-2">
           Willkommen
         </h2>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-400">
           AI-powered document processing for Paperless-NGX
         </p>
       </div>

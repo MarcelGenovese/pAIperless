@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+import Logo from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -57,8 +57,8 @@ export default function LoginPage() {
   return (
     <div className="w-full max-w-md mx-auto bg-card shadow-lg">
       {/* Header */}
-      <div className="text-center border-b px-6 py-4">
-        <Image
+      <div className="text-center border-b dark:border-[hsl(0,0%,20%)] px-6 py-4">
+        <Logo
           src="/logo_complete.png"
           alt="pAIperless"
           width={300}
@@ -69,7 +69,7 @@ export default function LoginPage() {
         <h1 className="text-2xl font-bold text-accent mb-2">
           Login
         </h1>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           Sign in with your Paperless-NGX credentials
         </p>
       </div>

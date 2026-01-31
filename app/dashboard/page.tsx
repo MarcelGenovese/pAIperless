@@ -2,7 +2,7 @@
 
 import { useSession, signOut } from 'next-auth/react';
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
+import Logo from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOutAlt, faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
@@ -121,7 +121,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="h-screen bg-gray-50 dark:bg-[hsl(0,0%,7%)] flex flex-col overflow-hidden">
+    <div className="h-screen bg-gray-50 dark:bg-[hsl(0,0%,7%)] flex flex-col overflow-hidden overflow-x-hidden">
       {/* Header - Fixed */}
       <header className="bg-white dark:bg-[hsl(0,0%,10%)] shadow-sm border-b dark:border-[hsl(0,0%,20%)] z-10 shrink-0">
         <div className="px-4 sm:px-6 lg:px-8 py-4">
@@ -137,7 +137,7 @@ export default function DashboardPage() {
                 <FontAwesomeIcon icon={sidebarOpen ? faTimes : faBars} />
               </Button>
 
-              <Image
+              <Logo
                 src="/logo_complete.png"
                 alt="pAIperless"
                 width={200}

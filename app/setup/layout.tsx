@@ -7,7 +7,7 @@ export default function SetupLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 dark:bg-[hsl(0,0%,7%)] flex flex-col">
       <div className="flex-1 flex items-center justify-center p-4">
         {children}
       </div>

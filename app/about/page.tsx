@@ -13,6 +13,7 @@ import {
   faBolt
 } from '@fortawesome/free-solid-svg-icons';
 import { faGithub, faPaypal } from '@fortawesome/free-brands-svg-icons';
+import Logo from '@/components/Logo';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
@@ -42,7 +43,7 @@ export default function AboutPage() {
               <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
               Zurück
             </Button>
-            <Image
+            <Logo
               src="/logo_small.png"
               alt="pAIperless"
               width={120}
@@ -60,7 +61,7 @@ export default function AboutPage() {
           <div className="space-y-6">
             {/* Hero Section */}
             <div className="text-center mb-8">
-              <Image
+              <Logo
                 src="/logo_complete.png"
                 alt="pAIperless"
                 width={300}
