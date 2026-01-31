@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
         data.geminiStrictCorrespondents = await getConfig(CONFIG_KEYS.GEMINI_STRICT_CORRESPONDENTS) || 'false';
         data.geminiStrictDocumentTypes = await getConfig(CONFIG_KEYS.GEMINI_STRICT_DOCUMENT_TYPES) || 'false';
         data.geminiStrictStoragePaths = await getConfig(CONFIG_KEYS.GEMINI_STRICT_STORAGE_PATHS) || 'false';
+        data.geminiFillCustomFields = await getConfig(CONFIG_KEYS.GEMINI_FILL_CUSTOM_FIELDS) || 'true';
         break;
 
       case 3: // Document AI

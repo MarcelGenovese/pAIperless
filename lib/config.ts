@@ -24,6 +24,7 @@ export const CONFIG_KEYS = {
   GEMINI_STRICT_CORRESPONDENTS: 'GEMINI_STRICT_CORRESPONDENTS', // Restrict to existing correspondents
   GEMINI_STRICT_DOCUMENT_TYPES: 'GEMINI_STRICT_DOCUMENT_TYPES', // Restrict to existing document types
   GEMINI_STRICT_STORAGE_PATHS: 'GEMINI_STRICT_STORAGE_PATHS', // Restrict to existing storage paths
+  GEMINI_FILL_CUSTOM_FIELDS: 'GEMINI_FILL_CUSTOM_FIELDS', // Enable AI to fill custom fields during tagging
   GEMINI_COST_AMOUNT: 'GEMINI_COST_AMOUNT', // Cost amount for pricing calculation
   GEMINI_TOKEN_UNIT: 'GEMINI_TOKEN_UNIT', // Token unit for pricing (e.g., 1000000 for cost per million)
 

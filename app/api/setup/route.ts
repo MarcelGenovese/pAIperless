@@ -73,6 +73,9 @@ export async function POST(request: NextRequest) {
         if (data.geminiStrictStoragePaths !== undefined) {
           await setConfig(CONFIG_KEYS.GEMINI_STRICT_STORAGE_PATHS, data.geminiStrictStoragePaths);
         }
+        if (data.geminiFillCustomFields !== undefined) {
+          await setConfig(CONFIG_KEYS.GEMINI_FILL_CUSTOM_FIELDS, data.geminiFillCustomFields);
+        }
         break;
 
       case 3: // Document AI

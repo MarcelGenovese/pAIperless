@@ -18,7 +18,10 @@ interface PromptConfig {
  * Note: Gemini uses OpenAPI 3.0 schema format, not standard JSON Schema
  */
 export async function generateResponseSchema(
-  paperlessClient: PaperlessClient
+  paperlessClient: PaperlessClient,
+  fillCustomFields: boolean = true,
+  fieldActionDescription?: string,
+  fieldDueDate?: string
 ): Promise<any> {
   const customFields = await paperlessClient.getCustomFields();
 
@@ -55,46 +58,53 @@ export async function generateResponseSchema(
     required: ["title", "tags"]
   };
 
-  // Add custom fields to schema
+  // Add custom fields to schema (always include action_description and due_date, others only if enabled)
   if (customFields.length > 0) {
-    schema.properties.custom_fields = {
-      type: "OBJECT",
-      properties: {},
-      description: "Custom field values",
-      nullable: true
-    };
-
-    customFields.forEach(field => {
-      let fieldSchema: any = { nullable: true };
-
-      switch (field.data_type) {
-        case 'string':
-        case 'text':
-        case 'url':
-        case 'select':
-          fieldSchema.type = "STRING";
-          break;
-        case 'integer':
-        case 'documentlink':
-          fieldSchema.type = "INTEGER";
-          break;
-        case 'float':
-          fieldSchema.type = "NUMBER";
-          break;
-        case 'boolean':
-          fieldSchema.type = "BOOLEAN";
-          break;
-        case 'date':
-          fieldSchema.type = "STRING";
-          fieldSchema.format = "date";
-          fieldSchema.description = "Date in YYYY-MM-DD format";
-          break;
-        default:
-          fieldSchema.type = "STRING";
-      }
-
-      schema.properties.custom_fields.properties[field.name] = fieldSchema;
+    const filteredFields = customFields.filter(field => {
+      const isActionField = field.name === fieldActionDescription || field.name === fieldDueDate;
+      return isActionField || fillCustomFields;
     });
+
+    if (filteredFields.length > 0) {
+      schema.properties.custom_fields = {
+        type: "OBJECT",
+        properties: {},
+        description: "Custom field values",
+        nullable: true
+      };
+
+      filteredFields.forEach(field => {
+        let fieldSchema: any = { nullable: true };
+
+        switch (field.data_type) {
+          case 'string':
+          case 'text':
+          case 'url':
+          case 'select':
+            fieldSchema.type = "STRING";
+            break;
+          case 'integer':
+          case 'documentlink':
+            fieldSchema.type = "INTEGER";
+            break;
+          case 'float':
+            fieldSchema.type = "NUMBER";
+            break;
+          case 'boolean':
+            fieldSchema.type = "BOOLEAN";
+            break;
+          case 'date':
+            fieldSchema.type = "STRING";
+            fieldSchema.format = "date";
+            fieldSchema.description = "Date in YYYY-MM-DD format";
+            break;
+          default:
+            fieldSchema.type = "STRING";
+        }
+
+        schema.properties.custom_fields.properties[field.name] = fieldSchema;
+      });
+    }
   }
 
   return schema;
@@ -110,6 +120,7 @@ export async function generateAnalysisPrompt(
   const strictCorrespondents = (await getConfig(CONFIG_KEYS.GEMINI_STRICT_CORRESPONDENTS)) === 'true';
   const strictDocumentTypes = (await getConfig(CONFIG_KEYS.GEMINI_STRICT_DOCUMENT_TYPES)) === 'true';
   const strictStoragePaths = (await getConfig(CONFIG_KEYS.GEMINI_STRICT_STORAGE_PATHS)) === 'true';
+  const fillCustomFields = (await getConfig(CONFIG_KEYS.GEMINI_FILL_CUSTOM_FIELDS)) === 'true';
   const customPrompt = await getConfig(CONFIG_KEYS.GEMINI_PROMPT_TEMPLATE) || '';
   const fieldActionDescription = await getConfig(CONFIG_KEYS.FIELD_ACTION_DESCRIPTION) || 'action_description';
   const fieldDueDate = await getConfig(CONFIG_KEYS.FIELD_DUE_DATE) || 'due_date';
@@ -139,10 +150,16 @@ export async function generateAnalysisPrompt(
     storage_path: "storage path name or null",
   };
 
-  // Add custom fields
+  // Add custom fields (always include action_description and due_date, others only if enabled)
   if (customFields.length > 0) {
     structure.custom_fields = {};
     customFields.forEach(field => {
+      // Always include action tracking fields, or include all if custom fields are enabled
+      const isActionField = field.name === fieldActionDescription || field.name === fieldDueDate;
+      if (!isActionField && !fillCustomFields) {
+        return; // Skip this field
+      }
+
       let exampleValue: any;
       switch (field.data_type) {
         case 'string':
@@ -270,7 +287,7 @@ export async function generateAnalysisPrompt(
   prompt += documentContent;
 
   // Generate response schema for strict validation
-  const schema = await generateResponseSchema(paperlessClient);
+  const schema = await generateResponseSchema(paperlessClient, fillCustomFields, fieldActionDescription, fieldDueDate);
 
   return { prompt, schema };
 }

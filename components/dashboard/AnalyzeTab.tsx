@@ -43,6 +43,7 @@ export default function AnalyzeTab() {
   const [strictCorrespondents, setStrictCorrespondents] = useState(false);
   const [strictDocumentTypes, setStrictDocumentTypes] = useState(false);
   const [strictStoragePaths, setStrictStoragePaths] = useState(false);
+  const [fillCustomFields, setFillCustomFields] = useState(true);
   const [customPrompt, setCustomPrompt] = useState('');
   const [hasChanges, setHasChanges] = useState(false);
   const [systemLanguage, setSystemLanguage] = useState('de');
@@ -110,6 +111,7 @@ export default function AnalyzeTab() {
       setStrictCorrespondents(config2Data.geminiStrictCorrespondents === 'true');
       setStrictDocumentTypes(config2Data.geminiStrictDocumentTypes === 'true');
       setStrictStoragePaths(config2Data.geminiStrictStoragePaths === 'true');
+      setFillCustomFields(config2Data.geminiFillCustomFields !== 'false'); // Default true
 
       setSystemLanguage(config0Data.locale || 'de');
     } catch (error) {
@@ -205,6 +207,7 @@ export default function AnalyzeTab() {
             geminiStrictCorrespondents: strictCorrespondents ? 'true' : 'false',
             geminiStrictDocumentTypes: strictDocumentTypes ? 'true' : 'false',
             geminiStrictStoragePaths: strictStoragePaths ? 'true' : 'false',
+            geminiFillCustomFields: fillCustomFields ? 'true' : 'false',
           },
         }),
       });
@@ -995,6 +998,26 @@ export default function AnalyzeTab() {
               checked={strictStoragePaths}
               onCheckedChange={(checked) => {
                 setStrictStoragePaths(checked);
+                setHasChanges(true);
+              }}
+            />
+          </div>
+
+          {/* Fill Custom Fields */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="fill-custom-fields">
+                Benutzerdefinierte Felder automatisch ausfüllen
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                KI füllt alle benutzerdefinierten Felder nach bestem Ermessen aus
+              </p>
+            </div>
+            <Switch
+              id="fill-custom-fields"
+              checked={fillCustomFields}
+              onCheckedChange={(checked) => {
+                setFillCustomFields(checked);
                 setHasChanges(true);
               }}
             />
