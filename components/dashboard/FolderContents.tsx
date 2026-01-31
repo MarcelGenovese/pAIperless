@@ -28,28 +28,55 @@ interface FolderContents {
   error: FileInfo[];
 }
 
+interface QueueCounts {
+  pending: number;
+  processing: number;
+  error: number;
+  completed: number;
+}
+
 export default function FolderContents() {
   const [folders, setFolders] = useState<FolderContents>({
     consume: [],
     processing: [],
     error: [],
   });
+  const [queueCounts, setQueueCounts] = useState<QueueCounts>({
+    pending: 0,
+    processing: 0,
+    error: 0,
+    completed: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState<'consume' | 'processing' | 'error' | null>(null);
   const [clearing, setClearing] = useState(false);
+  const [triggering, setTriggering] = useState(false);
 
   const loadFolders = async () => {
     setRefreshing(true);
     try {
-      const response = await fetch('/api/documents/folders');
-      const data = await response.json();
+      // Load both folder contents and queue counts in parallel
+      const [foldersResponse, queueResponse] = await Promise.all([
+        fetch('/api/documents/folders'),
+        fetch('/api/dashboard/queue')
+      ]);
 
-      if (data && !data.error) {
-        setFolders(data);
-      } else if (data?.error) {
-        console.error('[FolderContents] Failed to load folders:', data.error);
+      const foldersData = await foldersResponse.json();
+      const queueData = await queueResponse.json();
+
+      if (foldersData && !foldersData.error) {
+        setFolders(foldersData);
+      } else if (foldersData?.error) {
+        console.error('[FolderContents] Failed to load folders:', foldersData.error);
       }
+
+      if (queueData && !queueData.error && queueData.counts) {
+        setQueueCounts(queueData.counts);
+      } else if (queueData?.error) {
+        console.error('[FolderContents] Failed to load queue counts:', queueData.error);
+      }
+
       setLoading(false);
     } catch (error) {
       console.error('Failed to load folders:', error);
@@ -130,6 +157,29 @@ export default function FolderContents() {
       alert('Fehler beim Leeren des Ordners');
     } finally {
       setClearing(false);
+    }
+  };
+
+  const triggerManualProcessing = async () => {
+    setTriggering(true);
+    try {
+      const response = await fetch('/api/documents/trigger-consume', {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(data.message || 'Verarbeitung wurde manuell ausgelöst');
+        loadFolders();
+      } else {
+        const data = await response.json();
+        alert('Fehler beim Auslösen: ' + (data.error || 'Unbekannter Fehler'));
+      }
+    } catch (error) {
+      console.error('Failed to trigger processing:', error);
+      alert('Fehler beim Auslösen der Verarbeitung');
+    } finally {
+      setTriggering(false);
     }
   };
 
@@ -223,23 +273,35 @@ export default function FolderContents() {
                   <FontAwesomeIcon icon={faClock} className="text-blue-600" />
                   Warteschlange
                   <span className="ml-auto text-sm font-normal text-muted-foreground">
-                    {folders.consume.length}
+                    {folders.consume.length} / {queueCounts.pending} DB
                   </span>
                 </CardTitle>
                 <CardDescription className="text-xs mt-1">
                   Neue Dateien, die auf Verarbeitung warten
                 </CardDescription>
               </div>
-              {folders.consume.length > 0 && (
+              <div className="flex gap-2">
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setShowClearConfirm('consume')}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-[hsl(0,40%,18%)]"
+                  onClick={triggerManualProcessing}
+                  disabled={triggering}
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-[hsl(220,40%,18%)]"
+                  title="Verarbeitung manuell auslösen"
                 >
-                  <FontAwesomeIcon icon={faTrash} />
+                  <FontAwesomeIcon icon={faSync} className={triggering ? 'animate-spin' : ''} />
                 </Button>
-              )}
+                {folders.consume.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowClearConfirm('consume')}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-[hsl(0,40%,18%)]"
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </Button>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent className="pt-0">
@@ -259,7 +321,7 @@ export default function FolderContents() {
                   <FontAwesomeIcon icon={faSpinner} className="text-yellow-600" />
                   In Bearbeitung
                   <span className="ml-auto text-sm font-normal text-muted-foreground">
-                    {folders.processing.length}
+                    {folders.processing.length} / {queueCounts.processing} DB
                   </span>
                 </CardTitle>
                 <CardDescription className="text-xs mt-1">
@@ -295,7 +357,7 @@ export default function FolderContents() {
                   <FontAwesomeIcon icon={faExclamationTriangle} className="text-red-600" />
                   Fehler
                   <span className="ml-auto text-sm font-normal text-muted-foreground">
-                    {folders.error.length}
+                    {folders.error.length} / {queueCounts.error} DB
                   </span>
                 </CardTitle>
                 <CardDescription className="text-xs mt-1">

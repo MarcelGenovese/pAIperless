@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic'; // Disable caching
+export const revalidate = 0; // No caching
 
 /**
  * Get document processing queue status
@@ -94,7 +96,7 @@ export async function GET() {
       }
     });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       counts: {
         pending,
         processing,
@@ -107,6 +109,13 @@ export async function GET() {
         error: errorDocuments,
       }
     });
+
+    // Prevent caching
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+
+    return response;
   } catch (error: any) {
     console.error('Failed to fetch queue status:', error);
     return NextResponse.json(
