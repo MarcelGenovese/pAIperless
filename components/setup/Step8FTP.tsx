@@ -1,13 +1,13 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faArrowRight, faEye, faEyeSlash, faServer } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faArrowRight, faEye, faEyeSlash, faServer, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 interface StepProps {
   onNext: (data: Record<string, any>) => void;
@@ -24,6 +24,30 @@ export default function Step8FTP({ onNext, onBack, data }: StepProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [ftpPort, setFtpPort] = useState('21');
   const [enableTls, setEnableTls] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  // Load saved configuration
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const response = await fetch('/api/setup/load-config?step=8');
+        if (response.ok) {
+          const savedData = await response.json();
+          if (savedData.ftpEnabled !== undefined) setEnabled(savedData.ftpEnabled);
+          if (savedData.ftpUsername) setFtpUsername(savedData.ftpUsername);
+          if (savedData.ftpPassword) setFtpPassword(savedData.ftpPassword);
+          if (savedData.ftpPort) setFtpPort(savedData.ftpPort);
+          if (savedData.ftpEnableTls !== undefined) setEnableTls(savedData.ftpEnableTls);
+        }
+      } catch (error) {
+        console.error('Failed to load FTP config:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadConfig();
+  }, []);
 
   const canProceed = !enabled || (ftpUsername && ftpPassword);
 
@@ -31,7 +55,8 @@ export default function Step8FTP({ onNext, onBack, data }: StepProps) {
     if (!canProceed) return;
 
     try {
-      await fetch('/api/setup', {
+      console.log('[Step8FTP] Saving FTP configuration...');
+      const response = await fetch('/api/setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -46,15 +71,46 @@ export default function Step8FTP({ onNext, onBack, data }: StepProps) {
         }),
       });
 
-      onNext({});
-    } catch (error) {
+      const result = await response.json();
+      console.log('[Step8FTP] Save result:', result);
+
+      if (response.ok) {
+        // Show FTP server status if enabled
+        if (enabled && result.ftpStarted !== undefined) {
+          if (result.ftpStarted) {
+            toast({
+              title: "FTP Server gestartet",
+              description: result.ftpMessage || `FTP Server läuft auf Port ${ftpPort}`,
+            });
+          } else {
+            toast({
+              title: "Warnung",
+              description: result.ftpMessage || "FTP-Konfiguration gespeichert, aber Server konnte nicht gestartet werden",
+              variant: "destructive",
+            });
+          }
+        }
+        onNext({});
+      } else {
+        throw new Error(result.error || 'Fehler beim Speichern');
+      }
+    } catch (error: any) {
+      console.error('[Step8FTP] Save error:', error);
       toast({
         title: "Fehler",
-        description: "FTP-Konfiguration konnte nicht gespeichert werden.",
+        description: error.message || "FTP-Konfiguration konnte nicht gespeichert werden.",
         variant: "destructive",
       });
     }
   };
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto flex justify-center items-center py-12">
+        <FontAwesomeIcon icon={faSpinner} className="animate-spin text-4xl text-accent" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto">

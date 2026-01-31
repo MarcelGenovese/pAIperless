@@ -1,12 +1,12 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faArrowRight, faTag, faFileAlt } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faArrowRight, faTag, faFileAlt, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 interface StepProps {
   onNext: (data: Record<string, any>) => void;
@@ -21,6 +21,29 @@ export default function Step6PaperlessIntegration({ onNext, onBack, data }: Step
   const [tagActionRequired, setTagActionRequired] = useState('action_required');
   const [fieldActionDescription, setFieldActionDescription] = useState('action_description');
   const [fieldDueDate, setFieldDueDate] = useState('due_date');
+  const [loading, setLoading] = useState(true);
+
+  // Load saved configuration
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const response = await fetch('/api/setup/load-config?step=6');
+        if (response.ok) {
+          const savedData = await response.json();
+          if (savedData.tagAiTodo) setTagAiTodo(savedData.tagAiTodo);
+          if (savedData.tagActionRequired) setTagActionRequired(savedData.tagActionRequired);
+          if (savedData.fieldActionDescription) setFieldActionDescription(savedData.fieldActionDescription);
+          if (savedData.fieldDueDate) setFieldDueDate(savedData.fieldDueDate);
+        }
+      } catch (error) {
+        console.error('Failed to load Paperless integration config:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadConfig();
+  }, []);
 
   const canProceed = tagAiTodo && tagActionRequired && fieldActionDescription && fieldDueDate;
 
@@ -51,6 +74,14 @@ export default function Step6PaperlessIntegration({ onNext, onBack, data }: Step
       });
     }
   };
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto flex justify-center items-center py-12">
+        <FontAwesomeIcon icon={faSpinner} className="animate-spin text-4xl text-accent" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto">

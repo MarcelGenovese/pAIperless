@@ -29,6 +29,38 @@ export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
 
   const canProceed = clientId && clientSecret && isAuthorized && selectedCalendar && selectedTaskList;
 
+  const handleSkip = async () => {
+    try {
+      // Save as not configured
+      await fetch('/api/setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          step: 4,
+          data: {
+            clientId: '',
+            clientSecret: '',
+            calendarId: '',
+            taskListId: ''
+          }
+        }),
+      });
+
+      toast({
+        title: "Google OAuth übersprungen",
+        description: "Sie können Google Calendar & Tasks später in den Einstellungen konfigurieren.",
+      });
+
+      onNext({});
+    } catch (error) {
+      toast({
+        title: "Fehler",
+        description: "Konfiguration konnte nicht gespeichert werden.",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Load saved OAuth config on mount
   useEffect(() => {
     const loadOAuthConfig = async () => {
@@ -404,15 +436,21 @@ export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
           )}
         </div>
 
-        <div className="flex justify-between pt-6">
+        <div className="flex justify-between items-center pt-6">
           <Button onClick={onBack} variant="outline">
             <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
             Back
           </Button>
-          <Button onClick={handleNext} disabled={!canProceed}>
-            Next
-            <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
-          </Button>
+
+          <div className="flex gap-3">
+            <Button onClick={handleSkip} variant="ghost">
+              Skip (Optional)
+            </Button>
+            <Button onClick={handleNext} disabled={!canProceed}>
+              Next
+              <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

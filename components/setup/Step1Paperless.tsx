@@ -473,8 +473,16 @@ export default function Step1Paperless({ onNext, onBack, data }: Step1PaperlessP
                           <FontAwesomeIcon icon={faCopy} />
                         </Button>
                       </div>
-                      <div>
-                        <span className="text-gray-600">Header:</span> <code className="bg-gray-100 px-2 py-1 rounded">x-api-key: {webhookApiKey.substring(0, 16)}...</code>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-600">Header:</span>
+                        <code className="bg-gray-100 px-2 py-1 rounded flex-1 text-xs break-all">x-api-key: {webhookApiKey}</code>
+                        <Button
+                          onClick={handleCopyWebhookKey}
+                          size="sm"
+                          variant="ghost"
+                        >
+                          <FontAwesomeIcon icon={faCopy} />
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -500,8 +508,16 @@ export default function Step1Paperless({ onNext, onBack, data }: Step1PaperlessP
                           <FontAwesomeIcon icon={faCopy} />
                         </Button>
                       </div>
-                      <div>
-                        <span className="text-gray-600">Header:</span> <code className="bg-gray-100 px-2 py-1 rounded">x-api-key: {webhookApiKey.substring(0, 16)}...</code>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-600">Header:</span>
+                        <code className="bg-gray-100 px-2 py-1 rounded flex-1 text-xs break-all">x-api-key: {webhookApiKey}</code>
+                        <Button
+                          onClick={handleCopyWebhookKey}
+                          size="sm"
+                          variant="ghost"
+                        >
+                          <FontAwesomeIcon icon={faCopy} />
+                        </Button>
                       </div>
                     </div>
                   </div>

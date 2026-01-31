@@ -600,9 +600,10 @@ export class PaperlessClient {
 
       const results = paiperlessWorkflows.map((workflow: any) => {
         // Check if workflow has HTTP actions
+        // Type can be either integer (4 = WEBHOOK) or string ('webhook', 'http')
         const actions = workflow.actions || [];
         const webhookAction = actions.find((action: any) =>
-          action.type === 'webhook' || action.type === 'http'
+          action.type === 4 || action.type === 'webhook' || action.type === 'http'
         );
 
         if (!webhookAction) {
@@ -615,7 +616,8 @@ export class PaperlessClient {
         }
 
         // Check headers for x-api-key
-        const headers = webhookAction.headers || {};
+        // Headers can be in action.headers or action.webhook.headers depending on Paperless version
+        const headers = webhookAction.webhook?.headers || webhookAction.headers || {};
         const currentApiKey = headers['x-api-key'] || headers['X-Api-Key'] || headers['X-API-KEY'];
 
         return {
@@ -647,15 +649,30 @@ export class PaperlessClient {
       const workflow = await this.getWorkflow(workflowId);
 
       // Update all webhook actions with new API key
+      // Type can be either integer (4 = WEBHOOK) or string ('webhook', 'http')
       const updatedActions = (workflow.actions || []).map((action: any) => {
-        if (action.type === 'webhook' || action.type === 'http') {
-          return {
-            ...action,
-            headers: {
-              ...(action.headers || {}),
-              'x-api-key': newApiKey,
-            },
-          };
+        if (action.type === 4 || action.type === 'webhook' || action.type === 'http') {
+          // Headers can be in action.headers or action.webhook.headers depending on Paperless version
+          if (action.webhook) {
+            return {
+              ...action,
+              webhook: {
+                ...action.webhook,
+                headers: {
+                  ...(action.webhook.headers || {}),
+                  'x-api-key': newApiKey,
+                },
+              },
+            };
+          } else {
+            return {
+              ...action,
+              headers: {
+                ...(action.headers || {}),
+                'x-api-key': newApiKey,
+              },
+            };
+          }
         }
         return action;
       });
@@ -748,10 +765,14 @@ export class PaperlessClient {
         if (existingWorkflow) {
           // Workflow exists, update the API key if needed
           const actions = existingWorkflow.actions || [];
-          const webhookAction = actions.find((a: any) => a.type === 'webhook' || a.type === 'http');
+          const webhookAction = actions.find((a: any) =>
+            a.type === 4 || a.type === 'webhook' || a.type === 'http'
+          );
 
           if (webhookAction) {
-            const currentApiKey = webhookAction.headers?.['x-api-key'];
+            // Check current API key (can be in webhook.headers or headers)
+            const currentApiKey = webhookAction.webhook?.headers?.['x-api-key'] ||
+                                  webhookAction.headers?.['x-api-key'];
             if (currentApiKey !== webhookApiKey) {
               // Update API key
               await this.updateWorkflowApiKey(existingWorkflow.id, webhookApiKey);

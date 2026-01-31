@@ -183,12 +183,21 @@ class EmailService {
         return { success: false, message: 'Email is not configured or disabled' };
       }
 
+      console.log('[Email] Creating transporter with config:', {
+        host: this.config.smtpServer,
+        port: this.config.smtpPort,
+        encryption: this.config.smtpEncryption,
+        user: this.config.smtpUser,
+      });
+
       const transporter = await this.createTransporter();
       if (!transporter) {
-        return { success: false, message: 'Failed to create SMTP transporter' };
+        return { success: false, message: 'Failed to create SMTP transporter - check server logs for details' };
       }
 
       const to = recipient || this.config.emailRecipients[0];
+      console.log('[Email] Sending to:', to);
+      console.log('[Email] From:', this.config.emailSender);
 
       const mailOptions = {
         from: this.config.emailSender,
@@ -209,11 +218,13 @@ class EmailService {
         `,
       };
 
+      console.log('[Email] Attempting to send mail...');
       const info = await transporter.sendMail(mailOptions);
 
       const message = `Test email sent successfully to ${to}`;
       console.log(`[Email] ${message}`);
       console.log('[Email] Message ID:', info.messageId);
+      console.log('[Email] Response:', info.response);
 
       await this.log('INFO', message, {
         to,
@@ -223,9 +234,36 @@ class EmailService {
 
       return { success: true, message };
     } catch (error: any) {
-      const message = `Failed to send test email: ${error.message}`;
+      // Extract detailed error information
+      let errorDetails = error.message;
+
+      // Check for specific nodemailer error types
+      if (error.code) {
+        errorDetails += ` (Code: ${error.code})`;
+      }
+      if (error.command) {
+        errorDetails += ` during ${error.command}`;
+      }
+      if (error.responseCode) {
+        errorDetails += ` - Server responded with code ${error.responseCode}`;
+      }
+      if (error.response) {
+        errorDetails += ` - Server response: ${error.response}`;
+      }
+
+      const message = `Failed to send test email: ${errorDetails}`;
       console.error(`[Email] ${message}`);
-      await this.log('ERROR', message, { error: error.message, stack: error.stack });
+      console.error('[Email] Full error:', error);
+
+      await this.log('ERROR', message, {
+        error: error.message,
+        code: error.code,
+        command: error.command,
+        responseCode: error.responseCode,
+        response: error.response,
+        stack: error.stack
+      });
+
       return { success: false, message };
     }
   }
@@ -311,26 +349,85 @@ class EmailService {
 
       const configLoaded = await this.loadConfig();
       if (!configLoaded || !this.config) {
-        return { success: false, message: 'Email is not configured or disabled' };
+        const reason = await this._getConfigLoadFailureReason();
+        return { success: false, message: `Email is not configured: ${reason}` };
       }
+
+      console.log('[Email] Config loaded, creating transporter...');
+      console.log('[Email] SMTP Server:', this.config.smtpServer);
+      console.log('[Email] SMTP Port:', this.config.smtpPort);
+      console.log('[Email] SMTP Encryption:', this.config.smtpEncryption);
+      console.log('[Email] SMTP User:', this.config.smtpUser);
 
       const transporter = await this.createTransporter();
       if (!transporter) {
-        return { success: false, message: 'Failed to create SMTP transporter' };
+        return { success: false, message: 'Failed to create SMTP transporter - check server logs' };
       }
 
+      console.log('[Email] Transporter created, verifying connection...');
       await transporter.verify();
 
-      const message = 'SMTP connection verified successfully';
+      const message = `SMTP connection verified successfully (${this.config.smtpServer}:${this.config.smtpPort})`;
       console.log(`[Email] ${message}`);
       await this.log('INFO', message);
 
       return { success: true, message };
     } catch (error: any) {
-      const message = `SMTP connection verification failed: ${error.message}`;
+      // Extract detailed error information
+      let errorDetails = error.message;
+
+      if (error.code) {
+        errorDetails += ` (Error code: ${error.code})`;
+      }
+      if (error.errno) {
+        errorDetails += ` errno: ${error.errno}`;
+      }
+      if (error.syscall) {
+        errorDetails += ` during ${error.syscall}`;
+      }
+
+      const message = `SMTP connection verification failed: ${errorDetails}`;
       console.error(`[Email] ${message}`);
-      await this.log('ERROR', message, { error: error.message });
+      console.error('[Email] Full error:', error);
+
+      await this.log('ERROR', message, {
+        error: error.message,
+        code: error.code,
+        errno: error.errno,
+        syscall: error.syscall,
+        stack: error.stack
+      });
+
       return { success: false, message };
+    }
+  }
+
+  /**
+   * Get detailed reason why config loading failed
+   */
+  private async _getConfigLoadFailureReason(): Promise<string> {
+    try {
+      const enabled = (await getConfig(CONFIG_KEYS.EMAIL_ENABLED)) === 'true';
+      if (!enabled) {
+        return 'Email notifications are disabled';
+      }
+
+      const missing: string[] = [];
+
+      if (!await getConfig(CONFIG_KEYS.SMTP_SERVER)) missing.push('SMTP Server');
+      if (!await getConfig(CONFIG_KEYS.SMTP_PORT)) missing.push('SMTP Port');
+      if (!await getConfig(CONFIG_KEYS.SMTP_USER)) missing.push('SMTP Username');
+      if (!await getConfigSecure(CONFIG_KEYS.SMTP_PASSWORD)) missing.push('SMTP Password');
+      if (!await getConfig(CONFIG_KEYS.EMAIL_SENDER)) missing.push('Sender Email');
+      if (!await getConfig(CONFIG_KEYS.EMAIL_RECIPIENTS)) missing.push('Recipients');
+
+      if (missing.length > 0) {
+        return `Missing configuration: ${missing.join(', ')}`;
+      }
+
+      return 'Unknown configuration error';
+    } catch (error) {
+      return 'Failed to check configuration';
     }
   }
 

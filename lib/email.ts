@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import { getConfig, CONFIG_KEYS } from './config';
+import { getConfig, getConfigSecure, CONFIG_KEYS } from './config';
 import { createLogger } from './logger';
 
 const logger = createLogger('Email');
@@ -17,7 +17,7 @@ async function getTransporter() {
   const smtpPort = parseInt(await getConfig(CONFIG_KEYS.SMTP_PORT) || '587', 10);
   const smtpEncryption = await getConfig(CONFIG_KEYS.SMTP_ENCRYPTION) || 'TLS';
   const smtpUser = await getConfig(CONFIG_KEYS.SMTP_USER);
-  const smtpPassword = await getConfig(CONFIG_KEYS.SMTP_PASSWORD);
+  const smtpPassword = await getConfigSecure(CONFIG_KEYS.SMTP_PASSWORD);
 
   if (!smtpServer || !smtpUser || !smtpPassword) {
     await logger.warn('Email not configured properly, skipping');

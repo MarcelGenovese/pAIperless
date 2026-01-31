@@ -69,8 +69,10 @@ export default function SystemCheckModal({ isOpen, onClose }: SystemCheckModalPr
 
     // Test 2: Paperless Workflows
     setTests(prev => prev.map((t, i) => i === 1 ? { ...t, status: 'running' } : t));
-    if (paperlessData && paperlessData.workflowsExist !== undefined) {
-      if (paperlessData.workflowsExist) {
+    try {
+      const res = await fetch('/api/setup/test-webhooks', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok && data.webhooksExist) {
         setTests(prev => prev.map((t, i) =>
           i === 1 ? {
             ...t,
@@ -79,17 +81,17 @@ export default function SystemCheckModal({ isOpen, onClose }: SystemCheckModalPr
           } : t
         ));
       } else {
-        const missing = paperlessData.missingWorkflows || [];
+        const missing = data.missingWebhooks || [];
         setTests(prev => prev.map((t, i) =>
           i === 1 ? {
             ...t,
             status: 'error',
-            message: `Fehlende Workflows: ${missing.join(', ')}`,
-            detail: 'Bitte erstellen Sie die Workflows in Paperless-NGX'
+            message: `Fehlende Workflows: ${missing.join(', ') || 'unbekannt'}`,
+            detail: 'Bitte erstellen Sie die Workflows in Paperless-NGX oder verwenden Sie "Auto-Create"'
           } : t
         ));
       }
-    } else {
+    } catch (error: any) {
       setTests(prev => prev.map((t, i) =>
         i === 1 ? { ...t, status: 'error', message: 'Workflow-Prüfung fehlgeschlagen' } : t
       ));

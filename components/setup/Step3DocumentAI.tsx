@@ -33,6 +33,39 @@ export default function Step3DocumentAI({ onNext, onBack, data }: StepProps) {
   const canProceed = projectId && processorId && location && serviceAccountJson &&
                      connectionStatus === 'success' && ocrStatus === 'success';
 
+  const handleSkip = async () => {
+    try {
+      // Save as disabled
+      await fetch('/api/setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          step: 3,
+          data: {
+            projectId: '',
+            credentials: '',
+            processorId: '',
+            location: 'us',
+            enabled: 'false'
+          }
+        }),
+      });
+
+      toast({
+        title: "Document AI übersprungen",
+        description: "Sie können Document AI später in den Einstellungen konfigurieren.",
+      });
+
+      onNext({});
+    } catch (error) {
+      toast({
+        title: "Fehler",
+        description: "Konfiguration konnte nicht gespeichert werden.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -430,15 +463,21 @@ export default function Step3DocumentAI({ onNext, onBack, data }: StepProps) {
           )}
         </div>
 
-        <div className="flex justify-between pt-6">
+        <div className="flex justify-between items-center pt-6">
           <Button onClick={onBack} variant="outline">
             <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
             Back
           </Button>
-          <Button onClick={() => onNext({})} disabled={!canProceed}>
-            Next
-            <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
-          </Button>
+
+          <div className="flex gap-3">
+            <Button onClick={handleSkip} variant="ghost">
+              Skip (Optional)
+            </Button>
+            <Button onClick={() => onNext({})} disabled={!canProceed}>
+              Next
+              <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

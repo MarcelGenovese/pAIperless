@@ -137,10 +137,13 @@ export default function ProcessingStatusIndicator() {
               </span>
             )}
           </div>
-          <div className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
-            <FontAwesomeIcon icon={faClock} className="text-xs" />
-            {formatDuration(process.duration)}
-          </div>
+          {/* Only show duration for non-watcher processes */}
+          {process.type !== 'WORKER_CONSUME' && (
+            <div className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
+              <FontAwesomeIcon icon={faClock} className="text-xs" />
+              {formatDuration(process.duration)}
+            </div>
+          )}
         </div>
       ))}
     </div>

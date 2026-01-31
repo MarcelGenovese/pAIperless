@@ -6,6 +6,17 @@ import { prisma } from './prisma';
 const logger = createLogger('GoogleCalendarTasks');
 
 /**
+ * Check if Google OAuth is configured
+ */
+async function isOAuthConfigured(): Promise<boolean> {
+  const clientId = await getConfigSecure(CONFIG_KEYS.GOOGLE_OAUTH_CLIENT_ID);
+  const clientSecret = await getConfigSecure(CONFIG_KEYS.GOOGLE_OAUTH_CLIENT_SECRET);
+  const accessToken = await getConfigSecure(CONFIG_KEYS.GOOGLE_OAUTH_ACCESS_TOKEN);
+
+  return !!(clientId && clientSecret && accessToken);
+}
+
+/**
  * Get authenticated Google OAuth2 client
  */
 async function getOAuth2Client() {
@@ -37,6 +48,12 @@ export async function createCalendarEvent(
   paperlessDocumentId: number
 ): Promise<string | null> {
   try {
+    // Check if OAuth is configured
+    if (!(await isOAuthConfigured())) {
+      await logger.info('Google OAuth not configured, skipping calendar event creation');
+      return null;
+    }
+
     const oauth2Client = await getOAuth2Client();
     const calendarId = await getConfig(CONFIG_KEYS.GOOGLE_CALENDAR_ID);
 
@@ -107,6 +124,12 @@ export async function createTask(
   paperlessDocumentId: number
 ): Promise<string | null> {
   try {
+    // Check if OAuth is configured
+    if (!(await isOAuthConfigured())) {
+      await logger.info('Google OAuth not configured, skipping task creation');
+      return null;
+    }
+
     const oauth2Client = await getOAuth2Client();
     const taskListId = await getConfig(CONFIG_KEYS.GOOGLE_TASK_LIST_ID);
 
@@ -166,6 +189,12 @@ export async function hasExistingCalendarOrTask(paperlessDocumentId: number): Pr
  */
 export async function getCompletedTasks(): Promise<Array<{ id: string; title: string; paperlessDocId: number | null }>> {
   try {
+    // Check if OAuth is configured
+    if (!(await isOAuthConfigured())) {
+      await logger.info('Google OAuth not configured, skipping task polling');
+      return [];
+    }
+
     const oauth2Client = await getOAuth2Client();
     const taskListId = await getConfig(CONFIG_KEYS.GOOGLE_TASK_LIST_ID);
 
@@ -215,6 +244,12 @@ export async function getCompletedTasks(): Promise<Array<{ id: string; title: st
  */
 export async function deleteTask(taskId: string): Promise<boolean> {
   try {
+    // Check if OAuth is configured
+    if (!(await isOAuthConfigured())) {
+      await logger.info('Google OAuth not configured, skipping task deletion');
+      return false;
+    }
+
     const oauth2Client = await getOAuth2Client();
     const taskListId = await getConfig(CONFIG_KEYS.GOOGLE_TASK_LIST_ID);
 
@@ -242,6 +277,12 @@ export async function deleteTask(taskId: string): Promise<boolean> {
  */
 export async function deleteCalendarEvent(eventId: string): Promise<boolean> {
   try {
+    // Check if OAuth is configured
+    if (!(await isOAuthConfigured())) {
+      await logger.info('Google OAuth not configured, skipping calendar event deletion');
+      return false;
+    }
+
     const oauth2Client = await getOAuth2Client();
     const calendarId = await getConfig(CONFIG_KEYS.GOOGLE_CALENDAR_ID);
 

@@ -45,6 +45,11 @@ export async function middleware(request: NextRequest) {
 
   // If setup is not complete, redirect to /setup (unless already there)
   if (setupComplete !== 'true') {
+    // Allow /api/email/ during setup ONLY
+    if (pathname.startsWith('/api/email/')) {
+      return NextResponse.next();
+    }
+
     if (!pathname.startsWith('/setup')) {
       // For API routes, return JSON error
       if (pathname.startsWith('/api/')) {

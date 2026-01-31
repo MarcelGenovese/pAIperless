@@ -29,6 +29,33 @@ export default function Step5Email({ onNext, onBack, data }: StepProps) {
   const [emailSender, setEmailSender] = useState('');
   const [emailRecipients, setEmailRecipients] = useState('');
   const [testing, setTesting] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Load saved configuration
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const response = await fetch('/api/setup/load-config?step=5');
+        if (response.ok) {
+          const savedData = await response.json();
+          if (savedData.emailEnabled !== undefined) setEnabled(savedData.emailEnabled);
+          if (savedData.smtpServer) setSmtpServer(savedData.smtpServer);
+          if (savedData.smtpPort) setSmtpPort(savedData.smtpPort);
+          if (savedData.smtpEncryption) setSmtpEncryption(savedData.smtpEncryption);
+          if (savedData.smtpUser) setSmtpUser(savedData.smtpUser);
+          if (savedData.smtpPassword) setSmtpPassword(savedData.smtpPassword);
+          if (savedData.emailSender) setEmailSender(savedData.emailSender);
+          if (savedData.emailRecipients) setEmailRecipients(savedData.emailRecipients);
+        }
+      } catch (error) {
+        console.error('Failed to load email config:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadConfig();
+  }, []);
 
   const canProceed = !enabled || (
     smtpServer && smtpPort && smtpUser && smtpPassword && emailSender && emailRecipients
@@ -48,7 +75,8 @@ export default function Step5Email({ onNext, onBack, data }: StepProps) {
 
     try {
       // Save configuration first
-      await fetch('/api/setup', {
+      console.log('[Step5Email] Saving configuration...');
+      const saveResponse = await fetch('/api/setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -66,30 +94,41 @@ export default function Step5Email({ onNext, onBack, data }: StepProps) {
         }),
       });
 
+      if (!saveResponse.ok) {
+        const saveError = await saveResponse.json();
+        throw new Error(`Failed to save configuration: ${saveError.message || saveResponse.statusText}`);
+      }
+
+      console.log('[Step5Email] Configuration saved successfully');
+
       // Test email
+      console.log('[Step5Email] Sending test email...');
       const response = await fetch('/api/email/test', {
         method: 'GET',
       });
 
       const result = await response.json();
+      console.log('[Step5Email] Test result:', result);
 
       if (response.ok && result.success) {
         toast({
           title: "Test erfolgreich",
           description: result.message,
-          variant: "success",
         });
       } else {
+        // Show detailed error message
+        const errorMsg = result.message || result.details || 'Fehler beim Senden der Test-Email';
         toast({
           title: "Test fehlgeschlagen",
-          description: result.message || 'Fehler beim Senden der Test-Email',
+          description: errorMsg,
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error('[Step5Email] Test error:', error);
       toast({
         title: "Test fehlgeschlagen",
-        description: "Netzwerkfehler",
+        description: error.message || "Netzwerkfehler",
         variant: "destructive",
       });
     } finally {
@@ -128,6 +167,14 @@ export default function Step5Email({ onNext, onBack, data }: StepProps) {
       });
     }
   };
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto flex justify-center items-center py-12">
+        <FontAwesomeIcon icon={faSpinner} className="animate-spin text-4xl text-accent" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto">

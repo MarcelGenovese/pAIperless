@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { setConfig, setConfigSecure, CONFIG_KEYS } from '@/lib/config';
 import { generateSecureToken } from '@/lib/utils';
+import serviceManager from '@/lib/services/service-manager';
 
 export async function POST(request: NextRequest) {
   try {
@@ -153,6 +154,33 @@ export async function POST(request: NextRequest) {
           await setConfig(CONFIG_KEYS.FTP_PORT, data.ftpPort?.toString() || '21');
           await setConfig(CONFIG_KEYS.FTP_ENABLE_TLS, data.enableTls ? 'true' : 'false');
           await setConfig(CONFIG_KEYS.FTP_PASV_URL, data.ftpPasvUrl || '');
+
+          // Start FTP server after configuration is saved
+          console.log('[Setup] Starting FTP server...');
+          try {
+            const startResult = await serviceManager.restart('ftp');
+            console.log('[Setup] FTP server start result:', startResult);
+            return NextResponse.json({
+              success: true,
+              ftpStarted: startResult.success,
+              ftpMessage: startResult.message
+            });
+          } catch (error: any) {
+            console.error('[Setup] Failed to start FTP server:', error);
+            return NextResponse.json({
+              success: true,
+              ftpStarted: false,
+              ftpMessage: `Configuration saved but FTP server failed to start: ${error.message}`
+            });
+          }
+        } else {
+          // Stop FTP server if disabled
+          console.log('[Setup] Stopping FTP server (disabled)...');
+          try {
+            await serviceManager.restart('ftp');
+          } catch (error) {
+            console.error('[Setup] Error stopping FTP server:', error);
+          }
         }
         break;
 

@@ -79,45 +79,58 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     console.log('[API] Email test GET request (no auth)');
+    console.log('[API] Step 1: Verifying SMTP connection...');
 
     // Verify connection
     const verifyResult = await emailService.verifyConnection();
+    console.log('[API] Verify result:', verifyResult);
+
     if (!verifyResult.success) {
+      console.error('[API] SMTP verification failed:', verifyResult.message);
       return NextResponse.json(
         {
           success: false,
-          message: verifyResult.message,
+          message: `Connection verification failed: ${verifyResult.message}`,
           step: 'verify',
+          details: verifyResult.message,
         },
         { status: 400 }
       );
     }
 
+    console.log('[API] Step 2: Sending test email...');
+
     // Send test email
     const sendResult = await emailService.sendTestEmail();
+    console.log('[API] Send result:', sendResult);
 
     if (!sendResult.success) {
+      console.error('[API] Test email sending failed:', sendResult.message);
       return NextResponse.json(
         {
           success: false,
-          message: sendResult.message,
+          message: `Failed to send test email: ${sendResult.message}`,
           step: 'send',
+          details: sendResult.message,
         },
         { status: 500 }
       );
     }
 
+    console.log('[API] Test email sent successfully');
     return NextResponse.json({
       success: true,
       message: sendResult.message,
     });
   } catch (error: any) {
     console.error('[API] Error testing email:', error);
+    console.error('[API] Error stack:', error.stack);
     return NextResponse.json(
       {
         success: false,
         error: 'Internal server error',
-        message: error.message,
+        message: `Unexpected error: ${error.message}`,
+        details: error.stack,
       },
       { status: 500 }
     );
