@@ -140,16 +140,29 @@ export default function FolderContents() {
         body: JSON.stringify({ folder }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
+        toast({
+          title: 'Ordner geleert',
+          description: `${data.deleted} Datei(en) erfolgreich gelöscht`,
+          variant: 'success',
+        });
         setShowClearConfirm(null);
-        loadFolders();
+        await loadFolders();
       } else {
-        const data = await response.json();
-        alert('Fehler beim Leeren: ' + (data.error || 'Unbekannter Fehler'));
+        toast({
+          title: 'Fehler beim Leeren',
+          description: data.error || 'Unbekannter Fehler',
+          variant: 'destructive',
+        });
       }
-    } catch (error) {
-      console.error('Failed to clear folder:', error);
-      alert('Fehler beim Leeren des Ordners');
+    } catch (error: any) {
+      toast({
+        title: 'Fehler',
+        description: error.message || 'Fehler beim Leeren des Ordners',
+        variant: 'destructive',
+      });
     } finally {
       setClearing(false);
     }

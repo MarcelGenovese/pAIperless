@@ -318,7 +318,29 @@ export default function AnalyzeTab() {
 
   const copyToClipboard = async (text: string, label: string) => {
     try {
-      await navigator.clipboard.writeText(text);
+      // Try modern clipboard API first
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        // Fallback for non-secure contexts
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+          document.execCommand('copy');
+          textArea.remove();
+        } catch (err) {
+          textArea.remove();
+          throw err;
+        }
+      }
+
       toast({
         title: 'Kopiert',
         description: `${label} wurde in die Zwischenablage kopiert`,
@@ -326,9 +348,10 @@ export default function AnalyzeTab() {
     } catch (error) {
       toast({
         title: 'Fehler',
-        description: 'Konnte nicht in Zwischenablage kopieren',
+        description: 'Konnte nicht in Zwischenablage kopieren. Bitte manuell kopieren.',
         variant: 'destructive',
       });
+      console.error('Clipboard error:', error);
     }
   };
 

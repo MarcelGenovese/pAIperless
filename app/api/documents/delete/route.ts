@@ -5,11 +5,28 @@ export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
-    const { ids } = await request.json();
+    const body = await request.json();
+    const { ids, documentId } = body;
 
-    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    // Accept both 'ids' (array) and 'documentId' (single) formats
+    let documentIds: number[];
+
+    if (documentId !== undefined) {
+      // Single document ID
+      documentIds = [typeof documentId === 'number' ? documentId : parseInt(documentId, 10)];
+    } else if (ids && Array.isArray(ids)) {
+      // Array of document IDs
+      documentIds = ids.map((id: string | number) => typeof id === 'number' ? id : parseInt(id, 10));
+    } else {
       return NextResponse.json(
         { error: 'Invalid document IDs' },
+        { status: 400 }
+      );
+    }
+
+    if (documentIds.length === 0) {
+      return NextResponse.json(
+        { error: 'No document IDs provided' },
         { status: 400 }
       );
     }
@@ -18,7 +35,7 @@ export async function POST(request: NextRequest) {
     const deleted = await prisma.document.deleteMany({
       where: {
         id: {
-          in: ids.map((id: string) => parseInt(id, 10))
+          in: documentIds
         }
       }
     });
