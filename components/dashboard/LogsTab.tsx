@@ -338,7 +338,7 @@ export default function LogsTab() {
           </CardTitle>
           <CardDescription>
             Live Logs aus dem Docker Container + Datenbank-Suche für historische Logs.
-            Filter nach Level & Source wirken auf beide. Text-Suche filtert Live Logs sofort,
+            Filter nach Level & Source wirken auf beide. Text-Suche durchsucht Nachricht, Source (system, middleware, worker...) & Level,
             "Suchen" durchsucht zusätzlich alte Logs (automatisch nach 4 Wochen gelöscht).
           </CardDescription>
         </CardHeader>
@@ -478,7 +478,7 @@ export default function LogsTab() {
               <div className="flex-1">
                 <Input
                   type="text"
-                  placeholder="Suchbegriffe eingeben (filtert Live Logs + durchsucht Datenbank)..."
+                  placeholder="Suche nach Text, Source (system, middleware, worker...) oder Level (ERROR, INFO...)..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   onKeyDown={(e) => {
@@ -526,13 +526,13 @@ export default function LogsTab() {
                   </span>
                   <br />
                   {searchMode === 'OR' ? (
-                    'Durchsucht Nachricht, Source & Level - zeigt Einträge mit mindestens einem Suchbegriff'
+                    'Durchsucht Nachricht, Source (system, middleware, worker, ftp, email...) & Level (ERROR, WARN, INFO, DEBUG) - zeigt Einträge mit mindestens einem Suchbegriff'
                   ) : (
-                    'Durchsucht Nachricht, Source & Level - zeigt Einträge mit allen Suchbegriffen'
+                    'Durchsucht Nachricht, Source (system, middleware, worker, ftp, email...) & Level (ERROR, WARN, INFO, DEBUG) - zeigt Einträge mit allen Suchbegriffen'
                   )}
                 </>
               ) : (
-                'Gib Text ein um Live Logs zu filtern. Klicke "Suchen" um auch alte Logs aus der Datenbank zu durchsuchen.'
+                'Gib Text ein um Live Logs zu filtern (durchsucht Nachricht + Source + Level). Klicke "Suchen" um auch alte Logs aus der Datenbank zu durchsuchen.'
               )}
             </p>
           </div>
