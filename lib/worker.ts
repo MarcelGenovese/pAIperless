@@ -193,6 +193,12 @@ async function processFile(filePath: string) {
     const paperless = await getPaperlessClient();
     const paperlessId = await paperless.uploadDocument(finalPath, [aiTodoTag]);
 
+    if (paperlessId) {
+      await logger.info(`✅ Successfully uploaded to Paperless with ID: ${paperlessId}`);
+    } else {
+      await logger.warn(`⚠️ Uploaded to Paperless but could not retrieve document ID (task timeout or async processing)`);
+    }
+
     // Update final status
     await prisma.document.update({
       where: { id: documentId },
@@ -202,7 +208,7 @@ async function processFile(filePath: string) {
       },
     });
 
-    await logger.info(`✅ Successfully processed: ${fileName} (Paperless ID: ${paperlessId})`);
+    await logger.info(`✅ Successfully processed: ${fileName} (Paperless ID: ${paperlessId || 'pending'})`);
 
     // Cleanup temporary files
     if (rotatedPath && existsSync(rotatedPath)) unlinkSync(rotatedPath);

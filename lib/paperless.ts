@@ -152,7 +152,49 @@ export class PaperlessClient {
     }
   }
 
-  async uploadDocument(filePath: string, tagNames: string[] = []): Promise<number> {
+  /**
+   * Poll task status until completion and return the document ID
+   */
+  private async waitForTask(taskId: string, maxWaitMs: number = 30000): Promise<number | null> {
+    const startTime = Date.now();
+    const pollInterval = 500; // Poll every 500ms
+
+    while (Date.now() - startTime < maxWaitMs) {
+      try {
+        const taskStatus = await this.fetch(`/api/tasks/?task_id=${taskId}`);
+
+        if (taskStatus.results && taskStatus.results.length > 0) {
+          const task = taskStatus.results[0];
+
+          if (task.status === 'SUCCESS') {
+            // Task completed successfully
+            // The related_document field contains the document ID
+            if (task.related_document) {
+              console.log(`[Paperless] Task ${taskId} completed, document ID: ${task.related_document}`);
+              return task.related_document;
+            }
+            // Try to find document by matching the filename/task timing
+            console.warn(`[Paperless] Task ${taskId} completed but no related_document field`);
+            return null;
+          } else if (task.status === 'FAILURE') {
+            console.error(`[Paperless] Task ${taskId} failed:`, task.result);
+            throw new Error(`Document processing task failed: ${task.result}`);
+          }
+          // Still PENDING or STARTED - continue polling
+        }
+      } catch (error) {
+        console.error(`[Paperless] Error checking task status:`, error);
+      }
+
+      // Wait before next poll
+      await new Promise(resolve => setTimeout(resolve, pollInterval));
+    }
+
+    console.warn(`[Paperless] Task ${taskId} polling timeout after ${maxWaitMs}ms`);
+    return null;
+  }
+
+  async uploadDocument(filePath: string, tagNames: string[] = []): Promise<number | null> {
     const fs = await import('fs').then(m => m.promises);
     const path = await import('path');
 
@@ -199,20 +241,30 @@ export class PaperlessClient {
     // Paperless post_document can return:
     // 1. A task ID string (async processing)
     // 2. An object with { task_id: "..." } or { id: ... }
+    let taskId: string | null = null;
+
     if (typeof data === 'string') {
       // Task ID returned as plain string
-      console.log(`[Paperless] Document upload task created: ${data}`);
-      // Document will be processed async, we can't get document ID yet
-      // Return null to indicate async processing
-      return null as any; // Worker will handle null paperlessId
+      taskId = data;
+      console.log(`[Paperless] Document upload task created: ${taskId}`);
+    } else if (data.task_id) {
+      taskId = data.task_id;
+      console.log(`[Paperless] Document upload task created: ${taskId}`);
+    } else if (data.id) {
+      // Direct document ID (synchronous processing)
+      console.log(`[Paperless] Document created with ID: ${data.id}`);
+      return data.id;
     }
 
-    if (data.task_id) {
-      console.log(`[Paperless] Document upload task created: ${data.task_id}`);
-      return null as any;
+    // If we have a task ID, poll for completion
+    if (taskId) {
+      console.log(`[Paperless] Polling task ${taskId} for document ID...`);
+      const documentId = await this.waitForTask(taskId, 30000);
+      return documentId;
     }
 
-    return data.id;
+    console.warn(`[Paperless] Upload completed but no document ID or task ID received`);
+    return null;
   }
 
   /**

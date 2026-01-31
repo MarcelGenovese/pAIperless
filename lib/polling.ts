@@ -154,19 +154,30 @@ export async function processAiTodoDocuments(): Promise<{
             const result = await geminiClient.analyzeDocument(prompt, schema);
             response = result.response;
             tokensUsed = result.tokensUsed;
+            await logger.info(`[AI Polling] ✅ Gemini analysis successful for document ${doc.id}`);
             break; // Success, exit retry loop
           } catch (error: any) {
             retryCount++;
+            await logger.error(`[AI Polling] ❌ Gemini request failed for document ${doc.id}, attempt ${retryCount}/${maxRetries + 1}`, {
+              error: error.message,
+              stack: error.stack
+            });
             if (retryCount > maxRetries) {
+              await logger.error(`[AI Polling] 🛑 Max retries reached for document ${doc.id}, giving up`);
               throw error; // Max retries reached, throw error
             }
-            await logger.warn(`[AI Polling] Gemini failed for document ${doc.id}, retry ${retryCount}/${maxRetries}`, { error: error.message });
+            await logger.info(`[AI Polling] ⏳ Retrying in ${retryCount} second(s)...`);
             await new Promise(resolve => setTimeout(resolve, 1000 * retryCount)); // Exponential backoff
           }
         }
 
-        await logger.info(`[AI Polling] Gemini response for document ${doc.id}:`, JSON.stringify(response, null, 2));
-        await logger.info(`[AI Polling] Tokens used - Input: ${tokensUsed.input}, Output: ${tokensUsed.output}`);
+        // Verify we got a response
+        if (!response || !tokensUsed) {
+          throw new Error('Gemini returned empty response or token data');
+        }
+
+        await logger.info(`[AI Polling] 📄 Gemini response for document ${doc.id}:`, JSON.stringify(response, null, 2));
+        await logger.info(`[AI Polling] 🎯 Tokens used - Input: ${tokensUsed.input}, Output: ${tokensUsed.output}`);
 
         // Process the response and update Paperless
         const updates: any = {};
