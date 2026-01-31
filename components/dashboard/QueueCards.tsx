@@ -12,6 +12,7 @@ import {
   faRotateRight,
   faCheckCircle,
   faSync,
+  faTrash,
 } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
 
@@ -52,6 +53,7 @@ export default function QueueCards() {
   const [loading, setLoading] = useState(true);
   const [retrying, setRetrying] = useState<number | null>(null);
   const [triggering, setTriggering] = useState(false);
+  const [deleting, setDeleting] = useState<number | null>(null);
 
   const fetchQueueData = async () => {
     try {
@@ -155,6 +157,45 @@ export default function QueueCards() {
       });
     } finally {
       setRetrying(null);
+    }
+  };
+
+  const handleDelete = async (documentId: number, filename: string) => {
+    if (!confirm(`Dokument "${filename}" wirklich löschen?`)) {
+      return;
+    }
+
+    setDeleting(documentId);
+    try {
+      const response = await fetch('/api/documents/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documentId }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Dokument gelöscht',
+          description: `"${filename}" wurde erfolgreich gelöscht`,
+          variant: 'success',
+        });
+        await fetchQueueData();
+      } else {
+        const data = await response.json();
+        toast({
+          title: 'Fehler beim Löschen',
+          description: data.error || 'Unbekannter Fehler',
+          variant: 'destructive',
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Fehler',
+        description: error.message || 'Dokument konnte nicht gelöscht werden',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -284,19 +325,31 @@ export default function QueueCards() {
                       {formatDate(doc.updatedAt)}
                     </p>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleRetry(doc.id, doc.errorMessage)}
-                    disabled={retrying === doc.id}
-                    className="ml-3 shrink-0"
-                  >
-                    <FontAwesomeIcon
-                      icon={faRotateRight}
-                      className={cn("mr-2", retrying === doc.id && "animate-spin")}
-                    />
-                    Retry
-                  </Button>
+                  <div className="flex gap-2 ml-3 shrink-0">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleRetry(doc.id, doc.errorMessage)}
+                      disabled={retrying === doc.id || deleting === doc.id}
+                      className="text-blue-600 hover:text-blue-700"
+                    >
+                      <FontAwesomeIcon
+                        icon={faRotateRight}
+                        className={cn("mr-2", retrying === doc.id && "animate-spin")}
+                      />
+                      Retry
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDelete(doc.id, doc.originalFilename)}
+                      disabled={retrying === doc.id || deleting === doc.id}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <FontAwesomeIcon icon={faTrash} className="mr-2" />
+                      Löschen
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>

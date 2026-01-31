@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faFolder,
@@ -11,7 +12,8 @@ import {
   faExclamationTriangle,
   faSync,
   faTrash,
-  faFileAlt
+  faFileAlt,
+  faRotateRight
 } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
 
@@ -35,7 +37,16 @@ interface QueueCounts {
   completed: number;
 }
 
+interface ErrorDocument {
+  id: number;
+  originalFilename: string;
+  errorMessage: string | null;
+  updatedAt: string;
+  paperlessId: number | null;
+}
+
 export default function FolderContents() {
+  const { toast } = useToast();
   const [folders, setFolders] = useState<FolderContents>({
     consume: [],
     processing: [],
@@ -47,11 +58,14 @@ export default function FolderContents() {
     error: 0,
     completed: 0,
   });
+  const [errorDocuments, setErrorDocuments] = useState<ErrorDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState<'consume' | 'processing' | 'error' | null>(null);
   const [clearing, setClearing] = useState(false);
   const [triggering, setTriggering] = useState(false);
+  const [retrying, setRetrying] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState<number | null>(null);
 
   const loadFolders = async () => {
     setRefreshing(true);
@@ -71,8 +85,13 @@ export default function FolderContents() {
         console.error('[FolderContents] Failed to load folders:', foldersData.error);
       }
 
-      if (queueData && !queueData.error && queueData.counts) {
-        setQueueCounts(queueData.counts);
+      if (queueData && !queueData.error) {
+        if (queueData.counts) {
+          setQueueCounts(queueData.counts);
+        }
+        if (queueData.documents?.error) {
+          setErrorDocuments(queueData.documents.error);
+        }
       } else if (queueData?.error) {
         console.error('[FolderContents] Failed to load queue counts:', queueData.error);
       }
@@ -112,30 +131,6 @@ export default function FolderContents() {
     });
   };
 
-  const deleteErrorFile = async (filename: string) => {
-    if (!confirm(`Datei "${filename}" wirklich löschen?`)) {
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/documents/delete-error', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filename }),
-      });
-
-      if (response.ok) {
-        loadFolders();
-      } else {
-        const data = await response.json();
-        alert('Fehler beim Löschen: ' + (data.error || 'Unbekannter Fehler'));
-      }
-    } catch (error) {
-      console.error('Failed to delete file:', error);
-      alert('Fehler beim Löschen der Datei');
-    }
-  };
-
   const clearFolder = async (folder: 'consume' | 'processing' | 'error') => {
     setClearing(true);
     try {
@@ -169,24 +164,122 @@ export default function FolderContents() {
 
       if (response.ok) {
         const data = await response.json();
-        alert(data.message || 'Verarbeitung wurde manuell ausgelöst');
+        toast({
+          title: 'Verarbeitung ausgelöst',
+          description: data.message || 'Verarbeitung wurde manuell ausgelöst',
+          variant: 'success',
+        });
         loadFolders();
       } else {
         const data = await response.json();
-        alert('Fehler beim Auslösen: ' + (data.error || 'Unbekannter Fehler'));
+        toast({
+          title: 'Fehler',
+          description: data.error || 'Fehler beim Auslösen',
+          variant: 'destructive',
+        });
       }
-    } catch (error) {
-      console.error('Failed to trigger processing:', error);
-      alert('Fehler beim Auslösen der Verarbeitung');
+    } catch (error: any) {
+      toast({
+        title: 'Fehler',
+        description: error.message || 'Fehler beim Auslösen der Verarbeitung',
+        variant: 'destructive',
+      });
     } finally {
       setTriggering(false);
     }
   };
 
+  const handleRetry = async (documentId: number, errorMessage: string | null) => {
+    setRetrying(documentId);
+    try {
+      // Check if this is a duplicate error
+      const isDuplicate = errorMessage?.includes('Duplikat') ||
+                        errorMessage?.includes('duplicate') ||
+                        errorMessage?.includes('DUPLICATE');
+
+      let response;
+      if (isDuplicate) {
+        response = await fetch('/api/documents/retry-duplicate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ documentId }),
+        });
+      } else {
+        response = await fetch('/api/documents/retry', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ documentId }),
+        });
+      }
+
+      if (response.ok) {
+        toast({
+          title: isDuplicate ? 'Duplikat wird erneut verarbeitet' : 'Dokument wird erneut verarbeitet',
+          description: isDuplicate ? 'Dokument wurde mit neuem Hash zurück in den Consume-Ordner verschoben' : 'Verarbeitung wurde neu gestartet',
+          variant: 'success',
+        });
+        await loadFolders();
+      } else {
+        const data = await response.json();
+        toast({
+          title: 'Fehler beim Wiederholen',
+          description: data.error || 'Unbekannter Fehler',
+          variant: 'destructive',
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Fehler',
+        description: error.message || 'Dokument konnte nicht erneut verarbeitet werden',
+        variant: 'destructive',
+      });
+    } finally {
+      setRetrying(null);
+    }
+  };
+
+  const handleDelete = async (documentId: number, filename: string) => {
+    if (!confirm(`Dokument "${filename}" wirklich löschen?`)) {
+      return;
+    }
+
+    setDeleting(documentId);
+    try {
+      const response = await fetch('/api/documents/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documentId }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Dokument gelöscht',
+          description: `"${filename}" wurde erfolgreich gelöscht`,
+          variant: 'success',
+        });
+        await loadFolders();
+      } else {
+        const data = await response.json();
+        toast({
+          title: 'Fehler beim Löschen',
+          description: data.error || 'Unbekannter Fehler',
+          variant: 'destructive',
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Fehler',
+        description: error.message || 'Dokument konnte nicht gelöscht werden',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeleting(null);
+    }
+  };
+
   const renderFileList = (
     files: FileInfo[],
-    emptyMessage: string,
-    showDelete: boolean = false
+    emptyMessage: string
   ) => {
     if (files.length === 0) {
       return (
@@ -214,16 +307,67 @@ export default function FolderContents() {
                 </div>
               </div>
             </div>
-            {showDelete && (
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderErrorList = () => {
+    if (errorDocuments.length === 0) {
+      return (
+        <div className="text-center py-8 text-muted-foreground text-sm">
+          Keine fehlerhaften Dokumente
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-2">
+        {errorDocuments.map((doc) => (
+          <div
+            key={doc.id}
+            className="flex items-start justify-between p-3 border rounded-lg bg-red-50 dark:bg-[hsl(0,40%,15%)] border-red-200 dark:border-[hsl(0,40%,25%)] transition-colors"
+          >
+            <div className="flex items-start gap-3 flex-1 min-w-0">
+              <FontAwesomeIcon icon={faFileAlt} className="text-red-600 mt-1" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{doc.originalFilename}</p>
+                {doc.errorMessage && (
+                  <p className="text-xs text-red-600 dark:text-red-400 mt-1 line-clamp-2">
+                    {doc.errorMessage}
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground mt-1">
+                  {formatDate(doc.updatedAt)}
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => deleteErrorFile(file.name)}
+                onClick={() => handleRetry(doc.id, doc.errorMessage)}
+                disabled={retrying === doc.id}
+                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-[hsl(220,40%,18%)]"
+                title="Erneut verarbeiten"
+              >
+                <FontAwesomeIcon
+                  icon={faRotateRight}
+                  className={retrying === doc.id ? 'animate-spin' : ''}
+                />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDelete(doc.id, doc.originalFilename)}
+                disabled={deleting === doc.id}
                 className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-[hsl(0,40%,18%)]"
+                title="Löschen"
               >
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
-            )}
+            </div>
           </div>
         ))}
       </div>
@@ -357,14 +501,14 @@ export default function FolderContents() {
                   <FontAwesomeIcon icon={faExclamationTriangle} className="text-red-600" />
                   Fehler
                   <span className="ml-auto text-sm font-normal text-muted-foreground">
-                    {folders.error.length} / {queueCounts.error} DB
+                    {errorDocuments.length} / {queueCounts.error} DB
                   </span>
                 </CardTitle>
                 <CardDescription className="text-xs mt-1">
                   Fehlerhafte Dateien (Duplikate oder Fehler)
                 </CardDescription>
               </div>
-              {folders.error.length > 0 && (
+              {errorDocuments.length > 0 && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -377,11 +521,7 @@ export default function FolderContents() {
             </div>
           </CardHeader>
           <CardContent className="pt-0">
-            {renderFileList(
-              folders.error,
-              'Keine fehlerhaften Dateien',
-              true
-            )}
+            {renderErrorList()}
           </CardContent>
         </Card>
       </div>
