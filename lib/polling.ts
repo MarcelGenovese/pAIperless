@@ -319,6 +319,26 @@ export async function processAiTodoDocuments(): Promise<{
           });
         } else {
           // Create new record for tracking
+          // Check if this is a _searchable document and try to find the original
+          let ocrPages = null;
+          if (doc.title && doc.title.includes('_searchable')) {
+            const originalTitle = doc.title.replace('_searchable', '');
+            const originalDoc = await prisma.document.findFirst({
+              where: {
+                originalFilename: {
+                  contains: originalTitle
+                }
+              },
+              orderBy: {
+                createdAt: 'desc'
+              }
+            });
+            if (originalDoc && originalDoc.ocrPageCount) {
+              ocrPages = originalDoc.ocrPageCount;
+              await logger.info(`[AI Polling] Found original document for ${doc.title}, copying ocrPageCount: ${ocrPages}`);
+            }
+          }
+
           await prisma.document.create({
             data: {
               paperlessId: doc.id,
@@ -327,6 +347,7 @@ export async function processAiTodoDocuments(): Promise<{
               status: 'COMPLETED',
               geminiTokensSent: tokensUsed.input,
               geminiTokensRecv: tokensUsed.output,
+              ocrPageCount: ocrPages,
             },
           });
         }

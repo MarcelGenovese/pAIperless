@@ -10,7 +10,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Copyright */}
           <div className="flex items-center gap-3">
-            <Link href="/about" className="hover:opacity-80 transition-opacity">
+            <a href="https://mgenovese.de" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
               <Image
                 src="/mg.svg"
                 alt="Marcel Genovese"
@@ -18,13 +18,13 @@ export default function Footer() {
                 height={24}
                 className="h-6 w-auto invert dark:invert-0"
               />
-            </Link>
+            </a>
             <div className="text-sm text-muted-foreground">
               <p>
                 © {currentYear}{' '}
-                <Link href="/about" className="hover:text-primary transition-colors font-medium">
+                <a href="https://mgenovese.de" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors font-medium">
                   Marcel Genovese
-                </Link>
+                </a>
               </p>
               <p className="text-xs">pAIperless</p>
             </div>
