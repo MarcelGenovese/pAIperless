@@ -165,7 +165,7 @@ export default function WebhookApiKeyDisplay() {
       <div className="flex items-center gap-2">
         {/* API Key Display */}
         <div
-          className="relative flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md cursor-pointer transition-all hover:bg-blue-100 dark:hover:bg-blue-900"
+          className="relative flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-[hsl(0,0%,15%)] border border-blue-200 dark:border-[hsl(0,0%,25%)] rounded-md cursor-pointer transition-all hover:bg-blue-100 dark:hover:bg-[hsl(0,0%,18%)]"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           onClick={handleClick}

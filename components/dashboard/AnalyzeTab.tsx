@@ -538,7 +538,7 @@ export default function AnalyzeTab() {
       </div>
 
       {/* Manual Processing Info */}
-      <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+      <Card className="bg-blue-50 dark:bg-[hsl(0,0%,15%)] border-blue-200 dark:border-[hsl(0,0%,25%)]">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <FontAwesomeIcon icon={faPlay} className="text-blue-600" />

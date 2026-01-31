@@ -72,7 +72,7 @@ export default function Step7Advanced({ onNext, onBack, data }: StepProps) {
 
         <div className="space-y-4">
           {/* Info Box */}
-          <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
+          <div className="p-4 border rounded-lg bg-blue-50 dark:bg-[hsl(0,0%,15%)]">
             <p className="text-sm text-blue-900 dark:text-blue-100">
               <FontAwesomeIcon icon={faClock} className="mr-2" />
               <strong>Hinweis:</strong> Kürzere Intervalle bedeuten schnellere Reaktion, aber auch höhere Serverlast und API-Kosten.

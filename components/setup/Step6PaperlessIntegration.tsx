@@ -97,7 +97,7 @@ export default function Step6PaperlessIntegration({ onNext, onBack, data }: Step
 
         <div className="space-y-4">
           {/* Info Box */}
-          <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
+          <div className="p-4 border rounded-lg bg-blue-50 dark:bg-[hsl(0,0%,15%)]">
             <p className="text-sm text-blue-900 dark:text-blue-100">
               <strong>Wichtig:</strong> Diese Tags und Custom Fields müssen manuell in Ihrer Paperless-NGX Instanz angelegt werden.
               pAIperless wird sie automatisch verwenden, erstellt sie aber nicht selbst.

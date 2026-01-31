@@ -307,7 +307,7 @@ export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
           </div>
 
           {/* Redirect URI Info */}
-          <div className="space-y-2 p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
+          <div className="space-y-2 p-4 border rounded-lg bg-blue-50 dark:bg-[hsl(0,0%,15%)]">
             <Label className="text-blue-900 dark:text-blue-100">
               <FontAwesomeIcon icon={faExternalLinkAlt} className="mr-2" />
               Autorisierte Weiterleitungs-URI

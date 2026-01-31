@@ -239,7 +239,7 @@ export default function Step9Complete({ data }: Step9CompleteProps) {
 
       <div className="mt-12 grid md:grid-cols-3 gap-6">
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-950 mb-3">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 dark:bg-[hsl(0,0%,18%)] mb-3">
             <FontAwesomeIcon icon={faFileUpload} className="text-3xl text-blue-600" />
           </div>
           <h3 className="font-semibold mb-1">Drop Files</h3>

@@ -146,7 +146,7 @@ export default function Step8FTP({ onNext, onBack, data }: StepProps) {
           {enabled && (
             <>
               {/* Info Box */}
-              <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
+              <div className="p-4 border rounded-lg bg-blue-50 dark:bg-[hsl(0,0%,15%)]">
                 <p className="text-sm text-blue-900 dark:text-blue-100">
                   <strong>Hinweis:</strong> Der FTP-Server wird auf Port {ftpPort} gebunden und erlaubt Uploads direkt in den /consume Ordner.
                   Stellen Sie sicher, dass dieser Port in Ihrer Firewall freigegeben ist.

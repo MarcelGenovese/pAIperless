@@ -153,7 +153,7 @@ export default function SetupPage() {
                     priority
                   />
                   {currentStep < totalSteps && (
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
                       Step {currentStep} / {totalSteps - 1}
                     </span>
                   )}
@@ -163,7 +163,7 @@ export default function SetupPage() {
 
             {/* Progress Bar */}
             {currentStep > 0 && (
-              <div className="h-1 bg-gray-200 flex-shrink-0">
+              <div className="h-1 bg-gray-200 dark:bg-[hsl(0,0%,20%)] flex-shrink-0">
                 <div
                   className="h-full bg-accent transition-all duration-300"
                   style={{ width: `${(currentStep / totalSteps) * 100}%` }}
@@ -181,9 +181,9 @@ export default function SetupPage() {
         {/* Right Column - Video & Info */}
         {currentStep > 0 && (
           <div className="hidden lg:block lg:w-1/2">
-            <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 to-accent/5 shadow-lg">
+            <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 to-accent/5 dark:from-[hsl(0,0%,12%)] dark:to-[hsl(0,0%,10%)] shadow-lg">
               {/* Video Player */}
-              <div className="aspect-video bg-gray-900 flex items-center justify-center flex-shrink-0">
+              <div className="aspect-video bg-gray-900 dark:bg-[hsl(0,0%,10%)] flex items-center justify-center flex-shrink-0">
                 <div className="text-white text-center p-4">
                   <svg className="w-16 h-16 mx-auto mb-2 opacity-50" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
@@ -194,9 +194,9 @@ export default function SetupPage() {
               </div>
 
               {/* Step Summary - fills remaining space */}
-              <div className="flex-1 border-t p-4">
-                <h3 className="font-semibold text-gray-900 mb-2">What to do:</h3>
-                <p className="text-sm text-gray-600">
+              <div className="flex-1 border-t dark:border-[hsl(0,0%,20%)] p-4">
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">What to do:</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
                   {videoInfo.summary}
                 </p>
               </div>

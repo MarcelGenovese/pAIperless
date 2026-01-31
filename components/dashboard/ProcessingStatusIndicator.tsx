@@ -107,7 +107,7 @@ export default function ProcessingStatusIndicator() {
       {status.activeProcesses.map((process, index) => (
         <div
           key={index}
-          className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md w-full"
+          className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-[hsl(0,0%,15%)] border border-blue-200 dark:border-[hsl(0,0%,25%)] rounded-md w-full"
         >
           <FontAwesomeIcon
             icon={faSpinner}

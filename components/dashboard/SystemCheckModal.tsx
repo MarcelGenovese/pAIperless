@@ -354,7 +354,7 @@ export default function SystemCheckModal({ isOpen, onClose }: SystemCheckModalPr
 
           {/* Summary */}
           {!isRunning && (
-            <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <div className="mt-6 p-4 bg-blue-50 dark:bg-[hsl(0,0%,15%)] border border-blue-200 dark:border-[hsl(0,0%,25%)] rounded-lg">
               <div className="flex items-start gap-3">
                 <FontAwesomeIcon icon={faInfoCircle} className="text-blue-600 text-lg mt-0.5" />
                 <div>

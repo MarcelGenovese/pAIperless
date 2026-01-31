@@ -479,7 +479,7 @@ export default function AdvancedSettingsTab() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-[hsl(0,0%,15%)] border border-blue-200 dark:border-[hsl(0,0%,25%)] rounded-lg">
               <FontAwesomeIcon icon={faInfoCircle} className="text-blue-600 text-lg mt-0.5" />
               <div>
                 <p className="text-sm text-blue-900 dark:text-blue-100 font-medium mb-1">
@@ -492,7 +492,7 @@ export default function AdvancedSettingsTab() {
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-[hsl(0,0%,15%)] border border-blue-200 dark:border-[hsl(0,0%,25%)] rounded-lg">
               <FontAwesomeIcon icon={faInfoCircle} className="text-blue-600 text-lg mt-0.5" />
               <div>
                 <p className="text-sm text-blue-900 dark:text-blue-100 font-medium mb-1">
@@ -505,7 +505,7 @@ export default function AdvancedSettingsTab() {
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-[hsl(0,0%,15%)] border border-blue-200 dark:border-[hsl(0,0%,25%)] rounded-lg">
               <FontAwesomeIcon icon={faInfoCircle} className="text-blue-600 text-lg mt-0.5" />
               <div>
                 <p className="text-sm text-blue-900 dark:text-blue-100 font-medium mb-1">

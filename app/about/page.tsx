@@ -29,9 +29,9 @@ export default function AboutPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
+    <div className="min-h-screen bg-gray-50 dark:bg-[hsl(0,0%,7%)] flex flex-col">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-900 shadow-sm border-b sticky top-0 z-10">
+      <header className="bg-white dark:bg-[hsl(0,0%,10%)] shadow-sm border-b dark:border-[hsl(0,0%,20%)] sticky top-0 z-10">
         <div className="px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between max-w-3xl mx-auto">
             <Button
@@ -83,15 +83,15 @@ export default function AboutPage() {
                   für die automatische Dokumentenverarbeitung.
                 </p>
                 <div className="grid grid-cols-3 gap-3 pt-2">
-                  <div className="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded">
+                  <div className="text-center p-3 bg-gray-50 dark:bg-[hsl(0,0%,15%)] rounded">
                     <FontAwesomeIcon icon={faFileAlt} className="text-2xl mb-1 text-blue-600" />
                     <p className="text-xs font-medium">Document AI OCR</p>
                   </div>
-                  <div className="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded">
+                  <div className="text-center p-3 bg-gray-50 dark:bg-[hsl(0,0%,15%)] rounded">
                     <FontAwesomeIcon icon={faRobot} className="text-2xl mb-1 text-blue-600" />
                     <p className="text-xs font-medium">Gemini Tagging</p>
                   </div>
-                  <div className="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded">
+                  <div className="text-center p-3 bg-gray-50 dark:bg-[hsl(0,0%,15%)] rounded">
                     <FontAwesomeIcon icon={faBolt} className="text-2xl mb-1 text-blue-600" />
                     <p className="text-xs font-medium">Automatisierung</p>
                   </div>
@@ -126,7 +126,7 @@ export default function AboutPage() {
                 <div className="grid grid-cols-1 gap-2 pt-2">
                   <a
                     href="mailto:info@paiperless.de"
-                    className="flex items-center gap-3 p-2 rounded border hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors text-sm"
+                    className="flex items-center gap-3 p-2 rounded border hover:border-primary hover:bg-gray-50 dark:hover:bg-[hsl(0,0%,15%)] transition-colors text-sm"
                   >
                     <FontAwesomeIcon icon={faEnvelope} className="text-primary w-5" />
                     <span>info@paiperless.de</span>
@@ -135,7 +135,7 @@ export default function AboutPage() {
                     href="https://github.com/MarcelGenovese"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-2 rounded border hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors text-sm"
+                    className="flex items-center gap-3 p-2 rounded border hover:border-primary hover:bg-gray-50 dark:hover:bg-[hsl(0,0%,15%)] transition-colors text-sm"
                   >
                     <FontAwesomeIcon icon={faGithub} className="text-primary w-5" />
                     <span>GitHub: MarcelGenovese</span>
@@ -144,7 +144,7 @@ export default function AboutPage() {
                     href="https://paypal.me/mg3n0"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-2 rounded border hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors text-sm"
+                    className="flex items-center gap-3 p-2 rounded border hover:border-primary hover:bg-gray-50 dark:hover:bg-[hsl(0,0%,15%)] transition-colors text-sm"
                   >
                     <FontAwesomeIcon icon={faPaypal} className="text-primary w-5" />
                     <span>Spenden via PayPal</span>

@@ -437,7 +437,7 @@ export default function Step1Paperless({ onNext, onBack, data }: Step1PaperlessP
 
           {webhookApiKey && (
             <>
-              <Card className="p-4 bg-blue-50 border-blue-200">
+              <Card className="p-4 bg-blue-50 dark:bg-[hsl(0,0%,15%)] border-blue-200 dark:border-[hsl(0,0%,25%)]">
                 <div className="space-y-4">
                   <div>
                     <h3 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">

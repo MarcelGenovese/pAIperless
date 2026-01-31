@@ -385,7 +385,7 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
+          <div className="p-4 border rounded-lg bg-blue-50 dark:bg-[hsl(0,0%,15%)]">
             <h4 className="font-semibold mb-2">ℹ️ Wichtig für Document AI</h4>
             <p className="text-sm text-muted-foreground mb-2">
               Damit Paperless die OCR-Ergebnisse von Document AI nicht überschreibt, muss der OCR-Modus auf
@@ -448,7 +448,7 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
+          <div className="p-4 border rounded-lg bg-blue-50 dark:bg-[hsl(0,0%,15%)]">
             <h4 className="font-semibold mb-2">ℹ️ Erforderliche Workflows</h4>
             <p className="text-sm text-muted-foreground mb-2">
               pAIperless benötigt zwei Workflows in Paperless-NGX:

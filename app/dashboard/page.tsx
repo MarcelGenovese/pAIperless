@@ -121,9 +121,9 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="h-screen bg-gray-50 dark:bg-gray-950 flex flex-col overflow-hidden">
+    <div className="h-screen bg-gray-50 dark:bg-[hsl(0,0%,7%)] flex flex-col overflow-hidden">
       {/* Header - Fixed */}
-      <header className="bg-white dark:bg-gray-900 shadow-sm border-b z-10 shrink-0">
+      <header className="bg-white dark:bg-[hsl(0,0%,10%)] shadow-sm border-b dark:border-[hsl(0,0%,20%)] z-10 shrink-0">
         <div className="px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -171,7 +171,7 @@ export default function DashboardPage() {
       {/* Main Layout - Takes remaining height */}
       <div className="flex flex-1 overflow-hidden min-h-0">
         {/* Sidebar - Desktop */}
-        <aside className="hidden lg:block w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 overflow-y-auto shrink-0">
+        <aside className="hidden lg:block w-64 bg-white dark:bg-[hsl(0,0%,10%)] border-r border-gray-200 dark:border-[hsl(0,0%,20%)] overflow-y-auto shrink-0">
           <Sidebar
             activeTab={activeTab}
             onTabChange={setActiveTab}
@@ -183,10 +183,10 @@ export default function DashboardPage() {
         {sidebarOpen && (
           <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50" onClick={() => setSidebarOpen(false)}>
             <aside
-              className="w-64 h-full bg-white dark:bg-gray-900 shadow-xl overflow-y-auto"
+              className="w-64 h-full bg-white dark:bg-[hsl(0,0%,10%)] shadow-xl overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="p-4 border-b flex items-center justify-between">
+              <div className="p-4 border-b dark:border-[hsl(0,0%,20%)] flex items-center justify-between">
                 <span className="font-semibold">Navigation</span>
                 <Button
                   variant="ghost"

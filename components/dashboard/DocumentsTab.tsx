@@ -405,7 +405,7 @@ export default function DocumentsTab() {
 
                           <TabsContent value="ocr" className="mt-4 space-y-3">
                             {doc.ocrPageCount && doc.ocrPageCount > 0 ? (
-                              <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
+                              <div className="p-3 rounded-lg bg-blue-50 dark:bg-[hsl(0,0%,15%)] border border-blue-200 dark:border-[hsl(0,0%,25%)]">
                                 <div className="flex items-center gap-2 mb-2">
                                   <FontAwesomeIcon icon={faCheckCircle} className="text-blue-600" />
                                   <span className="font-semibold text-sm text-blue-900 dark:text-blue-100">
