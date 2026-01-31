@@ -34,6 +34,7 @@ export async function middleware(request: NextRequest) {
     '/login',
     '/about',
     '/api/documents/upload', // Skip completely - auth checked in route handler
+    '/api/pipeline-test/start', // Skip to avoid body consumption issues with FormData
   ];
 
   if (skipAuthRoutes.some(route => pathname.startsWith(route))) {

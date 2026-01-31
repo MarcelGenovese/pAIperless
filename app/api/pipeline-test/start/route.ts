@@ -1,17 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { randomUUID } from 'crypto';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
-import { randomUUID } from 'crypto';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 // In-memory store for test status (will be lost on restart, but that's OK for testing)
 const testStore = new Map<string, any>();
 
 export async function POST(request: NextRequest) {
+  // Auth check (since this route bypasses middleware)
+  const { getToken } = await import('next-auth/jwt');
+  const token = await getToken({ req: request as any });
+
+  if (!token) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
+  let formData: FormData;
+  let file: File | null = null;
+
   try {
-    const formData = await request.formData();
-    const file = formData.get('file') as File;
+    // Try to read formData
+    try {
+      formData = await request.formData();
+      file = formData.get('file') as File;
+    } catch (error: any) {
+      console.error('[Pipeline Test] FormData error:', error.message);
+      return NextResponse.json(
+        { error: 'Failed to read file upload. Error: ' + error.message },
+        { status: 400 }
+      );
+    }
 
     if (!file) {
       return NextResponse.json(
