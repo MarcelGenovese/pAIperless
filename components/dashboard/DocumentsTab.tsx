@@ -21,6 +21,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import DocumentUpload from './DocumentUpload';
 import FolderContents from './FolderContents';
+import QueueCards from './QueueCards';
 
 interface Document {
   id: string;
@@ -233,6 +234,9 @@ export default function DocumentsTab() {
 
       {/* Folder Contents - Live Pipeline View */}
       <FolderContents />
+
+      {/* Queue Status Cards */}
+      <QueueCards />
 
       <Card>
         <CardHeader>

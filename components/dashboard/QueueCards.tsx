@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faClock,
@@ -45,6 +46,7 @@ interface QueueData {
 }
 
 export default function QueueCards() {
+  const { toast } = useToast();
   const [queueData, setQueueData] = useState<QueueData | null>(null);
   const [loading, setLoading] = useState(true);
   const [retrying, setRetrying] = useState<number | null>(null);
@@ -69,21 +71,52 @@ export default function QueueCards() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleRetry = async (documentId: number) => {
+  const handleRetry = async (documentId: number, errorMessage: string | null) => {
     setRetrying(documentId);
     try {
-      const response = await fetch('/api/documents/retry', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ documentId }),
-      });
+      // Check if this is a duplicate error
+      const isDuplicate = errorMessage?.includes('Duplikat') ||
+                        errorMessage?.includes('duplicate') ||
+                        errorMessage?.includes('DUPLICATE');
+
+      let response;
+      if (isDuplicate) {
+        // Use special duplicate retry endpoint
+        response = await fetch('/api/documents/retry-duplicate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ documentId }),
+        });
+      } else {
+        // Regular retry
+        response = await fetch('/api/documents/retry', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ documentId }),
+        });
+      }
 
       if (response.ok) {
+        toast({
+          title: isDuplicate ? 'Duplikat wird erneut verarbeitet' : 'Dokument wird erneut verarbeitet',
+          description: isDuplicate
+            ? 'Dokument wurde mit neuem Hash zurück in den Consume-Ordner verschoben'
+            : 'Verarbeitung wurde neu gestartet',
+          variant: 'success',
+        });
         // Refresh data
         await fetchQueueData();
+      } else {
+        const data = await response.json();
+        throw new Error(data.error || 'Retry failed');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to retry document:', error);
+      toast({
+        title: 'Fehler',
+        description: error.message || 'Dokument konnte nicht erneut verarbeitet werden',
+        variant: 'destructive',
+      });
     } finally {
       setRetrying(null);
     }
@@ -206,7 +239,7 @@ export default function QueueCards() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => handleRetry(doc.id)}
+                    onClick={() => handleRetry(doc.id, doc.errorMessage)}
                     disabled={retrying === doc.id}
                     className="ml-3 shrink-0"
                   >
