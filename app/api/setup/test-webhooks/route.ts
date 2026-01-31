@@ -1,12 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getConfig, getConfigSecure, CONFIG_KEYS } from '@/lib/config';
+
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
-    const { paperlessUrl, paperlessToken } = await request.json();
+    // Try to get parameters from request body
+    let paperlessUrl: string | null = null;
+    let paperlessToken: string | null = null;
+
+    try {
+      const body = await request.json();
+      paperlessUrl = body.paperlessUrl;
+      paperlessToken = body.paperlessToken;
+    } catch (e) {
+      // No body provided, will use config
+    }
+
+    // If not provided in body, load from config
+    if (!paperlessUrl || !paperlessToken) {
+      paperlessUrl = await getConfig(CONFIG_KEYS.PAPERLESS_URL);
+      paperlessToken = await getConfigSecure(CONFIG_KEYS.PAPERLESS_TOKEN);
+    }
 
     if (!paperlessUrl || !paperlessToken) {
       return NextResponse.json(
-        { error: 'Missing paperlessUrl or paperlessToken' },
+        { error: 'Paperless-NGX not configured' },
         { status: 400 }
       );
     }
