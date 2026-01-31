@@ -423,6 +423,15 @@ async function processPipeline(testId: string, filePath: string, originalFileNam
             '',
             'Datei in /app/storage/error verschoben'
           ]);
+
+          // Mark test as completed (with error) so polling stops
+          const testStatus = testStore.get(testId);
+          if (testStatus) {
+            testStatus.status = 'completed';
+            testStatus.completedAt = new Date().toISOString();
+            testStatus.documentId = doc.id;
+            testStore.set(testId, testStatus);
+          }
           break;
         }
       } else {

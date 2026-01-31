@@ -27,7 +27,8 @@ RUN apt-get update && apt-get install -y \
 RUN pip3 install --no-cache-dir --break-system-packages \
     ocrmypdf \
     pypdf \
-    reportlab
+    reportlab \
+    PyMuPDF
 
 # Install Docker CLI
 RUN install -m 0755 -d /etc/apt/keyrings && \

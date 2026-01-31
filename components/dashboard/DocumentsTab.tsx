@@ -374,12 +374,49 @@ export default function DocumentsTab() {
                           size="sm"
                           onClick={async () => {
                             try {
-                              await fetch(`/api/documents/${doc.id}/retry`, {
-                                method: 'POST',
-                              });
+                              // Check if this is a duplicate error
+                              const isDuplicate = doc.errorMessage?.includes('Duplikat') ||
+                                                doc.errorMessage?.includes('duplicate') ||
+                                                doc.errorMessage?.includes('DUPLICATE');
+
+                              if (isDuplicate) {
+                                // Use special duplicate retry endpoint
+                                const response = await fetch('/api/documents/retry-duplicate', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ documentId: parseInt(doc.id) }),
+                                });
+
+                                if (response.ok) {
+                                  toast({
+                                    title: 'Duplikat wird erneut verarbeitet',
+                                    description: 'Dokument wurde mit neuem Hash zurück in den Consume-Ordner verschoben',
+                                    variant: 'success',
+                                  });
+                                } else {
+                                  const data = await response.json();
+                                  throw new Error(data.error || 'Retry failed');
+                                }
+                              } else {
+                                // Regular retry
+                                await fetch(`/api/documents/${doc.id}/retry`, {
+                                  method: 'POST',
+                                });
+                                toast({
+                                  title: 'Dokument wird erneut verarbeitet',
+                                  description: 'Verarbeitung wurde neu gestartet',
+                                  variant: 'success',
+                                });
+                              }
+
                               loadDocuments();
-                            } catch (error) {
+                            } catch (error: any) {
                               console.error('Failed to retry document:', error);
+                              toast({
+                                title: 'Fehler',
+                                description: error.message || 'Dokument konnte nicht erneut verarbeitet werden',
+                                variant: 'destructive',
+                              });
                             }
                           }}
                         >
