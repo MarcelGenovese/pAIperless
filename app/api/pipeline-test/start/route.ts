@@ -204,6 +204,16 @@ async function processPipeline(testId: string, filePath: string, originalFileNam
         documentId = doc.id;
         console.log(`[Pipeline Test ${testId}] Document found in DB: ${doc.id}, status: ${doc.status}`);
 
+        // Parse processing details if available
+        let details: any = null;
+        try {
+          if (doc.processingDetails) {
+            details = JSON.parse(doc.processingDetails);
+          }
+        } catch (e) {
+          // Ignore parse errors
+        }
+
         // Update based on status
         if (doc.status === 'PENDING') {
           addStepDetail('preprocessing', `Dokument ID ${doc.id} erstellt, Status: PENDING`);
@@ -213,36 +223,168 @@ async function processPipeline(testId: string, filePath: string, originalFileNam
             'Status: PREPROCESSING',
             'PDF wird analysiert...',
             '→ Seitenorientierung prüfen',
-            '→ OCR-Layer entfernen'
+            '→ OCR-Layer entfernen falls nötig'
           ]);
         } else if (doc.status === 'OCR_IN_PROGRESS') {
-          updateStep('preprocessing', 'success', [
-            `Dokument ID: ${doc.id}`,
-            '✓ Vorverarbeitung abgeschlossen',
-            '✓ PDF vorbereitet'
-          ]);
+          // Build preprocessing details
+          const preprocessingDetails = [`Dokument ID: ${doc.id}`];
+
+          if (details) {
+            if (details.rotatedPages > 0) {
+              preprocessingDetails.push(`✓ ${details.rotatedPages} Seite(n) wurden gedreht`);
+            } else {
+              preprocessingDetails.push('✓ Keine Rotation nötig');
+            }
+
+            if (details.ocrLayerRemoved) {
+              preprocessingDetails.push('✓ OCR-Layer wurde entfernt');
+            }
+
+            if (details.usedDocumentAI) {
+              preprocessingDetails.push('✓ Wird mit Document AI verarbeitet');
+            } else if (details.directToPaperless) {
+              preprocessingDetails.push('✓ Direkt zu Paperless (ohne Document AI)');
+            }
+          } else {
+            preprocessingDetails.push('✓ Vorverarbeitung abgeschlossen');
+          }
+
+          updateStep('preprocessing', 'success', preprocessingDetails);
 
           updateStep('ocr', 'running', [
             'Document AI wird gestartet...',
             `Verarbeite ${doc.ocrPageCount || '?'} Seiten`
           ]);
         } else if (doc.status === 'OCR_COMPLETE') {
-          updateStep('preprocessing', 'success', [
-            `Dokument ID: ${doc.id}`,
-            '✓ Vorverarbeitung abgeschlossen'
-          ]);
+          // Build preprocessing details
+          const preprocessingDetails = [`Dokument ID: ${doc.id}`];
 
-          updateStep('ocr', 'success', [
-            `✓ ${doc.ocrPageCount || 0} Seiten verarbeitet`,
-            '✓ OCR-Layer eingebettet',
-            '✓ Searchable PDF erstellt'
-          ]);
+          if (details) {
+            if (details.rotatedPages > 0) {
+              preprocessingDetails.push(`✓ ${details.rotatedPages} Seite(n) wurden gedreht`);
+            } else {
+              preprocessingDetails.push('✓ Keine Rotation nötig');
+            }
+
+            if (details.ocrLayerRemoved) {
+              preprocessingDetails.push('✓ OCR-Layer wurde entfernt');
+            }
+
+            if (details.usedDocumentAI) {
+              preprocessingDetails.push('✓ Mit Document AI verarbeitet');
+            } else if (details.directToPaperless) {
+              preprocessingDetails.push('✓ Direkt zu Paperless (ohne Document AI)');
+            }
+          } else {
+            preprocessingDetails.push('✓ Vorverarbeitung abgeschlossen');
+          }
+
+          updateStep('preprocessing', 'success', preprocessingDetails);
+
+          const ocrDetails = [];
+          if (details && details.searchablePdfCreated) {
+            ocrDetails.push(`✓ ${doc.ocrPageCount || 0} Seiten verarbeitet`);
+            ocrDetails.push('✓ OCR-Layer eingebettet (komprimiert als JPEG)');
+            ocrDetails.push('✓ Searchable PDF erfolgreich erstellt');
+          } else {
+            ocrDetails.push(`✓ ${doc.ocrPageCount || 0} Seiten verarbeitet`);
+            ocrDetails.push('✓ OCR-Layer eingebettet');
+            ocrDetails.push('✓ Searchable PDF erstellt');
+          }
+
+          updateStep('ocr', 'success', ocrDetails);
         } else if (doc.status === 'UPLOADING_TO_PAPERLESS') {
+          // Show preprocessing details if available
+          if (details) {
+            const preprocessingDetails = [`Dokument ID: ${doc.id}`];
+
+            if (details.rotatedPages > 0) {
+              preprocessingDetails.push(`✓ ${details.rotatedPages} Seite(n) wurden gedreht`);
+            } else {
+              preprocessingDetails.push('✓ Keine Rotation nötig');
+            }
+
+            if (details.ocrLayerRemoved) {
+              preprocessingDetails.push('✓ OCR-Layer wurde entfernt');
+            } else if (!details.usedDocumentAI) {
+              preprocessingDetails.push('✓ OCR-Layer behalten (direkt zu Paperless)');
+            }
+
+            if (details.usedDocumentAI) {
+              preprocessingDetails.push('✓ Mit Document AI verarbeitet');
+            } else if (details.directToPaperless) {
+              preprocessingDetails.push('✓ Direkt zu Paperless (Datei zu groß/limit)');
+            }
+
+            updateStep('preprocessing', 'success', preprocessingDetails);
+
+            if (details.usedDocumentAI && details.searchablePdfCreated) {
+              updateStep('ocr', 'success', [
+                `✓ ${doc.ocrPageCount || 0} Seiten verarbeitet`,
+                '✓ OCR-Layer eingebettet (komprimiert als JPEG)',
+                '✓ Searchable PDF erfolgreich erstellt'
+              ]);
+            } else if (details.usedDocumentAI) {
+              updateStep('ocr', 'success', [
+                `✓ ${doc.ocrPageCount || 0} Seiten verarbeitet`,
+                '✓ Document AI Verarbeitung abgeschlossen'
+              ]);
+            } else {
+              updateStep('ocr', 'skipped', [
+                'Übersprungen (Datei zu groß oder Limit erreicht)',
+                'Paperless nutzt Tesseract OCR'
+              ]);
+            }
+          }
+
           updateStep('paperless_upload', 'running', [
             'Upload zu Paperless läuft...',
             'Warte auf Document ID...'
           ]);
         } else if (doc.status === 'COMPLETED') {
+          // Show preprocessing details
+          if (details) {
+            const preprocessingDetails = [`Dokument ID: ${doc.id}`];
+
+            if (details.rotatedPages > 0) {
+              preprocessingDetails.push(`✓ ${details.rotatedPages} Seite(n) wurden gedreht`);
+            } else {
+              preprocessingDetails.push('✓ Keine Rotation nötig');
+            }
+
+            if (details.ocrLayerRemoved) {
+              preprocessingDetails.push('✓ OCR-Layer wurde entfernt');
+            } else if (!details.usedDocumentAI) {
+              preprocessingDetails.push('✓ OCR-Layer behalten (direkt zu Paperless)');
+            }
+
+            if (details.usedDocumentAI) {
+              preprocessingDetails.push('✓ Mit Document AI verarbeitet');
+            } else if (details.directToPaperless) {
+              preprocessingDetails.push('✓ Direkt zu Paperless (Datei zu groß/limit)');
+            }
+
+            updateStep('preprocessing', 'success', preprocessingDetails);
+
+            if (details.usedDocumentAI && details.searchablePdfCreated) {
+              updateStep('ocr', 'success', [
+                `✓ ${doc.ocrPageCount || 0} Seiten verarbeitet`,
+                '✓ OCR-Layer eingebettet (komprimiert als JPEG)',
+                '✓ Searchable PDF erfolgreich erstellt'
+              ]);
+            } else if (details.usedDocumentAI) {
+              updateStep('ocr', 'success', [
+                `✓ ${doc.ocrPageCount || 0} Seiten verarbeitet`,
+                '✓ Document AI Verarbeitung abgeschlossen'
+              ]);
+            } else {
+              updateStep('ocr', 'skipped', [
+                'Übersprungen (Datei zu groß oder Limit erreicht)',
+                'Paperless nutzt Tesseract OCR'
+              ]);
+            }
+          }
+
           if (doc.paperlessId) {
             updateStep('paperless_upload', 'success', [
               `✓ Paperless Document ID: ${doc.paperlessId}`,

@@ -80,6 +80,12 @@ async function processFile(filePath: string) {
   let searchablePath: string | null = null;
   let documentId: number | null = null;
 
+  // Processing details for debugging
+  let rotatedPagesCount = 0;
+  let usedDocumentAI = false;
+  let ocrLayerRemoved = false;
+  let searchablePdfCreated = false;
+
   try {
     // Calculate hash
     await logger.info(`🔐 Calculating SHA-256 hash for: ${fileName}`);
@@ -205,11 +211,12 @@ async function processFile(filePath: string) {
 
           // Step 1: Detect and rotate if needed
           await logger.info(`🔄 Step 1: Detecting page orientation...`);
-          const [rotated, wasRotated] = await detectAndRotatePDF(processingPath);
+          const [rotated, wasRotated, totalPages] = await detectAndRotatePDF(processingPath);
           if (wasRotated) {
             rotatedPath = rotated;
             finalPath = rotated;
-            await logger.info(`✅ Pages rotated to correct orientation`);
+            rotatedPagesCount = totalPages;
+            await logger.info(`✅ ${totalPages} page(s) rotated to correct orientation`);
             await logger.info(`   → Rotated file: ${rotatedPath}`);
           } else {
             await logger.info(`✅ Page orientation correct, no rotation needed`);
@@ -220,6 +227,7 @@ async function processFile(filePath: string) {
           await logger.info(`🧹 Step 2: Removing existing OCR layer...`);
           noOCRPath = await removeOCRLayer(finalPath);
           finalPath = noOCRPath;
+          ocrLayerRemoved = true;
           await logger.info(`✅ OCR layer removed successfully`);
           await logger.info(`   → Clean PDF: ${noOCRPath}`);
           await logger.info(``);
@@ -240,6 +248,7 @@ async function processFile(filePath: string) {
           const startTime = Date.now();
           const docAIResult = await processWithDocumentAI(finalPath);
           const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+          usedDocumentAI = true;
           await logger.info(`✅ Document AI processing complete`);
           await logger.info(`   → Duration: ${duration} seconds`);
           await logger.info(`   → Text extracted: ${docAIResult.text?.length || 0} characters`);
@@ -250,6 +259,7 @@ async function processFile(filePath: string) {
           searchablePath = join(PROCESSING_DIR, fileName.replace('.pdf', '_searchable.pdf'));
           await createSearchablePDF(finalPath, docAIResult, searchablePath);
           finalPath = searchablePath;
+          searchablePdfCreated = true;
           await logger.info(`✅ Searchable PDF created successfully`);
           await logger.info(`   → Output: ${searchablePath}`);
           await logger.info(``);
@@ -301,19 +311,28 @@ async function processFile(filePath: string) {
     }
     await logger.info(``);
 
-    // Update final status
+    // Update final status with processing details
     await logger.info(`💾 Updating final document status to COMPLETED...`);
+    const processingDetails = {
+      rotatedPages: rotatedPagesCount,
+      usedDocumentAI,
+      ocrLayerRemoved,
+      searchablePdfCreated,
+      directToPaperless: !usedDocumentAI,
+    };
     await prisma.document.update({
       where: { id: documentId },
       data: {
         status: 'COMPLETED',
         paperlessId: paperlessId,
+        processingDetails: JSON.stringify(processingDetails),
       },
     });
     await logger.info(`✅ Status updated: COMPLETED`);
     if (paperlessId) {
       await logger.info(`   → Paperless ID: ${paperlessId}`);
     }
+    await logger.info(`   → Processing details saved`);
     await logger.info(``);
 
     await logger.info(`🎉 ========================================`);

@@ -63,9 +63,9 @@ export async function detectRotationAngle(imagePath: string): Promise<number> {
 
 /**
  * Check if PDF needs rotation and rotate if necessary
- * Returns: [rotatedPdfPath, wasRotated]
+ * Returns: [rotatedPdfPath, wasRotated, totalPages]
  */
-export async function detectAndRotatePDF(inputPath: string): Promise<[string, boolean]> {
+export async function detectAndRotatePDF(inputPath: string): Promise<[string, boolean, number]> {
   try {
     await logger.info('Checking PDF orientation...');
 
@@ -112,7 +112,7 @@ export async function detectAndRotatePDF(inputPath: string): Promise<[string, bo
 
     if (!needsRotation) {
       await logger.info('No rotation needed');
-      return [inputPath, false];
+      return [inputPath, false, 0];
     }
 
     // Apply rotation to all pages based on most common rotation detected
@@ -121,7 +121,7 @@ export async function detectAndRotatePDF(inputPath: string): Promise<[string, bo
     ).pop() || 0;
 
     if (mostCommonRotation === 0) {
-      return [inputPath, false];
+      return [inputPath, false, 0];
     }
 
     await logger.info(`Rotating all pages by ${mostCommonRotation}°`);
@@ -138,12 +138,12 @@ export async function detectAndRotatePDF(inputPath: string): Promise<[string, bo
     writeFileSync(rotatedPath, rotatedBytes);
 
     await logger.info(`Rotation complete: ${rotatedPath}`);
-    return [rotatedPath, true];
+    return [rotatedPath, true, pages.length];
 
   } catch (error: any) {
     await logger.error('Failed to rotate PDF', error);
     // Return original if rotation fails
-    return [inputPath, false];
+    return [inputPath, false, 0];
   }
 }
 
