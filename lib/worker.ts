@@ -13,6 +13,7 @@ import { startAiTodoPolling, stopAiTodoPolling } from './polling';
 import { startActionPolling, stopActionPolling } from './action-polling';
 import { acquireLock, releaseLock, updateLockActivity } from './process-lock';
 import { checkEmergencyStop } from './emergency-stop';
+import { sendDocumentProcessedEmail, sendDocumentErrorEmail } from './email';
 
 const logger = createLogger('Worker');
 
@@ -335,6 +336,16 @@ async function processFile(filePath: string) {
     await logger.info(`   → Processing details saved`);
     await logger.info(``);
 
+    // Send success email notification
+    if (paperlessId) {
+      try {
+        await sendDocumentProcessedEmail(fileName, paperlessId, 0); // TODO: Track actual tokens used
+        await logger.info(`📧 Success email notification sent`);
+      } catch (emailError: any) {
+        await logger.warn(`Failed to send success email: ${emailError.message}`);
+      }
+    }
+
     await logger.info(`🎉 ========================================`);
     await logger.info(`🎉 DOCUMENT PROCESSING COMPLETE`);
     await logger.info(`🎉 ========================================`);
@@ -403,6 +414,14 @@ async function processFile(filePath: string) {
       await logger.info(`✅ Status updated: ERROR`);
       await logger.info(`   → Error message saved to database`);
       await logger.info(``);
+
+      // Send error email notification
+      try {
+        await sendDocumentErrorEmail(fileName, error.message || 'Unknown error', documentId);
+        await logger.info(`📧 Error email notification sent`);
+      } catch (emailError: any) {
+        await logger.warn(`Failed to send error email: ${emailError.message}`);
+      }
     }
 
     // Move to error directory

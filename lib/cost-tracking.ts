@@ -1,8 +1,12 @@
 import { prisma } from './prisma';
 import { getConfig, CONFIG_KEYS } from './config';
 import { createLogger } from './logger';
+import { sendAPILimitReachedEmail, sendAPILimitWarningEmail } from './email';
 
 const logger = createLogger('CostTracking');
+
+// Track which warnings have been sent this month to avoid spam
+const sentWarnings = new Map<string, Set<number>>(); // month -> Set of percentages sent
 
 /**
  * Get current month in format YYYY-MM
@@ -10,6 +14,42 @@ const logger = createLogger('CostTracking');
 function getCurrentMonth(): string {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
+/**
+ * Check and send email notifications for API limits
+ */
+async function checkAndSendLimitNotifications(
+  apiType: 'gemini' | 'documentai',
+  currentUsage: number,
+  limit: number,
+  month: string
+) {
+  try {
+    const percentage = (currentUsage / limit) * 100;
+    const threshold = parseInt(await getConfig(CONFIG_KEYS.EMAIL_API_WARNING_THRESHOLD) || '80', 10);
+
+    // Initialize warnings tracking for this month if needed
+    if (!sentWarnings.has(month)) {
+      sentWarnings.set(month, new Set());
+    }
+    const monthWarnings = sentWarnings.get(month)!;
+
+    // Check if limit reached (100%)
+    if (percentage >= 100 && !monthWarnings.has(100)) {
+      await sendAPILimitReachedEmail(apiType, currentUsage, limit, month);
+      monthWarnings.add(100);
+      await logger.info(`Sent API limit reached email for ${apiType}`);
+    }
+    // Check if warning threshold reached
+    else if (percentage >= threshold && !monthWarnings.has(threshold)) {
+      await sendAPILimitWarningEmail(apiType, currentUsage, limit, percentage, month);
+      monthWarnings.add(threshold);
+      await logger.info(`Sent API limit warning email for ${apiType} at ${percentage.toFixed(1)}%`);
+    }
+  } catch (error: any) {
+    await logger.error(`Failed to send limit notification for ${apiType}`, error);
+  }
 }
 
 /**
@@ -96,6 +136,14 @@ export async function reserveDocumentAIPages(pageCount: number): Promise<boolean
       new: updated.documentAIPages,
       limit: tracking.documentAIPagesLimit
     });
+
+    // Check and send email notifications
+    await checkAndSendLimitNotifications(
+      'documentai',
+      updated.documentAIPages,
+      tracking.documentAIPagesLimit,
+      tracking.month
+    );
 
     return true;
   } catch (error: any) {
@@ -211,7 +259,7 @@ export async function updateActualGeminiTokens(documentId: number, actualSent: n
 
     // Update cost tracking
     const tracking = await getCurrentMonthTracking();
-    await prisma.costTracking.update({
+    const updated = await prisma.costTracking.update({
       where: { id: tracking.id },
       data: {
         geminiTokensSent: {
@@ -240,6 +288,15 @@ export async function updateActualGeminiTokens(documentId: number, actualSent: n
       actualReceived,
       diffReceived
     });
+
+    // Check and send email notifications
+    const totalTokens = updated.geminiTokensSent + updated.geminiTokensReceived;
+    await checkAndSendLimitNotifications(
+      'gemini',
+      totalTokens,
+      tracking.geminiTokensLimit,
+      tracking.month
+    );
   } catch (error: any) {
     await logger.error('Error updating actual Gemini tokens', error);
   }

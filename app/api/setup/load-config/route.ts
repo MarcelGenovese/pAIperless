@@ -73,6 +73,13 @@ export async function GET(request: NextRequest) {
         data.smtpPassword = await getConfigSecure(CONFIG_KEYS.SMTP_PASSWORD) || '';
         data.emailSender = await getConfig(CONFIG_KEYS.EMAIL_SENDER) || '';
         data.emailRecipients = await getConfig(CONFIG_KEYS.EMAIL_RECIPIENTS) || '';
+
+        // Notification settings
+        data.notifySuccess = await getConfig(CONFIG_KEYS.EMAIL_NOTIFY_SUCCESS) === 'true';
+        data.notifyError = await getConfig(CONFIG_KEYS.EMAIL_NOTIFY_ERROR) !== 'false'; // Default true
+        data.notifyApiLimit = await getConfig(CONFIG_KEYS.EMAIL_NOTIFY_API_LIMIT) !== 'false'; // Default true
+        data.notifyApiWarning = await getConfig(CONFIG_KEYS.EMAIL_NOTIFY_API_WARNING) !== 'false'; // Default true
+        data.apiWarningThreshold = await getConfig(CONFIG_KEYS.EMAIL_API_WARNING_THRESHOLD) || '80';
         break;
 
       case 6: // Paperless Integration

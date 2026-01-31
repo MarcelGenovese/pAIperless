@@ -21,6 +21,11 @@ interface EmailSettingsCardProps {
     smtpPassword?: string;
     emailSender?: string;
     emailRecipients?: string;
+    notifySuccess?: boolean;
+    notifyError?: boolean;
+    notifyApiLimit?: boolean;
+    notifyApiWarning?: boolean;
+    apiWarningThreshold?: string;
   };
 }
 
@@ -36,6 +41,11 @@ export default function EmailSettingsCard({ initialData = {} }: EmailSettingsCar
     smtpPassword: initialData.smtpPassword || '',
     emailSender: initialData.emailSender || '',
     emailRecipients: initialData.emailRecipients || '',
+    notifySuccess: initialData.notifySuccess ?? false,
+    notifyError: initialData.notifyError ?? true, // Default: enabled
+    notifyApiLimit: initialData.notifyApiLimit ?? true, // Default: enabled
+    notifyApiWarning: initialData.notifyApiWarning ?? true, // Default: enabled
+    apiWarningThreshold: initialData.apiWarningThreshold || '80',
     tested: false,
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -75,6 +85,11 @@ export default function EmailSettingsCard({ initialData = {} }: EmailSettingsCar
             smtpPassword: emailData.smtpPassword,
             emailSender: emailData.emailSender,
             emailRecipients: emailData.emailRecipients,
+            notifySuccess: emailData.notifySuccess,
+            notifyError: emailData.notifyError,
+            notifyApiLimit: emailData.notifyApiLimit,
+            notifyApiWarning: emailData.notifyApiWarning,
+            apiWarningThreshold: parseInt(emailData.apiWarningThreshold, 10),
           }
         }),
       });
@@ -126,6 +141,11 @@ export default function EmailSettingsCard({ initialData = {} }: EmailSettingsCar
             smtpPassword: emailData.smtpPassword,
             emailSender: emailData.emailSender,
             emailRecipients: emailData.emailRecipients,
+            notifySuccess: emailData.notifySuccess,
+            notifyError: emailData.notifyError,
+            notifyApiLimit: emailData.notifyApiLimit,
+            notifyApiWarning: emailData.notifyApiWarning,
+            apiWarningThreshold: parseInt(emailData.apiWarningThreshold, 10),
           }
         }),
       });
@@ -280,6 +300,106 @@ export default function EmailSettingsCard({ initialData = {} }: EmailSettingsCar
               <p className="text-xs text-muted-foreground mt-1">
                 Kommagetrennte Liste von E-Mail-Adressen
               </p>
+            </div>
+
+            {/* Notification Settings */}
+            <div className="border-t pt-4 mt-4">
+              <h3 className="text-sm font-semibold mb-3">Benachrichtigungseinstellungen</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 border rounded-lg bg-gray-50 dark:bg-gray-900">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="notify-success" className="text-sm font-medium">
+                      Erfolgreiche Verarbeitung
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Benachrichtigung bei erfolgreich verarbeiteten Dokumenten
+                    </p>
+                  </div>
+                  <Switch
+                    id="notify-success"
+                    checked={emailData.notifySuccess}
+                    onCheckedChange={(checked) => {
+                      setEmailData({ ...emailData, notifySuccess: checked });
+                    }}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-3 border rounded-lg bg-gray-50 dark:bg-gray-900">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="notify-error" className="text-sm font-medium">
+                      Fehler bei Verarbeitung
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Benachrichtigung bei fehlgeschlagenen Dokumenten
+                    </p>
+                  </div>
+                  <Switch
+                    id="notify-error"
+                    checked={emailData.notifyError}
+                    onCheckedChange={(checked) => {
+                      setEmailData({ ...emailData, notifyError: checked });
+                    }}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-3 border rounded-lg bg-gray-50 dark:bg-gray-900">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="notify-api-limit" className="text-sm font-medium">
+                      API-Limit erreicht
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Benachrichtigung bei Erreichen des monatlichen API-Limits
+                    </p>
+                  </div>
+                  <Switch
+                    id="notify-api-limit"
+                    checked={emailData.notifyApiLimit}
+                    onCheckedChange={(checked) => {
+                      setEmailData({ ...emailData, notifyApiLimit: checked });
+                    }}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-3 border rounded-lg bg-gray-50 dark:bg-gray-900">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="notify-api-warning" className="text-sm font-medium">
+                      API-Limit Warnung
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Warnung vor Erreichen des API-Limits
+                    </p>
+                  </div>
+                  <Switch
+                    id="notify-api-warning"
+                    checked={emailData.notifyApiWarning}
+                    onCheckedChange={(checked) => {
+                      setEmailData({ ...emailData, notifyApiWarning: checked });
+                    }}
+                  />
+                </div>
+
+                {emailData.notifyApiWarning && (
+                  <div className="ml-4 p-3 border rounded-lg bg-white dark:bg-gray-950">
+                    <Label htmlFor="api-warning-threshold" className="text-sm">
+                      Warnschwelle (%)
+                    </Label>
+                    <Input
+                      id="api-warning-threshold"
+                      type="number"
+                      min="1"
+                      max="100"
+                      value={emailData.apiWarningThreshold}
+                      onChange={(e) => {
+                        setEmailData({ ...emailData, apiWarningThreshold: e.target.value });
+                      }}
+                      className="mt-2"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Benachrichtigung senden wenn {emailData.apiWarningThreshold}% des Limits erreicht sind
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </>
         )}

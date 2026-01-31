@@ -130,6 +130,13 @@ export async function POST(request: NextRequest) {
           await setConfigSecure(CONFIG_KEYS.SMTP_PASSWORD, data.smtpPassword);
           await setConfig(CONFIG_KEYS.EMAIL_SENDER, data.emailSender);
           await setConfig(CONFIG_KEYS.EMAIL_RECIPIENTS, data.emailRecipients);
+
+          // Notification settings
+          await setConfig(CONFIG_KEYS.EMAIL_NOTIFY_SUCCESS, data.notifySuccess ? 'true' : 'false');
+          await setConfig(CONFIG_KEYS.EMAIL_NOTIFY_ERROR, data.notifyError ? 'true' : 'false');
+          await setConfig(CONFIG_KEYS.EMAIL_NOTIFY_API_LIMIT, data.notifyApiLimit ? 'true' : 'false');
+          await setConfig(CONFIG_KEYS.EMAIL_NOTIFY_API_WARNING, data.notifyApiWarning ? 'true' : 'false');
+          await setConfig(CONFIG_KEYS.EMAIL_API_WARNING_THRESHOLD, data.apiWarningThreshold?.toString() || '80');
         }
         break;
 
