@@ -18,6 +18,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/api/setup') ||
     pathname.startsWith('/api/webhooks/') ||  // Webhooks have their own API key auth
+    pathname.startsWith('/api/services/init') ||  // Service initialization on startup
     pathname === '/api/version' ||
     pathname === '/favicon.ico' ||
     pathname.startsWith('/logo') ||
