@@ -11,6 +11,7 @@ import {
   faExclamationTriangle,
   faRotateRight,
   faCheckCircle,
+  faSync,
 } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
 
@@ -50,6 +51,7 @@ export default function QueueCards() {
   const [queueData, setQueueData] = useState<QueueData | null>(null);
   const [loading, setLoading] = useState(true);
   const [retrying, setRetrying] = useState<number | null>(null);
+  const [triggering, setTriggering] = useState(false);
 
   const fetchQueueData = async () => {
     try {
@@ -70,6 +72,40 @@ export default function QueueCards() {
     const interval = setInterval(fetchQueueData, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  const triggerManualProcessing = async () => {
+    setTriggering(true);
+    try {
+      const response = await fetch('/api/documents/trigger-consume', {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast({
+          title: 'Verarbeitung ausgelöst',
+          description: data.message || 'Verarbeitung wurde manuell ausgelöst',
+          variant: 'success',
+        });
+        await fetchQueueData();
+      } else {
+        const data = await response.json();
+        toast({
+          title: 'Fehler',
+          description: data.error || 'Fehler beim Auslösen',
+          variant: 'destructive',
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Fehler',
+        description: error.message || 'Fehler beim Auslösen der Verarbeitung',
+        variant: 'destructive',
+      });
+    } finally {
+      setTriggering(false);
+    }
+  };
 
   const handleRetry = async (documentId: number, errorMessage: string | null) => {
     setRetrying(documentId);
@@ -168,7 +204,19 @@ export default function QueueCards() {
             <CardTitle className="text-sm font-medium">
               Warteschlange
             </CardTitle>
-            <FontAwesomeIcon icon={faClock} className="text-yellow-600" />
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={triggerManualProcessing}
+                disabled={triggering}
+                className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-[hsl(220,40%,18%)]"
+                title="Verarbeitung manuell auslösen"
+              >
+                <FontAwesomeIcon icon={faSync} className={triggering ? 'animate-spin' : ''} />
+              </Button>
+              <FontAwesomeIcon icon={faClock} className="text-yellow-600" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{queueData.counts.pending}</div>

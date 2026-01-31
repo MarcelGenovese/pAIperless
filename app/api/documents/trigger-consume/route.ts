@@ -7,7 +7,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const logger = createLogger('TriggerConsume');
-const CONSUME_DIR = '/app/consume';
+const CONSUME_DIR = process.env.CONSUME_DIR || '/app/storage/consume';
 
 /**
  * Manually trigger processing of all files in consume folder
