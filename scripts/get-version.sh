@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Get git tag if available, otherwise use commit hash
-if git describe --tags --exact-match 2>/dev/null; then
+if git describe --tags --exact-match >/dev/null 2>&1; then
     # We're on a tagged commit
     git describe --tags --exact-match
-elif git describe --tags 2>/dev/null; then
+elif git describe --tags >/dev/null 2>&1; then
     # We have tags but not on exact match
     git describe --tags
 else
