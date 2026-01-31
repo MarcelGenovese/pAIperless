@@ -40,29 +40,48 @@ export async function processAiTodoDocuments(): Promise<{
   // Use lock to prevent concurrent processing
   return withLock('AI_DOCUMENT_PROCESSING', 'Processing AI_TODO documents', async () => {
     try {
-      await logger.info('[AI Polling] Starting AI_TODO document processing');
+      await logger.info(``);
+      await logger.info(`🤖 ========================================`);
+      await logger.info(`🤖 AI TAGGING PROCESS STARTED`);
+      await logger.info(`🤖 ========================================`);
+      await logger.info(`   → Time: ${new Date().toISOString()}`);
+      await logger.info(`🤖 ========================================`);
+      await logger.info(``);
 
     // Get Paperless client
+    await logger.info(`🔌 Connecting to Paperless-NGX...`);
     const paperlessClient = await getPaperlessClient();
+    await logger.info(`✅ Connected to Paperless`);
+    await logger.info(``);
 
     // Get the AI_TODO tag ID
     const tagAiTodoName = await getConfig(CONFIG_KEYS.TAG_AI_TODO) || 'ai_todo';
+    await logger.info(`🔍 Looking for AI_TODO tag: "${tagAiTodoName}"...`);
     const tagAiTodoId = await paperlessClient.getTagId(tagAiTodoName);
 
     if (!tagAiTodoId) {
-      await logger.error(`[AI Polling] AI_TODO tag "${tagAiTodoName}" not found in Paperless`);
+      await logger.error(`❌ AI_TODO tag "${tagAiTodoName}" not found in Paperless`);
+      await logger.error(`   → Please create this tag in Paperless configuration`);
+      await logger.info(``);
       return { total: 0, successful: 0, failed: 0, results: [] };
     }
 
-    await logger.info(`[AI Polling] AI_TODO tag "${tagAiTodoName}" has ID: ${tagAiTodoId}`);
+    await logger.info(`✅ AI_TODO tag found: "${tagAiTodoName}" (ID: ${tagAiTodoId})`);
+    await logger.info(``);
 
     // Query Paperless for documents with AI_TODO tag
+    await logger.info(`🔍 Querying Paperless for documents with tag "${tagAiTodoName}"...`);
     const documents = await paperlessClient.getDocumentsByTag(tagAiTodoId);
-    await logger.info(`[AI Polling] Found ${documents.length} documents with tag "${tagAiTodoName}"`);
+    await logger.info(`✅ Found ${documents.length} document(s) with tag "${tagAiTodoName}"`);
 
     if (documents.length === 0) {
+      await logger.info(`ℹ️  No documents to process`);
+      await logger.info(``);
       return { total: 0, successful: 0, failed: 0, results: [] };
     }
+
+    await logger.info(`   → Document IDs: ${documents.map(d => d.id).join(', ')}`);
+    await logger.info(``);
 
     // Update progress: starting
     await updateLockProgress('AI_DOCUMENT_PROCESSING', {
@@ -72,12 +91,21 @@ export async function processAiTodoDocuments(): Promise<{
     });
 
     // Get Gemini client
+    await logger.info(`🧠 Initializing Gemini AI client...`);
     const geminiClient = await getGeminiClient();
+    await logger.info(`✅ Gemini client initialized`);
+    await logger.info(``);
 
     // Get other configuration
+    await logger.info(`⚙️  Loading configuration...`);
     const tagActionRequiredName = await getConfig(CONFIG_KEYS.TAG_ACTION_REQUIRED) || 'action_required';
     const fieldActionDescription = await getConfig(CONFIG_KEYS.FIELD_ACTION_DESCRIPTION) || 'action_description';
     const fieldDueDate = await getConfig(CONFIG_KEYS.FIELD_DUE_DATE) || 'due_date';
+    await logger.info(`✅ Configuration loaded:`);
+    await logger.info(`   → Action Required tag: ${tagActionRequiredName}`);
+    await logger.info(`   → Action Description field: ${fieldActionDescription}`);
+    await logger.info(`   → Due Date field: ${fieldDueDate}`);
+    await logger.info(``);
 
     // Process each document
     const results = [];
@@ -85,8 +113,16 @@ export async function processAiTodoDocuments(): Promise<{
     for (const doc of documents) {
       try {
         currentIndex++;
-        await logger.info(`[AI Polling] Processing document ${doc.id}: "${doc.title}"`);
-        await logger.info(`[AI Polling] Document ${doc.id} current tags: ${JSON.stringify(doc.tags)}`);
+
+        await logger.info(``);
+        await logger.info(`📄 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+        await logger.info(`📄 DOCUMENT ${currentIndex}/${documents.length}`);
+        await logger.info(`📄 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+        await logger.info(`   → Paperless ID: ${doc.id}`);
+        await logger.info(`   → Title: "${doc.title}"`);
+        await logger.info(`   → Current tags: ${JSON.stringify(doc.tags)}`);
+        await logger.info(`📄 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+        await logger.info(``);
 
         // Update progress
         await updateLockProgress('AI_DOCUMENT_PROCESSING', {
@@ -97,10 +133,12 @@ export async function processAiTodoDocuments(): Promise<{
         });
 
         // Get document content
+        await logger.info(`📥 Fetching document content from Paperless...`);
         const content = await paperlessClient.getDocumentContent(doc.id);
 
         if (!content || content.trim().length === 0) {
-          await logger.warn(`[AI Polling] Document ${doc.id} has no content, skipping`);
+          await logger.warn(`⚠️  Document has no content, skipping`);
+          await logger.info(``);
           results.push({
             documentId: doc.id,
             status: 'skipped',
@@ -109,12 +147,17 @@ export async function processAiTodoDocuments(): Promise<{
           continue;
         }
 
+        await logger.info(`✅ Content fetched: ${content.length} characters`);
+        await logger.info(``);
+
         // Check if we can process with Gemini (cost limit check)
         const estimatedTokens = Math.ceil(content.length / 4); // Rough estimate
+        await logger.info(`💰 Checking monthly Gemini token budget...`);
+        await logger.info(`   → Estimated tokens for this document: ${estimatedTokens}`);
         const limitCheck = await canProcessWithGemini(estimatedTokens);
         if (!limitCheck.allowed) {
-          await logger.error(`[AI Polling] Monthly Gemini token limit reached, stopping processing`);
-          await logger.error(`[AI Polling] ${limitCheck.reason}`);
+          await logger.error(`❌ Monthly Gemini token limit reached, stopping processing`);
+          await logger.error(`   → Reason: ${limitCheck.reason}`);
 
           // Update document status to show limit reached
           await prisma.log.create({
@@ -138,35 +181,53 @@ export async function processAiTodoDocuments(): Promise<{
           break;
         }
 
+        await logger.info(`✅ Monthly budget check passed: ${limitCheck.reason}`);
+        await logger.info(``);
+
         // Generate prompt and schema
+        await logger.info(`📝 Generating AI analysis prompt...`);
         const { prompt, schema } = await generateAnalysisPrompt(paperlessClient, content);
+        await logger.info(`✅ Prompt generated (${prompt.length} characters)`);
+        await logger.info(``);
 
         // Call Gemini AI with retry logic
-        await logger.info(`[AI Polling] Sending document ${doc.id} to Gemini for analysis (with JSON schema validation)`);
+        await logger.info(`🤖 Sending document to Gemini for analysis...`);
+        await logger.info(`   → Using JSON schema validation`);
+        await logger.info(`   → Max retries: 2`);
 
         let response;
         let tokensUsed;
         let retryCount = 0;
         const maxRetries = 2;
+        const geminiStartTime = Date.now();
 
         while (retryCount <= maxRetries) {
           try {
+            const attemptNum = retryCount + 1;
+            await logger.info(`   → Attempt ${attemptNum}/${maxRetries + 1}...`);
             const result = await geminiClient.analyzeDocument(prompt, schema);
             response = result.response;
             tokensUsed = result.tokensUsed;
-            await logger.info(`[AI Polling] ✅ Gemini analysis successful for document ${doc.id}`);
+            const geminiDuration = ((Date.now() - geminiStartTime) / 1000).toFixed(2);
+            await logger.info(`✅ Gemini analysis successful`);
+            await logger.info(`   → Duration: ${geminiDuration} seconds`);
             break; // Success, exit retry loop
           } catch (error: any) {
             retryCount++;
-            await logger.error(`[AI Polling] ❌ Gemini request failed for document ${doc.id}, attempt ${retryCount}/${maxRetries + 1}`, {
-              error: error.message,
-              stack: error.stack
-            });
+            await logger.error(`❌ Gemini request failed (attempt ${retryCount}/${maxRetries + 1})`);
+            await logger.error(`   → Error: ${error.message}`);
+            if (error.stack) {
+              const stackLines = error.stack.split('\n').slice(0, 3);
+              for (const line of stackLines) {
+                await logger.error(`   ${line}`);
+              }
+            }
             if (retryCount > maxRetries) {
-              await logger.error(`[AI Polling] 🛑 Max retries reached for document ${doc.id}, giving up`);
+              await logger.error(`🛑 Max retries reached, giving up on this document`);
               throw error; // Max retries reached, throw error
             }
-            await logger.info(`[AI Polling] ⏳ Retrying in ${retryCount} second(s)...`);
+            const waitSeconds = retryCount;
+            await logger.info(`⏳ Retrying in ${waitSeconds} second(s)...`);
             await new Promise(resolve => setTimeout(resolve, 1000 * retryCount)); // Exponential backoff
           }
         }
@@ -176,86 +237,102 @@ export async function processAiTodoDocuments(): Promise<{
           throw new Error('Gemini returned empty response or token data');
         }
 
-        await logger.info(`[AI Polling] 📄 Gemini response for document ${doc.id}:`, JSON.stringify(response, null, 2));
-        await logger.info(`[AI Polling] 🎯 Tokens used - Input: ${tokensUsed.input}, Output: ${tokensUsed.output}`);
+        await logger.info(``);
+        await logger.info(`📊 Gemini response received:`);
+        await logger.info(JSON.stringify(response, null, 2));
+        await logger.info(``);
+        await logger.info(`🎯 Token usage:`);
+        await logger.info(`   → Input tokens: ${tokensUsed.input}`);
+        await logger.info(`   → Output tokens: ${tokensUsed.output}`);
+        await logger.info(`   → Total tokens: ${tokensUsed.input + tokensUsed.output}`);
+        await logger.info(``);
 
         // Process the response and update Paperless
+        await logger.info(`🔄 Processing Gemini response and preparing Paperless update...`);
         const updates: any = {};
 
         // Title
         if (response.title) {
           updates.title = response.title;
+          await logger.info(`   → New title: "${response.title}"`);
         }
 
         // Tags - convert tag names to IDs, create new tags if needed
         if (response.tags && Array.isArray(response.tags)) {
-          await logger.info(`[AI Polling] Gemini suggested tags for document ${doc.id}: ${JSON.stringify(response.tags)}`);
+          await logger.info(`   → Gemini suggested tags: ${JSON.stringify(response.tags)}`);
 
           // Filter out AI_TODO tag from Gemini suggestions (it should never suggest this tag)
           const filteredTags = response.tags.filter((tagName: string) => tagName.toLowerCase() !== tagAiTodoName.toLowerCase());
           if (filteredTags.length !== response.tags.length) {
-            await logger.warn(`[AI Polling] Gemini incorrectly suggested "${tagAiTodoName}" tag, filtering it out`);
+            await logger.warn(`   → Warning: Gemini incorrectly suggested "${tagAiTodoName}" tag, filtering it out`);
           }
 
+          await logger.info(`   → Processing ${filteredTags.length} tag(s)...`);
           const tagIds: number[] = [];
           for (const tagName of filteredTags) {
-            await logger.info(`[AI Polling] Getting/creating tag: "${tagName}"`);
             const tagId = await paperlessClient.createOrGetTag(tagName);
-            await logger.info(`[AI Polling] Tag "${tagName}" has ID: ${tagId}`);
+            await logger.info(`     • Tag "${tagName}" → ID ${tagId}`);
             tagIds.push(tagId);
           }
 
           // Add existing tags from document (except AI_TODO)
           const existingTags = doc.tags || [];
-          await logger.info(`[AI Polling] Document ${doc.id} existing tags before filter: ${JSON.stringify(existingTags)}`);
-          await logger.info(`[AI Polling] Filtering out AI_TODO tag with ID: ${tagAiTodoId}`);
+          await logger.info(`   → Preserving existing tags (except AI_TODO): ${JSON.stringify(existingTags)}`);
 
           for (const existingTagId of existingTags) {
             if (existingTagId !== tagAiTodoId && !tagIds.includes(existingTagId)) {
               tagIds.push(existingTagId);
+              await logger.info(`     • Kept existing tag ID: ${existingTagId}`);
             }
           }
 
           // Add ACTION_REQUIRED tag if action description is present
           if (response.custom_fields && response.custom_fields[fieldActionDescription]) {
+            await logger.info(`   → Action detected: Adding ACTION_REQUIRED tag`);
             const actionRequiredTagId = await paperlessClient.createOrGetTag(tagActionRequiredName);
-            await logger.info(`[AI Polling] Adding ACTION_REQUIRED tag (ID: ${actionRequiredTagId}) to document ${doc.id}`);
+            await logger.info(`     • ACTION_REQUIRED tag ID: ${actionRequiredTagId}`);
             if (!tagIds.includes(actionRequiredTagId)) {
               tagIds.push(actionRequiredTagId);
             }
           }
 
           updates.tags = tagIds;
-          await logger.info(`[AI Polling] Final tag IDs for document ${doc.id}: ${JSON.stringify(tagIds)}`);
+          await logger.info(`   → Final tag IDs: ${JSON.stringify(tagIds)}`);
         } else {
           // Keep existing tags but remove AI_TODO
           const existingTags = doc.tags || [];
-          await logger.info(`[AI Polling] No tags from Gemini, keeping existing tags except AI_TODO`);
-          await logger.info(`[AI Polling] Document ${doc.id} existing tags before filter: ${JSON.stringify(existingTags)}`);
+          await logger.info(`   → No tags from Gemini, keeping existing tags except AI_TODO`);
           updates.tags = existingTags.filter((id: number) => id !== tagAiTodoId);
-          await logger.info(`[AI Polling] Final tag IDs for document ${doc.id} after removing AI_TODO: ${JSON.stringify(updates.tags)}`);
+          await logger.info(`   → Final tag IDs: ${JSON.stringify(updates.tags)}`);
         }
 
         // Correspondent
         if (response.correspondent) {
+          await logger.info(`   → Setting correspondent: "${response.correspondent}"`);
           const correspondentId = await paperlessClient.createOrGetCorrespondent(response.correspondent);
           updates.correspondent = correspondentId;
+          await logger.info(`     • Correspondent ID: ${correspondentId}`);
         }
 
         // Document Type
         if (response.document_type) {
+          await logger.info(`   → Setting document type: "${response.document_type}"`);
           const docTypeId = await paperlessClient.createOrGetDocumentType(response.document_type);
           updates.document_type = docTypeId;
+          await logger.info(`     • Document type ID: ${docTypeId}`);
         }
 
         // Storage Path
         if (response.storage_path) {
+          await logger.info(`   → Setting storage path: "${response.storage_path}"`);
           const storagePathId = await paperlessClient.createOrGetStoragePath(response.storage_path);
           updates.storage_path = storagePathId;
+          await logger.info(`     • Storage path ID: ${storagePathId}`);
         }
 
         // Custom Fields
         if (response.custom_fields && Object.keys(response.custom_fields).length > 0) {
+          await logger.info(`   → Processing ${Object.keys(response.custom_fields).length} custom field(s)...`);
           const customFields = await paperlessClient.getCustomFields();
           const customFieldUpdates: Array<{ field: number; value: any }> = [];
 
@@ -266,6 +343,9 @@ export async function processAiTodoDocuments(): Promise<{
                 field: field.id,
                 value: fieldValue,
               });
+              await logger.info(`     • Field "${fieldName}" (ID ${field.id}): ${JSON.stringify(fieldValue)}`);
+            } else {
+              await logger.warn(`     • Warning: Custom field "${fieldName}" not found in Paperless`);
             }
           }
 
@@ -274,18 +354,33 @@ export async function processAiTodoDocuments(): Promise<{
           }
         }
 
-        // Update document in Paperless
-        await logger.info(`[AI Polling] Updating document ${doc.id} in Paperless with:`, JSON.stringify(updates, null, 2));
+        await logger.info(``);
+        await logger.info(`📤 Updating document in Paperless...`);
+        await logger.info(`   → Update payload:`);
+        await logger.info(JSON.stringify(updates, null, 2));
 
         try {
+          const updateStartTime = Date.now();
           await paperlessClient.updateDocument(doc.id, updates);
-          await logger.info(`[AI Polling] Successfully updated document ${doc.id} in Paperless`);
+          const updateDuration = ((Date.now() - updateStartTime) / 1000).toFixed(2);
+          await logger.info(`✅ Document updated successfully in Paperless`);
+          await logger.info(`   → Update duration: ${updateDuration} seconds`);
 
           // Verify tags were updated by fetching the document again
+          await logger.info(`   → Verifying update...`);
           const updatedDoc = await paperlessClient.getDocument(doc.id);
-          await logger.info(`[AI Polling] Document ${doc.id} tags after update: ${JSON.stringify(updatedDoc.tags)}`);
+          await logger.info(`   → Verified tags: ${JSON.stringify(updatedDoc.tags)}`);
+          await logger.info(``);
         } catch (updateError: any) {
-          await logger.error(`[AI Polling] Failed to update document ${doc.id} in Paperless:`, updateError);
+          await logger.error(`❌ Failed to update document in Paperless:`);
+          await logger.error(`   → Error: ${updateError.message}`);
+          if (updateError.stack) {
+            const stackLines = updateError.stack.split('\n').slice(0, 3);
+            for (const line of stackLines) {
+              await logger.error(`   ${line}`);
+            }
+          }
+          await logger.info(``);
           throw updateError;
         }
 
@@ -392,7 +487,15 @@ export async function processAiTodoDocuments(): Promise<{
           tokensUsed: tokensUsed.input + tokensUsed.output,
         });
 
-        await logger.info(`[AI Polling] Successfully processed document ${doc.id}`);
+        await logger.info(`✅ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+        await logger.info(`✅ DOCUMENT PROCESSING COMPLETE`);
+        await logger.info(`✅ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+        await logger.info(`   → Paperless ID: ${doc.id}`);
+        await logger.info(`   → Title: "${doc.title}"`);
+        await logger.info(`   → Tokens used: ${tokensUsed.input + tokensUsed.output}`);
+        await logger.info(`   → Status: SUCCESS`);
+        await logger.info(`✅ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+        await logger.info(``);
 
         // Send email notification for successful processing
         await sendDocumentProcessedEmail(
@@ -401,7 +504,23 @@ export async function processAiTodoDocuments(): Promise<{
           tokensUsed.input + tokensUsed.output
         );
       } catch (error: any) {
-        await logger.error(`[AI Polling] Error processing document ${doc.id}:`, error);
+        await logger.error(`❌ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+        await logger.error(`❌ DOCUMENT PROCESSING ERROR`);
+        await logger.error(`❌ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+        await logger.error(`   → Paperless ID: ${doc.id}`);
+        await logger.error(`   → Title: "${doc.title}"`);
+        await logger.error(`   → Error: ${error.message}`);
+        await logger.error(`   → Type: ${error.constructor.name}`);
+        await logger.error(``);
+        if (error.stack) {
+          await logger.error(`Stack trace:`);
+          const stackLines = error.stack.split('\n').slice(0, 10);
+          for (const line of stackLines) {
+            await logger.error(`   ${line}`);
+          }
+        }
+        await logger.error(`❌ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+        await logger.error(``);
 
         // Send email notification for error
         await sendDocumentErrorEmail(
@@ -432,8 +551,22 @@ export async function processAiTodoDocuments(): Promise<{
 
     const successCount = results.filter(r => r.status === 'success').length;
     const failedCount = results.filter(r => r.status === 'error').length;
+    const skippedCount = results.filter(r => r.status === 'skipped').length;
+    const totalTokens = results
+      .filter(r => r.status === 'success')
+      .reduce((sum, r) => sum + (r.tokensUsed || 0), 0);
 
-    await logger.info(`[AI Polling] Completed processing ${documents.length} documents. Success: ${successCount}, Errors: ${failedCount}`);
+    await logger.info(`🎉 ========================================`);
+    await logger.info(`🎉 AI TAGGING PROCESS COMPLETE`);
+    await logger.info(`🎉 ========================================`);
+    await logger.info(`   → Total documents: ${documents.length}`);
+    await logger.info(`   → Successful: ${successCount}`);
+    await logger.info(`   → Failed: ${failedCount}`);
+    await logger.info(`   → Skipped: ${skippedCount}`);
+    await logger.info(`   → Total tokens used: ${totalTokens}`);
+    await logger.info(`   → Time: ${new Date().toISOString()}`);
+    await logger.info(`🎉 ========================================`);
+    await logger.info(``);
 
       return {
         total: documents.length,
@@ -442,7 +575,21 @@ export async function processAiTodoDocuments(): Promise<{
         results,
       };
     } catch (error: any) {
-      await logger.error('[AI Polling] Unexpected error:', error);
+      await logger.error(`❌ ========================================`);
+      await logger.error(`❌ AI TAGGING PROCESS ERROR`);
+      await logger.error(`❌ ========================================`);
+      await logger.error(`   → Error: ${error.message}`);
+      await logger.error(`   → Type: ${error.constructor.name}`);
+      if (error.stack) {
+        await logger.error(``);
+        await logger.error(`Stack trace:`);
+        const stackLines = error.stack.split('\n').slice(0, 10);
+        for (const line of stackLines) {
+          await logger.error(`   ${line}`);
+        }
+      }
+      await logger.error(`❌ ========================================`);
+      await logger.error(``);
       return { total: 0, successful: 0, failed: 0, results: [] };
     }
   });
@@ -456,7 +603,7 @@ export async function startAiTodoPolling() {
   const pollEnabled = await getConfig(CONFIG_KEYS.POLL_AI_TODO_ENABLED) === 'true';
 
   if (!pollEnabled) {
-    await logger.info('[AI Polling] Polling is disabled');
+    await logger.info(`ℹ️  AI_TODO polling is disabled in configuration`);
     return;
   }
 
@@ -464,15 +611,27 @@ export async function startAiTodoPolling() {
   const intervalMinutes = parseInt(await getConfig(CONFIG_KEYS.POLL_AI_TODO_INTERVAL) || '30');
   const intervalMs = intervalMinutes * 60 * 1000;
 
-  await logger.info(`[AI Polling] Starting AI_TODO polling (interval: ${intervalMinutes} minutes)`);
+  await logger.info(``);
+  await logger.info(`🔄 ========================================`);
+  await logger.info(`🔄 STARTING AI_TODO POLLING`);
+  await logger.info(`🔄 ========================================`);
+  await logger.info(`   → Interval: ${intervalMinutes} minutes`);
+  await logger.info(`   → Interval (ms): ${intervalMs}`);
+  await logger.info(`🔄 ========================================`);
+  await logger.info(``);
 
   // Run immediately on startup (will check emergency stop internally)
+  await logger.info(`▶️  Running initial AI_TODO check...`);
   await processAiTodoDocuments();
 
   // Schedule recurring polling (each iteration will check emergency stop)
   pollInterval = setInterval(async () => {
+    await logger.info(`⏰ Scheduled AI_TODO polling triggered (interval: ${intervalMinutes} minutes)`);
     await processAiTodoDocuments();
   }, intervalMs);
+
+  await logger.info(`✅ AI_TODO polling started and scheduled`);
+  await logger.info(``);
 }
 
 /**
@@ -482,7 +641,13 @@ export async function stopAiTodoPolling() {
   if (pollInterval) {
     clearInterval(pollInterval);
     pollInterval = null;
-    await logger.info('[AI Polling] Polling stopped');
+    await logger.info(``);
+    await logger.info(`🛑 ========================================`);
+    await logger.info(`🛑 AI_TODO POLLING STOPPED`);
+    await logger.info(`🛑 ========================================`);
+    await logger.info(`   → Time: ${new Date().toISOString()}`);
+    await logger.info(`🛑 ========================================`);
+    await logger.info(``);
   }
 }
 

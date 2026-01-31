@@ -42,11 +42,15 @@ export default function AdvancedSettingsTab() {
   const [isSavingPrompt, setIsSavingPrompt] = useState(false);
   const [isRestoringDefault, setIsRestoringDefault] = useState(false);
 
-  // Load language, dark mode and prompt template on mount
+  // Version State
+  const [version, setVersion] = useState<string>('');
+
+  // Load language, dark mode, prompt template and version on mount
   useEffect(() => {
     loadLanguage();
     loadDarkMode();
     loadPromptTemplate();
+    loadVersion();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -161,6 +165,19 @@ export default function AdvancedSettingsTab() {
       });
     } finally {
       setIsSavingDarkMode(false);
+    }
+  };
+
+  const loadVersion = async () => {
+    try {
+      const response = await fetch('/api/version');
+      if (response.ok) {
+        const data = await response.json();
+        setVersion(data.version || 'unknown');
+      }
+    } catch (error) {
+      console.error('Failed to load version:', error);
+      setVersion('unknown');
     }
   };
 
@@ -447,7 +464,7 @@ export default function AdvancedSettingsTab() {
           <div className="space-y-3 text-sm">
             <div className="flex justify-between py-2 border-b">
               <span className="text-gray-600 dark:text-gray-400">Version</span>
-              <span className="font-medium">1.0.0</span>
+              <span className="font-medium font-mono">{version || 'loading...'}</span>
             </div>
             <div className="flex justify-between py-2 border-b">
               <span className="text-gray-600 dark:text-gray-400">Database</span>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import Image from 'next/image';
@@ -24,6 +24,15 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const [isResettingSetup, setIsResettingSetup] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [version, setVersion] = useState<string>('');
+
+  useEffect(() => {
+    // Load version from API
+    fetch('/api/version')
+      .then(res => res.json())
+      .then(data => setVersion(data.version || 'unknown'))
+      .catch(() => setVersion('unknown'));
+  }, []);
 
   const handleResetSetup = async () => {
     setIsResettingSetup(true);
@@ -173,7 +182,7 @@ export default function SettingsPage() {
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between py-2 border-b">
                   <span className="text-gray-600">Version</span>
-                  <span className="font-medium">1.0.0</span>
+                  <span className="font-medium font-mono">{version || 'loading...'}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b">
                   <span className="text-gray-600">Database</span>
