@@ -33,6 +33,26 @@ export default function LogsTab() {
   const logsContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
+  // Log type filters
+  const [showLevels, setShowLevels] = useState({
+    ERROR: true,
+    WARN: true,
+    INFO: true,
+    DEBUG: true,
+  });
+  const [showSources, setShowSources] = useState({
+    upload: true,
+    ftp: true,
+    email: true,
+    worker: true,
+    middleware: true,
+    paperless: true,
+    oauth: true,
+    framework: true,
+    'next.js': true,
+    system: true,
+  });
+
   const fetchDockerLogs = async () => {
     if (paused) {
       console.log('[Logs] Paused, skipping fetch');
@@ -187,12 +207,13 @@ export default function LogsTab() {
       const data = await response.json();
 
       if (response.ok) {
+        // Keep live logs running, add search results separately
         setSearchResults(data.logs || []);
         setSearchTotal(data.total || 0);
 
         toast({
           title: 'Suche abgeschlossen',
-          description: `${data.showing} von ${data.total} Logs gefunden`,
+          description: `${data.showing} von ${data.total} Logs gefunden (Live Logs weiter aktiv)`,
         });
       } else {
         throw new Error(data.message || 'Search failed');
@@ -218,47 +239,93 @@ export default function LogsTab() {
   const getLogLevelColor = (level: string) => {
     switch (level.toUpperCase()) {
       case 'ERROR':
-        return 'text-red-600';
+        return 'text-red-600 dark:text-red-400';
       case 'WARN':
-        return 'text-yellow-600';
+        return 'text-yellow-600 dark:text-yellow-400';
       case 'INFO':
-        return 'text-blue-600';
+        return 'text-blue-600 dark:text-blue-400';
       case 'DEBUG':
-        return 'text-gray-600';
+        return 'text-gray-600 dark:text-gray-400';
       default:
-        return 'text-gray-800';
+        return 'text-gray-800 dark:text-gray-300';
     }
   };
 
   const getSourceColor = (source: string) => {
     switch (source.toLowerCase()) {
       case 'upload':
-        return 'bg-indigo-100 text-indigo-700';
+        return 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300';
       case 'ftp':
-        return 'bg-purple-100 text-purple-700';
+        return 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300';
       case 'email':
-        return 'bg-green-100 text-green-700';
+        return 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300';
       case 'worker':
-        return 'bg-orange-100 text-orange-700';
+        return 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300';
       case 'middleware':
-        return 'bg-cyan-100 text-cyan-700';
+        return 'bg-cyan-100 dark:bg-cyan-900/40 text-cyan-700 dark:text-cyan-300';
       case 'paperless':
-        return 'bg-teal-100 text-teal-700';
+        return 'bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300';
       case 'oauth':
-        return 'bg-pink-100 text-pink-700';
+        return 'bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300';
       case 'framework':
-        return 'bg-red-100 text-red-700';
+        return 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300';
       case 'next.js':
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-gray-100 dark:bg-gray-700/40 text-gray-700 dark:text-gray-300';
       case 'system':
-        return 'bg-blue-100 text-blue-700';
+        return 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-gray-100 dark:bg-gray-700/40 text-gray-700 dark:text-gray-300';
     }
   };
 
-  // Use search results if available, otherwise show live logs
-  const displayLogs = searchResults !== null ? searchResults : logs;
+  // Filter logs based on text search, level, and source
+  const filterLogs = (logList: LogEntry[]) => {
+    let filtered = logList;
+
+    // Apply level filters
+    filtered = filtered.filter(log => showLevels[log.level as keyof typeof showLevels] !== false);
+
+    // Apply source filters
+    filtered = filtered.filter(log => showSources[log.source as keyof typeof showSources] !== false);
+
+    // Apply text search filter (searches in message, source, and level)
+    if (searchText.trim()) {
+      const searchTerms = searchText.toLowerCase().split(/\s+/);
+      filtered = filtered.filter(log => {
+        const searchableText = `${log.message} ${log.source} ${log.level}`.toLowerCase();
+
+        if (searchMode === 'AND') {
+          return searchTerms.every(term => searchableText.includes(term));
+        } else {
+          return searchTerms.some(term => searchableText.includes(term));
+        }
+      });
+    }
+
+    return filtered;
+  };
+
+  // Combine search results and live logs, then filter
+  let combinedLogs: LogEntry[] = [];
+
+  if (searchResults !== null && searchResults.length > 0) {
+    // Show search results first (older logs), then live logs
+    combinedLogs = [...searchResults, ...logs];
+
+    // Remove duplicates based on timestamp + message
+    const seen = new Set<string>();
+    combinedLogs = combinedLogs.filter(log => {
+      const key = `${log.timestamp}:${log.message}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  } else {
+    combinedLogs = logs;
+  }
+
+  // Apply all filters
+  const displayLogs = filterLogs(combinedLogs);
 
   return (
     <div className="space-y-4">
@@ -270,8 +337,9 @@ export default function LogsTab() {
             Live Logs
           </CardTitle>
           <CardDescription>
-            Echtzeit-Logs direkt aus dem Docker Container. Zeigt alle Logs inklusive Framework-Fehler, System-Meldungen und Anwendungs-Logs.
-            Datenbank-Logs werden automatisch nach 4 Wochen gelöscht.
+            Live Logs aus dem Docker Container + Datenbank-Suche für historische Logs.
+            Filter nach Level & Source wirken auf beide. Text-Suche filtert Live Logs sofort,
+            "Suchen" durchsucht zusätzlich alte Logs (automatisch nach 4 Wochen gelöscht).
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -334,22 +402,83 @@ export default function LogsTab() {
             {/* Log count */}
             <span className="text-sm text-muted-foreground">
               {searchResults !== null
-                ? `${displayLogs.length} von ${searchTotal} Suchergebnissen`
-                : `${displayLogs.length} Live Einträge`}
+                ? `${displayLogs.length} angezeigt (${logs.length} Live + ${searchResults.length} DB)`
+                : `${displayLogs.length} von ${logs.length} Live Einträgen`}
             </span>
           </div>
 
+          {/* Log Level Filters */}
+          <div className="mt-4 pt-4 border-t dark:border-[hsl(0,0%,20%)]">
+            <Label className="text-sm font-semibold mb-2 block">
+              Log Levels anzeigen
+            </Label>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant={showLevels.ERROR ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowLevels(prev => ({ ...prev, ERROR: !prev.ERROR }))}
+                className={showLevels.ERROR ? "bg-red-600 hover:bg-red-700" : ""}
+              >
+                ERROR
+              </Button>
+              <Button
+                variant={showLevels.WARN ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowLevels(prev => ({ ...prev, WARN: !prev.WARN }))}
+                className={showLevels.WARN ? "bg-yellow-600 hover:bg-yellow-700" : ""}
+              >
+                WARN
+              </Button>
+              <Button
+                variant={showLevels.INFO ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowLevels(prev => ({ ...prev, INFO: !prev.INFO }))}
+                className={showLevels.INFO ? "bg-blue-600 hover:bg-blue-700" : ""}
+              >
+                INFO
+              </Button>
+              <Button
+                variant={showLevels.DEBUG ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowLevels(prev => ({ ...prev, DEBUG: !prev.DEBUG }))}
+                className={showLevels.DEBUG ? "bg-gray-600 hover:bg-gray-700" : ""}
+              >
+                DEBUG
+              </Button>
+            </div>
+          </div>
+
+          {/* Source Filters */}
+          <div className="mt-4 pt-4 border-t dark:border-[hsl(0,0%,20%)]">
+            <Label className="text-sm font-semibold mb-2 block">
+              Log Sources anzeigen
+            </Label>
+            <div className="flex flex-wrap gap-2">
+              {Object.keys(showSources).map(source => (
+                <Button
+                  key={source}
+                  variant={showSources[source as keyof typeof showSources] ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setShowSources(prev => ({ ...prev, [source]: !prev[source as keyof typeof showSources] }))}
+                  className="text-xs"
+                >
+                  {source}
+                </Button>
+              ))}
+            </div>
+          </div>
+
           {/* Search Filter */}
-          <div className="mt-4 pt-4 border-t">
+          <div className="mt-4 pt-4 border-t dark:border-[hsl(0,0%,20%)]">
             <Label className="text-sm font-semibold mb-2 block">
               <FontAwesomeIcon icon={faSearch} className="mr-2" />
-              Datenbank-Suche (durchsucht ALLE Logs + Datum/Uhrzeit)
+              Text-Suche (Live Logs + Datenbank)
             </Label>
             <div className="flex gap-3">
               <div className="flex-1">
                 <Input
                   type="text"
-                  placeholder="Suchbegriffe eingeben (z.B. 2026-01-30, 10:15, error, worker)..."
+                  placeholder="Suchbegriffe eingeben (filtert Live Logs + durchsucht Datenbank)..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   onKeyDown={(e) => {
@@ -390,14 +519,20 @@ export default function LogsTab() {
               )}
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              {searchResults !== null ? (
-                <span className="text-blue-600 dark:text-blue-400 font-medium">
-                  🔍 Suchergebnisse aus der Datenbank (alle Logs inkl. Datum/Uhrzeit)
-                </span>
-              ) : searchMode === 'OR' ? (
-                'Durchsucht alle Logs (Nachricht, Level, Datum/Uhrzeit) - zeigt Einträge mit mindestens einem Suchbegriff'
+              {searchText.trim() ? (
+                <>
+                  <span className="text-blue-600 dark:text-blue-400 font-medium">
+                    🔍 Filtert Live Logs + {searchResults !== null ? `zeigt ${searchResults.length} Datenbank-Ergebnisse` : 'klicke "Suchen" für Datenbank'}
+                  </span>
+                  <br />
+                  {searchMode === 'OR' ? (
+                    'Durchsucht Nachricht, Source & Level - zeigt Einträge mit mindestens einem Suchbegriff'
+                  ) : (
+                    'Durchsucht Nachricht, Source & Level - zeigt Einträge mit allen Suchbegriffen'
+                  )}
+                </>
               ) : (
-                'Durchsucht alle Logs (Nachricht, Level, Datum/Uhrzeit) - zeigt Einträge mit allen Suchbegriffen'
+                'Gib Text ein um Live Logs zu filtern. Klicke "Suchen" um auch alte Logs aus der Datenbank zu durchsuchen.'
               )}
             </p>
           </div>
@@ -409,7 +544,7 @@ export default function LogsTab() {
         <CardContent className="p-0">
           <div
             ref={logsContainerRef}
-            className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-mono text-xs h-[600px] overflow-y-auto p-4 space-y-1 border-t"
+            className="bg-gray-50 dark:bg-[hsl(0,0%,10%)] text-gray-900 dark:text-gray-100 font-mono text-xs h-[600px] overflow-y-auto p-4 space-y-1 border-t dark:border-[hsl(0,0%,20%)]"
             style={{ fontFamily: 'ui-monospace, monospace' }}
           >
             {displayLogs.length === 0 ? (
@@ -418,15 +553,15 @@ export default function LogsTab() {
               </div>
             ) : (
               displayLogs.map((log, index) => (
-                <div key={index} className="flex gap-2 hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1 rounded">
-                  <span className="text-gray-500 shrink-0">{log.timestamp}</span>
+                <div key={index} className="flex gap-2 hover:bg-gray-100 dark:hover:bg-[hsl(0,0%,15%)] px-2 py-1 rounded">
+                  <span className="text-gray-500 dark:text-gray-400 shrink-0">{log.timestamp}</span>
                   <span className={cn('font-semibold shrink-0 w-16', getLogLevelColor(log.level))}>
                     [{log.level}]
                   </span>
                   <span className={cn('px-2 py-0.5 rounded text-xs shrink-0', getSourceColor(log.source))}>
                     {log.source}
                   </span>
-                  <span className="text-gray-800 dark:text-gray-300">{log.message}</span>
+                  <span className="text-gray-800 dark:text-gray-200">{log.message}</span>
                 </div>
               ))
             )}
