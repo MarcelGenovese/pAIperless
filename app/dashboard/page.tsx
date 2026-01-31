@@ -12,6 +12,7 @@ import OverviewTab from '@/components/dashboard/OverviewTab';
 import DocumentsTab from '@/components/dashboard/DocumentsTab';
 import LogsTab from '@/components/dashboard/LogsTab';
 import AnalyzeTab from '@/components/dashboard/AnalyzeTab';
+import PipelineTestTab from '@/components/dashboard/PipelineTestTab';
 import PaperlessSettingsTab from '@/components/dashboard/PaperlessSettingsTab';
 import GoogleSettingsTab from '@/components/dashboard/GoogleSettingsTab';
 import FTPSettingsCard from '@/components/dashboard/FTPSettingsCard';
@@ -105,6 +106,8 @@ export default function DashboardPage() {
         return <LogsTab />;
       case 'analyze':
         return <AnalyzeTab />;
+      case 'pipeline-test':
+        return <PipelineTestTab />;
       case 'paperless':
         return <PaperlessSettingsTab initialData={settingsData} />;
       case 'google':

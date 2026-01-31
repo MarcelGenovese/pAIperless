@@ -14,6 +14,7 @@ import {
   faBrain,
   faStethoscope,
   faHandPaper,
+  faVial,
 } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -39,6 +40,7 @@ const mainNavItems: NavItem[] = [
   { id: 'documents', label: 'Dokumente', icon: faFileAlt },
   { id: 'logs', label: 'Live Logs', icon: faTerminal },
   { id: 'analyze', label: 'Analyze', icon: faBrain },
+  { id: 'pipeline-test', label: 'Debug', icon: faVial },
 ];
 
 const settingsNavItems: NavItem[] = [
