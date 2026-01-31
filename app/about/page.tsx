@@ -32,7 +32,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[hsl(0,0%,7%)] flex flex-col">
       {/* Header */}
-      <header className="bg-white dark:bg-[hsl(0,0%,10%)] shadow-sm border-b dark:border-[hsl(0,0%,20%)] sticky top-0 z-10">
+      <header className="bg-white dark:bg-[hsl(0,0%,10%)] shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.3)] border-b dark:border-[hsl(0,0%,20%)] sticky top-0 z-10">
         <div className="px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between max-w-3xl mx-auto">
             <Button

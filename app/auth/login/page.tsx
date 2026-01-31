@@ -55,7 +55,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-card shadow-lg">
+    <div className="w-full max-w-md mx-auto bg-card shadow-2xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
       {/* Header */}
       <div className="text-center border-b dark:border-[hsl(0,0%,20%)] px-6 py-4">
         <Logo

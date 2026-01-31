@@ -123,7 +123,7 @@ export default function DashboardPage() {
   return (
     <div className="h-screen bg-gray-50 dark:bg-[hsl(0,0%,7%)] flex flex-col overflow-hidden overflow-x-hidden">
       {/* Header - Fixed */}
-      <header className="bg-white dark:bg-[hsl(0,0%,10%)] shadow-sm border-b dark:border-[hsl(0,0%,20%)] z-10 shrink-0">
+      <header className="bg-white dark:bg-[hsl(0,0%,10%)] shadow-lg dark:shadow-[0_10px_30px_rgba(0,0,0,0.3)] border-b dark:border-[hsl(0,0%,20%)] z-10 shrink-0">
         <div className="px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -171,7 +171,7 @@ export default function DashboardPage() {
       {/* Main Layout - Takes remaining height */}
       <div className="flex flex-1 overflow-hidden min-h-0">
         {/* Sidebar - Desktop */}
-        <aside className="hidden lg:block w-64 bg-white dark:bg-[hsl(0,0%,10%)] border-r border-gray-200 dark:border-[hsl(0,0%,20%)] overflow-y-auto shrink-0">
+        <aside className="hidden lg:block w-64 bg-white dark:bg-[hsl(0,0%,10%)] border-r border-gray-200 dark:border-[hsl(0,0%,20%)] shadow-lg dark:shadow-[10px_0_30px_rgba(0,0,0,0.3)] overflow-y-auto shrink-0">
           <Sidebar
             activeTab={activeTab}
             onTabChange={setActiveTab}
