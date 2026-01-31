@@ -4,6 +4,7 @@ import "./globals.css";
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getConfig, CONFIG_KEYS } from '@/lib/config';
 import SessionProvider from '@/components/SessionProvider';
+import DarkModeProvider from '@/components/DarkModeProvider';
 import { Toaster } from '@/components/ui/toaster';
 
 const inter = Inter({ subsets: ["latin"] });
@@ -49,6 +50,7 @@ export default async function RootLayout({
         />
       </head>
       <body className={inter.className}>
+        <DarkModeProvider />
         <SessionProvider>
           <NextIntlClientProvider locale={locale} messages={messages}>
             {children}
