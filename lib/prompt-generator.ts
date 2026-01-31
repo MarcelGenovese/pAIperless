@@ -245,6 +245,31 @@ export async function generateAnalysisPrompt(
     prompt += '\n';
   }
 
+  // Custom fields instruction (only if auto-fill is enabled)
+  if (fillCustomFields && customFields.length > 0) {
+    const nonActionFields = customFields.filter(field =>
+      field.name !== fieldActionDescription && field.name !== fieldDueDate
+    );
+
+    if (nonActionFields.length > 0) {
+      prompt += '**Custom Fields - Auto-Fill Enabled:**\n';
+      prompt += '- You should fill as many custom fields as possible based on the document content\n';
+      prompt += '- Available custom fields:\n';
+      nonActionFields.forEach(field => {
+        let typeInfo = field.data_type;
+        if (field.data_type === 'date') {
+          typeInfo = 'date (YYYY-MM-DD format)';
+        } else if (field.data_type === 'select' && field.extra_data?.select_options) {
+          const options = field.extra_data.select_options;
+          typeInfo = `select (options: ${options.join(', ')})`;
+        }
+        prompt += `  • ${field.name} (${typeInfo}): Extract relevant information from the document\n`;
+      });
+      prompt += '- Leave fields empty (null) if no relevant information is found in the document\n';
+      prompt += '\n';
+    }
+  }
+
   // Action description field instruction
   prompt += '**Action Detection - CRITICAL:**\n';
   prompt += `- Carefully analyze if the document requires MANDATORY user action with deadlines or consequences\n`;
@@ -281,7 +306,12 @@ export async function generateAnalysisPrompt(
   prompt += '- Do NOT include markdown code blocks (```json), explanations, or any text outside the JSON\n';
   prompt += '- Do NOT truncate the JSON - ensure it is complete and valid\n';
   prompt += '- Ensure all text is in the specified language\n';
-  prompt += '- All fields are optional except "title" and "tags"\n\n';
+  prompt += '- All fields are optional except "title" and "tags"\n';
+  if (fillCustomFields) {
+    prompt += '- Fill custom_fields where relevant information is available in the document\n';
+  }
+  prompt += `- ALWAYS fill "${fieldActionDescription}" and "${fieldDueDate}" if action is detected\n`;
+  prompt += '\n';
 
   prompt += '**Document to analyze:**\n\n';
   prompt += documentContent;
