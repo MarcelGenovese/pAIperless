@@ -86,7 +86,7 @@ export default function WebhookValidationWarning() {
   );
 
   return (
-    <div className="flex items-center gap-3 px-3 py-1.5 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-md">
+    <div className="flex items-center gap-3 px-3 py-1.5 bg-yellow-50 dark:bg-[hsl(45,40%,15%)] border border-yellow-200 dark:border-[hsl(45,40%,25%)] rounded-md">
       <FontAwesomeIcon
         icon={faExclamationTriangle}
         className="text-yellow-600 dark:text-yellow-400"

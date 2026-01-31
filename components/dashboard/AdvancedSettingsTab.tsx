@@ -286,7 +286,7 @@ export default function AdvancedSettingsTab() {
               Setup erneut ausführen
             </Button>
           ) : (
-            <div className="p-4 border border-yellow-500 rounded-lg bg-yellow-50 dark:bg-yellow-950/20">
+            <div className="p-4 border border-yellow-500 dark:border-yellow-600 rounded-lg bg-yellow-50 dark:bg-[hsl(45,40%,15%)]">
               <div className="flex items-start gap-3 mb-4">
                 <FontAwesomeIcon
                   icon={faExclamationTriangle}

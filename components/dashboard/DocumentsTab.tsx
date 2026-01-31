@@ -355,7 +355,7 @@ export default function DocumentsTab() {
 
                         {doc.errorMessage && (
                           <div className="mt-2">
-                            <div className="flex items-start gap-2 p-2 rounded bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                            <div className="flex items-start gap-2 p-2 rounded bg-red-50 dark:bg-[hsl(0,40%,15%)] border border-red-200 dark:border-[hsl(0,40%,25%)]">
                               <FontAwesomeIcon icon={faExclamationCircle} className="text-red-600 mt-0.5" />
                               <p className="text-xs text-red-600 dark:text-red-400 flex-1">
                                 {doc.errorMessage}
@@ -425,7 +425,7 @@ export default function DocumentsTab() {
                             )}
 
                             {doc.paperlessId && (
-                              <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+                              <div className="p-3 rounded-lg bg-green-50 dark:bg-[hsl(120,30%,15%)] border border-green-200 dark:border-[hsl(120,30%,25%)]">
                                 <div className="flex items-center justify-between mb-2">
                                   <div className="flex items-center gap-2">
                                     <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />
@@ -463,7 +463,7 @@ export default function DocumentsTab() {
                                     key={analysis.id}
                                     className={`p-3 rounded-lg border ${
                                       analysis.level === 'ERROR'
-                                        ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800'
+                                        ? 'bg-red-50 dark:bg-[hsl(0,40%,15%)] border-red-200 dark:border-[hsl(0,40%,25%)]'
                                         : 'bg-purple-50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-800'
                                     }`}
                                   >

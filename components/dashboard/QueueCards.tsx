@@ -192,7 +192,7 @@ export default function QueueCards() {
               {queueData.documents.error.map(doc => (
                 <div
                   key={doc.id}
-                  className="flex items-center justify-between p-3 border rounded-lg bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800"
+                  className="flex items-center justify-between p-3 border rounded-lg bg-red-50 dark:bg-[hsl(0,40%,15%)] border-red-200 dark:border-[hsl(0,40%,25%)]"
                 >
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">{doc.originalFilename}</p>

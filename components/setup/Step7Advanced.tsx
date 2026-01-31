@@ -185,7 +185,7 @@ export default function Step7Advanced({ onNext, onBack, data }: StepProps) {
           </div>
 
           {/* Performance Warning */}
-          <div className="p-4 border rounded-lg bg-yellow-50 dark:bg-yellow-950/20">
+          <div className="p-4 border rounded-lg bg-yellow-50 dark:bg-[hsl(45,40%,15%)]">
             <p className="text-sm text-yellow-900 dark:text-yellow-100">
               <strong>⚠️ Performance-Hinweis:</strong> Sehr kurze Polling-Intervalle (&lt; 10 Minuten) können bei großen Dokumentenbeständen
               zu erhöhter Serverlast und API-Kosten führen. Webhooks sind die bevorzugte Methode für Echtzeitverarbeitung.

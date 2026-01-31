@@ -253,7 +253,7 @@ export default function Step8FTP({ onNext, onBack, data }: StepProps) {
 
               {/* Warning Box */}
               {!enableTls && (
-                <div className="p-4 border rounded-lg bg-red-50 dark:bg-red-950/20">
+                <div className="p-4 border rounded-lg bg-red-50 dark:bg-[hsl(0,40%,15%)]">
                   <p className="text-sm text-red-900 dark:text-red-100">
                     <strong>⚠️ Sicherheitswarnung:</strong> FTP ohne TLS überträgt Benutzername und Passwort im Klartext.
                     Dies sollte nur in vertrauenswürdigen Netzwerken verwendet werden. TLS wird dringend empfohlen.
@@ -262,7 +262,7 @@ export default function Step8FTP({ onNext, onBack, data }: StepProps) {
               )}
 
               {/* Implementation Note */}
-              <div className="p-4 border rounded-lg bg-yellow-50 dark:bg-yellow-950/20">
+              <div className="p-4 border rounded-lg bg-yellow-50 dark:bg-[hsl(45,40%,15%)]">
                 <p className="text-sm text-yellow-900 dark:text-yellow-100">
                   <strong>📝 Hinweis zur Implementierung:</strong> Der FTP-Server wird beim ersten Start automatisch konfiguriert.
                   Es kann einige Sekunden dauern, bis der Server verfügbar ist. Ein Neustart des Containers ist erforderlich,

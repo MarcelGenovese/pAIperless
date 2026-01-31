@@ -86,7 +86,7 @@ export default function ProcessingStatusIndicator() {
   // If emergency stop is active, show warning instead of processes
   if (emergencyStop) {
     return (
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-md">
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 dark:bg-[hsl(0,40%,15%)] border border-red-200 dark:border-[hsl(0,40%,25%)] rounded-md">
         <FontAwesomeIcon
           icon={faHandPaper}
           className="text-red-600 dark:text-red-400"

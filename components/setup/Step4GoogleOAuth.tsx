@@ -367,7 +367,7 @@ export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
               </p>
             </div>
           ) : (
-            <div className="flex flex-col gap-2 p-4 border rounded-lg bg-green-50">
+            <div className="flex flex-col gap-2 p-4 border border-green-200 dark:border-[hsl(120,30%,25%)] rounded-lg bg-green-50 dark:bg-[hsl(120,30%,15%)]">
               <div className="flex items-center gap-2 text-sm text-green-700">
                 <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />
                 Successfully authorized with Google

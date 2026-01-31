@@ -400,8 +400,8 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
           {ocrStatus && (
             <div className={`p-4 border rounded-lg ${
               ocrStatus.valid
-                ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800'
-                : 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800'
+                ? 'bg-green-50 dark:bg-[hsl(120,30%,15%)] border-green-200 dark:border-[hsl(120,30%,25%)]'
+                : 'bg-red-50 dark:bg-[hsl(0,40%,15%)] border-red-200 dark:border-[hsl(0,40%,25%)]'
             }`}>
               <div className="flex items-start gap-3">
                 <FontAwesomeIcon
@@ -462,8 +462,8 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
           {workflowStatus && (
             <div className={`p-4 border rounded-lg ${
               workflowStatus.valid
-                ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800'
-                : 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800'
+                ? 'bg-green-50 dark:bg-[hsl(120,30%,15%)] border-green-200 dark:border-[hsl(120,30%,25%)]'
+                : 'bg-red-50 dark:bg-[hsl(0,40%,15%)] border-red-200 dark:border-[hsl(0,40%,25%)]'
             }`}>
               <div className="flex items-start gap-3">
                 <FontAwesomeIcon

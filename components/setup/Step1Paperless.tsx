@@ -386,7 +386,7 @@ export default function Step1Paperless({ onNext, onBack, data }: Step1PaperlessP
 
       {/* Connection Success Summary */}
       {connectionSuccess && (
-        <Card className="p-4 bg-green-50 border-green-200">
+        <Card className="p-4 bg-green-50 dark:bg-[hsl(120,30%,15%)] border-green-200 dark:border-[hsl(120,30%,25%)]">
           <div className="flex items-center gap-3">
             <FontAwesomeIcon icon={faCheckCircle} className="text-green-600 text-xl" />
             <div>

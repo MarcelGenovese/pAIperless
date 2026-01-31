@@ -169,7 +169,7 @@ export default function FolderContents() {
                 variant="ghost"
                 size="sm"
                 onClick={() => deleteErrorFile(file.name)}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-[hsl(0,40%,18%)]"
               >
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
@@ -235,7 +235,7 @@ export default function FolderContents() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowClearConfirm('consume')}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-[hsl(0,40%,18%)]"
                 >
                   <FontAwesomeIcon icon={faTrash} />
                 </Button>
@@ -271,7 +271,7 @@ export default function FolderContents() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowClearConfirm('processing')}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-[hsl(0,40%,18%)]"
                 >
                   <FontAwesomeIcon icon={faTrash} />
                 </Button>
@@ -307,7 +307,7 @@ export default function FolderContents() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowClearConfirm('error')}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-[hsl(0,40%,18%)]"
                 >
                   <FontAwesomeIcon icon={faTrash} />
                 </Button>

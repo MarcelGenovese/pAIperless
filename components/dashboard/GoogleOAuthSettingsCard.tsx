@@ -250,7 +250,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
         {/* Authorization Status */}
         <div className={cn(
           "flex items-center justify-between p-3 rounded-lg border",
-          isAuthorized ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-200"
+          isAuthorized ? "bg-green-50 dark:bg-[hsl(120,30%,15%)] border-green-200 dark:border-[hsl(120,30%,25%)]" : "bg-gray-50 dark:bg-[hsl(0,0%,15%)] border-gray-200 dark:border-[hsl(0,0%,25%)]"
         )}>
           <div className="flex items-center gap-2">
             <div className={cn(
