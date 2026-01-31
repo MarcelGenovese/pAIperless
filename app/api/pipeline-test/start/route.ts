@@ -174,16 +174,17 @@ async function processPipeline(testId: string, filePath: string, originalFileNam
       'Verschiebe in Consume-Ordner...'
     ]);
 
-    // Step 2: Move to consume folder
-    console.log(`[Pipeline Test ${testId}] Step 2: Moving to consume folder...`);
-    addStepDetail('upload', 'Verschiebe zu /app/storage/consume...');
+    // Step 2: Copy to consume folder (can't use rename across filesystems)
+    console.log(`[Pipeline Test ${testId}] Step 2: Copying to consume folder...`);
+    addStepDetail('upload', 'Kopiere zu /app/storage/consume...');
 
-    const { rename } = await import('fs/promises');
+    const { copyFile, unlink } = await import('fs/promises');
     const basename = await import('path').then(m => m.basename);
     const consumePath = join('/app/storage/consume', basename(filePath));
 
-    await rename(filePath, consumePath);
-    console.log(`[Pipeline Test ${testId}] File moved to: ${consumePath}`);
+    await copyFile(filePath, consumePath);
+    await unlink(filePath); // Remove original
+    console.log(`[Pipeline Test ${testId}] File copied to: ${consumePath}`);
 
     updateStep('upload', 'success', [
       `Datei: ${originalFileName}`,
