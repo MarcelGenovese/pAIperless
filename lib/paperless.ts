@@ -163,34 +163,51 @@ export class PaperlessClient {
       try {
         const taskStatus = await this.fetch(`/api/tasks/?task_id=${taskId}`);
 
-        if (taskStatus.results && taskStatus.results.length > 0) {
-          const task = taskStatus.results[0];
+        // The tasks API returns a direct array, not an object with 'results'
+        let tasks: any[] = [];
+        if (Array.isArray(taskStatus)) {
+          tasks = taskStatus;
+        } else if (taskStatus.results && Array.isArray(taskStatus.results)) {
+          // Fallback for different API versions
+          tasks = taskStatus.results;
+        }
+
+        if (tasks.length > 0) {
+          const task = tasks[0];
+          console.log(`[Paperless] Task status: ${task.status}, related_document: ${task.related_document}`);
 
           if (task.status === 'SUCCESS') {
             // Task completed successfully
-            // The related_document field contains the document ID
+            // The related_document field contains the document ID as a string
             if (task.related_document) {
-              console.log(`[Paperless] Task ${taskId} completed, document ID: ${task.related_document}`);
-              return task.related_document;
+              const docId = typeof task.related_document === 'string'
+                ? parseInt(task.related_document, 10)
+                : task.related_document;
+              console.log(`[Paperless] ✅ Task ${taskId} completed, document ID: ${docId}`);
+              return docId;
             }
-            // Try to find document by matching the filename/task timing
-            console.warn(`[Paperless] Task ${taskId} completed but no related_document field`);
+            // Task succeeded but no related_document field
+            console.warn(`[Paperless] ⚠️  Task ${taskId} completed but no related_document field`);
             return null;
           } else if (task.status === 'FAILURE') {
-            console.error(`[Paperless] Task ${taskId} failed:`, task.result);
+            console.error(`[Paperless] ❌ Task ${taskId} failed:`, task.result);
             throw new Error(`Document processing task failed: ${task.result}`);
           }
           // Still PENDING or STARTED - continue polling
+          console.log(`[Paperless] Task still in progress: ${task.status}`);
+        } else {
+          console.log(`[Paperless] No tasks found for task_id: ${taskId}`);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error(`[Paperless] Error checking task status:`, error);
+        console.error(`[Paperless] Error details:`, error.message);
       }
 
       // Wait before next poll
       await new Promise(resolve => setTimeout(resolve, pollInterval));
     }
 
-    console.warn(`[Paperless] Task ${taskId} polling timeout after ${maxWaitMs}ms`);
+    console.warn(`[Paperless] ⏱️  Task ${taskId} polling timeout after ${maxWaitMs}ms`);
     return null;
   }
 
