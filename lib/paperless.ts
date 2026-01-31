@@ -200,37 +200,51 @@ export class PaperlessClient {
    */
   private async findRecentDocumentByFilename(originalFilename: string): Promise<number | null> {
     try {
-      // Get documents from the last 5 minutes, ordered by creation date
-      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      console.log(`[Paperless] Searching for document with filename: ${originalFilename}`);
 
+      // Get the most recent documents, ordered by creation date
+      // We just uploaded, so it should be in the first few results
       const data = await this.fetch(
-        `/api/documents/?created__gte=${fiveMinutesAgo}&ordering=-created&page_size=20`
+        `/api/documents/?ordering=-created&page_size=30`
       );
 
       if (data.results && data.results.length > 0) {
+        console.log(`[Paperless] Found ${data.results.length} recent documents, searching for match...`);
+
         // Try to match by original filename (without extension and processing suffixes)
         const baseFilename = originalFilename
-          .replace(/_searchable\.pdf$/, '')
-          .replace(/_no_ocr\.pdf$/, '')
-          .replace(/\.pdf$/, '');
+          .replace(/_searchable\.pdf$/i, '')
+          .replace(/_no_ocr\.pdf$/i, '')
+          .replace(/\.pdf$/i, '');
+
+        console.log(`[Paperless] Looking for base filename: ${baseFilename}`);
 
         for (const doc of data.results) {
-          const docTitle = doc.title || doc.original_file_name || '';
-          if (docTitle.includes(baseFilename) || baseFilename.includes(docTitle.replace(/\.pdf$/, ''))) {
-            console.log(`[Paperless] Found document by filename match: ID ${doc.id}, title: "${docTitle}"`);
+          const docTitle = (doc.title || doc.original_file_name || '').toLowerCase();
+          const baseFilenameLower = baseFilename.toLowerCase();
+
+          // Try multiple matching strategies
+          if (
+            docTitle.includes(baseFilenameLower) ||
+            baseFilenameLower.includes(docTitle.replace(/\.pdf$/i, '')) ||
+            docTitle === baseFilenameLower ||
+            docTitle === `${baseFilenameLower}.pdf`
+          ) {
+            console.log(`[Paperless] ✅ Found document by filename match: ID ${doc.id}, title: "${doc.title || doc.original_file_name}"`);
             return doc.id;
           }
         }
 
         // If no filename match, return the most recent one as best guess
-        console.warn(`[Paperless] No exact filename match, using most recent document: ID ${data.results[0].id}`);
+        console.warn(`[Paperless] ⚠️  No exact filename match, using most recent document: ID ${data.results[0].id}, title: "${data.results[0].title || data.results[0].original_file_name}"`);
         return data.results[0].id;
       }
 
       console.warn(`[Paperless] No recent documents found`);
       return null;
-    } catch (error) {
+    } catch (error: any) {
       console.error(`[Paperless] Error finding recent document:`, error);
+      console.error(`[Paperless] Error details:`, error.message);
       return null;
     }
   }
