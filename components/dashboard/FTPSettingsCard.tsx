@@ -185,7 +185,9 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
         {serverStatus && (
           <div className={cn(
             "flex items-center justify-between p-3 rounded-lg border",
-            serverStatus.running ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-200"
+            serverStatus.running
+              ? "bg-green-50 dark:bg-[hsl(120,30%,15%)] border-green-200 dark:border-[hsl(120,30%,25%)]"
+              : "bg-gray-50 dark:bg-[hsl(0,0%,15%)] border-gray-200 dark:border-[hsl(0,0%,25%)]"
           )}>
             <div className="flex items-center gap-2">
               <div className={cn(
