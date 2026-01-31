@@ -475,11 +475,16 @@ export async function startWorker() {
     ignored: /^\./,
     persistent: true,
     ignoreInitial: false, // Process existing files on startup
-    // No awaitWriteFinish - trust the OS. Files are only visible when write is complete.
+    awaitWriteFinish: {
+      stabilityThreshold: 2000,
+      pollInterval: 100
+    }, // Wait for file to be fully written/moved
   });
 
-  watcher.on('add', (path: string) => {
+  watcher.on('add', async (path: string) => {
+    await logger.info(`Chokidar: File detected: ${path}`);
     if (path.toLowerCase().endsWith('.pdf')) {
+      await logger.info(`Chokidar: Processing PDF: ${path}`);
       processFile(path);
     }
   });
