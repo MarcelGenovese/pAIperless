@@ -153,9 +153,20 @@ async function processPipeline(testId: string, filePath: string, originalFileNam
         '❌ DUPLIKAT GEFUNDEN!',
         `Existierendes Dokument ID: ${existingDoc.id}`,
         `Original: ${existingDoc.originalFilename}`,
+        existingDoc.paperlessId ? `Paperless ID: ${existingDoc.paperlessId}` : '',
         '',
         '🛑 Verarbeitung gestoppt - Datei bereits vorhanden'
       ]);
+
+      // Mark test as completed (with error) and store duplicate info
+      const testStatus = testStore.get(testId);
+      if (testStatus) {
+        testStatus.status = 'completed';
+        testStatus.completedAt = new Date().toISOString();
+        testStatus.duplicateDocId = existingDoc.id;
+        testStatus.duplicatePaperlessId = existingDoc.paperlessId;
+        testStore.set(testId, testStatus);
+      }
       return;
     }
 

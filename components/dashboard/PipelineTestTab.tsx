@@ -30,6 +30,14 @@ interface PipelineStep {
 
 interface ConfigInfo {
   [key: string]: string | boolean | number;
+  paperlessUrl?: string;
+}
+
+interface TestStatus {
+  status: string;
+  duplicateDocId?: number;
+  duplicatePaperlessId?: number;
+  steps: PipelineStep[];
 }
 
 export default function PipelineTestTab() {
@@ -38,6 +46,7 @@ export default function PipelineTestTab() {
   const [testId, setTestId] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [steps, setSteps] = useState<PipelineStep[]>([]);
+  const [testStatus, setTestStatus] = useState<TestStatus | null>(null);
   const [configInfo, setConfigInfo] = useState<ConfigInfo | null>(null);
   const [showConfig, setShowConfig] = useState(false);
   const pollInterval = useRef<NodeJS.Timeout | null>(null);
@@ -128,12 +137,23 @@ export default function PipelineTestTab() {
             setSteps(data.steps);
           }
 
-          // Check if test is complete
-          const lastStep = data.steps[data.steps.length - 1];
-          if (lastStep.status === 'success' || lastStep.status === 'error') {
+          // Store full test status for duplicate info
+          setTestStatus(data);
+
+          // Check if test is complete (either by overall status or by any step having final status)
+          if (data.status === 'completed' || data.status === 'error') {
             setTesting(false);
             if (pollInterval.current) {
               clearInterval(pollInterval.current);
+            }
+          } else {
+            // Also check last step for backwards compatibility
+            const lastStep = data.steps?.[data.steps.length - 1];
+            if (lastStep && (lastStep.status === 'success' || lastStep.status === 'error')) {
+              setTesting(false);
+              if (pollInterval.current) {
+                clearInterval(pollInterval.current);
+              }
             }
           }
         } catch (error) {
@@ -311,6 +331,37 @@ export default function PipelineTestTab() {
             </Card>
           ))}
         </div>
+      )}
+
+      {/* Duplicate Document Info */}
+      {testStatus?.duplicateDocId && configInfo?.paperlessUrl && (
+        <Card className="bg-yellow-50 dark:bg-[hsl(45,40%,15%)] border-yellow-200 dark:border-[hsl(45,40%,25%)]">
+          <CardContent className="p-4">
+            <h4 className="text-sm font-semibold mb-2">Duplikat-Information</h4>
+            <div className="space-y-2 text-sm">
+              <p>Das hochgeladene Dokument existiert bereits im System:</p>
+              <div className="flex flex-col gap-1">
+                <div>
+                  <span className="font-medium">Dokument ID:</span>{' '}
+                  <span className="font-mono">{testStatus.duplicateDocId}</span>
+                </div>
+                {testStatus.duplicatePaperlessId && (
+                  <div>
+                    <span className="font-medium">Paperless:</span>{' '}
+                    <a
+                      href={`${configInfo.paperlessUrl}/documents/${testStatus.duplicatePaperlessId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 dark:text-blue-400 hover:underline font-mono"
+                    >
+                      Dokument #{testStatus.duplicatePaperlessId} öffnen ↗
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Info Box */}

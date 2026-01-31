@@ -7,6 +7,7 @@ export async function GET() {
   try {
     const config = {
       // Paperless Integration
+      paperlessUrl: await getConfig(CONFIG_KEYS.PAPERLESS_URL) || '',
       tagAiTodo: await getConfig(CONFIG_KEYS.TAG_AI_TODO) || 'ai_todo',
       tagActionRequired: await getConfig(CONFIG_KEYS.TAG_ACTION_REQUIRED) || 'action_required',
       fieldActionDescription: await getConfig(CONFIG_KEYS.FIELD_ACTION_DESCRIPTION) || 'action_description',
