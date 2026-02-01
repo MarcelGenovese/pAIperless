@@ -69,7 +69,7 @@ export default function EmergencyStopButton() {
       if (data.success) {
         setIsActive(data.active);
         toast({
-          title: data.active ? '🚨 Emergency Stop aktiviert' : '✅ Emergency Stop deaktiviert',
+          title: data.active ? t('emergency_stop_activated') : t('emergency_stop_deactivated'),
           description: data.message,
           variant: data.active ? 'destructive' : 'default',
         });
@@ -105,14 +105,14 @@ export default function EmergencyStopButton() {
         onClick={() => handleConfirm(isActive ? 'deactivate' : 'activate')}
         disabled={toggling}
         className={`w-full justify-start ${isActive ? 'animate-pulse' : ''}`}
-        title={isActive ? 'Emergency Stop ist AKTIV - klicken zum Deaktivieren' : 'Emergency Stop aktivieren'}
+        title={isActive ? t('emergency_stop_is_active_click_to_deactivate') : t('emergency_stop_activate')}
       >
         <FontAwesomeIcon
           icon={toggling ? faSpinner : isActive ? faHandPaper : faHandPaper}
           spin={toggling}
           className="mr-2 w-4 h-4"
         />
-        {isActive ? '🚨 STOP AKTIV' : 'Emergency Stop'}
+        {isActive ? t('stop_active') : t('emergency_stop')}
       </Button>
 
       {/* Confirmation Dialog */}
@@ -121,14 +121,14 @@ export default function EmergencyStopButton() {
           <AlertDialogHeader>
             <AlertDialogTitle>
               {actionToConfirm === 'activate'
-                ? '🚨 Emergency Stop aktivieren?'
-                : '✅ Emergency Stop deaktivieren?'}
+                ? t('emergency_stop_activate_question')
+                : t('emergency_stop_deactivate_question')}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {actionToConfirm === 'activate' ? (
                 <>
                   <strong className="text-red-600 dark:text-red-400">
-                    Dies stoppt ALLE laufenden Verarbeitungen sofort:
+                    {t('this_stops_all_running_processes_immediately')}
                   </strong>
                   <ul className="list-disc list-inside mt-2 space-y-1">
                     <li>{t('ai_dokumentenanalyse_wird_gestoppt')}</li>
@@ -138,15 +138,15 @@ export default function EmergencyStopButton() {
                     <li>{t('polling_wird_pausiert')}</li>
                   </ul>
                   <p className="mt-3 text-amber-600 dark:text-amber-400">
-                    ⚠️ Verwenden Sie dies nur in Notfällen!
+                    {t('use_only_in_emergencies')}
                   </p>
                 </>
               ) : (
                 <>
-                  Dies reaktiviert alle Verarbeitungsprozesse:
+                  {t('this_reactivates_all_processing')}
                   <ul className="list-disc list-inside mt-2 space-y-1">
-                    <li>Worker kann Dateien verarbeiten</li>
-                    <li>AI-Analyse kann starten</li>
+                    <li>{t('worker_can_process_files')}</li>
+                    <li>{t('ai_analysis_can_start')}</li>
                     <li>{t('webhooks_werden_akzeptiert')}</li>
                     <li>{t('polling_laeuft_weiter')}</li>
                   </ul>
@@ -155,12 +155,12 @@ export default function EmergencyStopButton() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleToggle}
               className={actionToConfirm === 'activate' ? 'bg-red-600 hover:bg-red-700' : ''}
             >
-              {actionToConfirm === 'activate' ? '🚨 Ja, stoppen!' : '✅ Ja, fortsetzen'}
+              {actionToConfirm === 'activate' ? t('yes_stop') : t('yes_continue')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -1,0 +1,28 @@
+{
+  "totalCount": 2,
+  "uniqueCount": 2,
+  "strings": [
+    {
+      "text": "Setup nicht abgeschlossen.",
+      "occurrences": [
+        {
+          "file": "components/dashboard/DocumentUpload.tsx",
+          "lines": [
+            179
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Interner Server-Fehler. Bitte versuchen Sie es erneut oder prüfen Sie die Server-Logs.",
+      "occurrences": [
+        {
+          "file": "components/dashboard/DocumentUpload.tsx",
+          "lines": [
+            182
+          ]
+        }
+      ]
+    }
+  ]
+}
