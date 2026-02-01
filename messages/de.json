@@ -325,7 +325,11 @@
     "documents_being_processed": "Dokumente werden verarbeitet",
     "pending_documents": "Wartende Dokumente",
     "documents_in_processing": "Dokumente in Bearbeitung",
-    "loading": "Lädt..."
+    "loading": "Lädt...",
+    "tasks_synchronisieren": "Tasks synchronisieren",
+    "synchronisiere_tasks": "Synchronisiere Tasks...",
+    "tasks_synchronisiert": "Tasks synchronisiert",
+    "task_synchronisierung_konnte_nicht_gestartet_werden": "Task-Synchronisierung konnte nicht gestartet werden"
   },
   "settings": {
     "title": "Einstellungen",

@@ -35,6 +35,7 @@ export default function AnalyzeTab() {
   const [creatingField, setCreatingField] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [isProcessingLocked, setIsProcessingLocked] = useState(false);
+  const [syncingTasks, setSyncingTasks] = useState(false);
   const [metadata, setMetadata] = useState<PaperlessMetadata | null>(null);
 
   // Config state
@@ -192,6 +193,38 @@ export default function AnalyzeTab() {
       });
     } finally {
       setProcessing(false);
+    }
+  };
+
+  const handleSyncTasks = async () => {
+    setSyncingTasks(true);
+    try {
+      const response = await fetch('/api/action-polling/trigger', {
+        method: 'POST',
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: t('tasks_synchronisiert'),
+          description: `${result.processed} von ${result.total} Tasks verarbeitet`,
+        });
+      } else {
+        toast({
+          title: t('fehler'),
+          description: result.error || 'Task-Synchronisierung fehlgeschlagen',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: t('fehler'),
+        description: t('task_synchronisierung_konnte_nicht_gestartet_werden'),
+        variant: 'destructive',
+      });
+    } finally {
+      setSyncingTasks(false);
     }
   };
 
@@ -659,14 +692,25 @@ export default function AnalyzeTab() {
             Dieser Button triggert die AI-Analyse für alle Dokumente in Paperless, die das Tag "{tagAiTodo || 'ai_todo'}" haben.
             Dies ist nützlich zum Testen oder wenn Webhooks/Polling nicht funktionieren.
           </p>
-          <Button
-            onClick={handleManualProcess}
-            disabled={processing || isProcessingLocked}
-            className="w-full"
-          >
-            <FontAwesomeIcon icon={processing || isProcessingLocked ? faSpinner : faPlay} spin={processing || isProcessingLocked} className="mr-2" />
-            {processing || isProcessingLocked ? 'Verarbeite Dokumente...' : 'AI-Analyse jetzt starten'}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={handleManualProcess}
+              disabled={processing || isProcessingLocked}
+              className="flex-1"
+            >
+              <FontAwesomeIcon icon={processing || isProcessingLocked ? faSpinner : faPlay} spin={processing || isProcessingLocked} className="mr-2" />
+              {processing || isProcessingLocked ? 'Verarbeite Dokumente...' : 'AI-Analyse jetzt starten'}
+            </Button>
+            <Button
+              onClick={handleSyncTasks}
+              disabled={syncingTasks}
+              variant="outline"
+              className="flex-1"
+            >
+              <FontAwesomeIcon icon={syncingTasks ? faSpinner : faRefresh} spin={syncingTasks} className="mr-2" />
+              {syncingTasks ? t('synchronisiere_tasks') : t('tasks_synchronisieren')}
+            </Button>
+          </div>
           {isProcessingLocked && !processing && (
             <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
               ⚠️ Eine AI-Verarbeitung läuft bereits. Bitte warten Sie, bis diese abgeschlossen ist.
