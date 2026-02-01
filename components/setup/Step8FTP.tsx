@@ -83,12 +83,12 @@ export default function Step8FTP({ onNext, onBack, data }: StepProps) {
         if (enabled && result.ftpStarted !== undefined) {
           if (result.ftpStarted) {
             toast({
-              title: "FTP Server gestartet",
+              title: t('ftp_server_gestartet'),
               description: result.ftpMessage || `FTP Server läuft auf Port ${ftpPort}`,
             });
           } else {
             toast({
-              title: "Warnung",
+              title: t('warnung'),
               description: result.ftpMessage || "FTP-Konfiguration gespeichert, aber Server konnte nicht gestartet werden",
               variant: "destructive",
             });
@@ -101,7 +101,7 @@ export default function Step8FTP({ onNext, onBack, data }: StepProps) {
     } catch (error: any) {
       console.error('[Step8FTP] Save error:', error);
       toast({
-        title: "Fehler",
+        title: t('fehler'),
         description: error.message || "FTP-Konfiguration konnte nicht gespeichert werden.",
         variant: "destructive",
       });

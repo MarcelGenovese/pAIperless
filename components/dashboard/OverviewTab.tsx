@@ -205,14 +205,14 @@ export default function OverviewTab() {
                     setStats(statsData);
                   } else {
                     toast({
-                      title: 'Fehler',
+                      title: t('fehler'),
                       description: data.error || 'Unbekannter Fehler',
                       variant: 'destructive',
                     });
                   }
                 } catch (error) {
                   toast({
-                    title: 'Fehler',
+                    title: t('fehler'),
                     description: 'Netzwerkfehler',
                     variant: 'destructive',
                   });

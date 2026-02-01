@@ -15,8 +15,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useTranslations } from 'next-intl';
 
 export default function WebhookApiKeyDisplay() {
+  const t = useTranslations('dashboard');
+
   const { toast } = useToast();
   const [apiKey, setApiKey] = useState<string>('');
   const [loading, setLoading] = useState(true);
@@ -82,16 +85,16 @@ export default function WebhookApiKeyDisplay() {
       setCopied(true);
 
       toast({
-        title: 'In Zwischenablage kopiert',
-        description: 'Webhook API Key wurde erfolgreich kopiert',
+        title: t('in_zwischenablage_kopiert'),
+        description: t('webhook_api_key_wurde_erfolgreich_kopiert'),
       });
 
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
       console.error('Failed to copy to clipboard:', error);
       toast({
-        title: 'Fehler',
-        description: 'Konnte nicht in Zwischenablage kopieren. Bitte manuell kopieren.',
+        title: t('fehler'),
+        description: t('konnte_nicht_in_zwischenablage_kopieren_bitte_manu'),
         variant: 'destructive',
       });
     }
@@ -124,13 +127,13 @@ export default function WebhookApiKeyDisplay() {
         } else if (data.workflowUpdate?.error) {
           toast({
             title: 'API Key neu generiert',
-            description: 'API Key generiert, aber Workflows konnten nicht automatisch aktualisiert werden. Bitte manuell in Paperless aktualisieren.',
+            description: t('api_key_generiert_aber_workflows_konnten_nicht_aut'),
             variant: 'destructive',
           });
         } else {
           toast({
             title: 'API Key neu generiert',
-            description: 'Der Webhook API Key wurde erfolgreich neu generiert. Bitte aktualisieren Sie die Paperless Workflows.',
+            description: t('der_webhook_api_key_wurde_erfolgreich_neu_generier'),
           });
         }
       } else {
@@ -138,8 +141,8 @@ export default function WebhookApiKeyDisplay() {
       }
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'API Key konnte nicht neu generiert werden',
+        title: t('fehler'),
+        description: t('api_key_konnte_nicht_neu_generiert_werden'),
         variant: 'destructive',
       });
     } finally {

@@ -1,0 +1,1506 @@
+{
+  "totalCount": 147,
+  "uniqueCount": 113,
+  "strings": [
+    {
+      "text": "Document AI übersprungen",
+      "occurrences": [
+        {
+          "file": "components/setup/Step3DocumentAI.tsx",
+          "lines": [
+            55
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Sie können Document AI später in den Einstellungen konfigurieren.",
+      "occurrences": [
+        {
+          "file": "components/setup/Step3DocumentAI.tsx",
+          "lines": [
+            56
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Fehler",
+      "occurrences": [
+        {
+          "file": "components/setup/Step3DocumentAI.tsx",
+          "lines": [
+            62
+          ]
+        },
+        {
+          "file": "components/setup/Step4GoogleOAuth.tsx",
+          "lines": [
+            57,
+            334
+          ]
+        },
+        {
+          "file": "components/setup/Step5Email.tsx",
+          "lines": [
+            71,
+            168
+          ]
+        },
+        {
+          "file": "components/setup/Step6PaperlessIntegration.tsx",
+          "lines": [
+            78
+          ]
+        },
+        {
+          "file": "components/setup/Step7Advanced.tsx",
+          "lines": [
+            54
+          ]
+        },
+        {
+          "file": "components/setup/Step8FTP.tsx",
+          "lines": [
+            104
+          ]
+        },
+        {
+          "file": "components/dashboard/AdvancedSettingsTab.tsx",
+          "lines": [
+            116,
+            177,
+            230,
+            260,
+            294,
+            325,
+            355,
+            390
+          ]
+        },
+        {
+          "file": "components/dashboard/AnalyzeTab.tsx",
+          "lines": [
+            124,
+            157,
+            182,
+            189,
+            226,
+            238,
+            268,
+            280,
+            314,
+            354,
+            373
+          ]
+        },
+        {
+          "file": "components/dashboard/DocumentsTab.tsx",
+          "lines": [
+            160,
+            421
+          ]
+        },
+        {
+          "file": "components/dashboard/EmailSettingsCard.tsx",
+          "lines": [
+            166
+          ]
+        },
+        {
+          "file": "components/dashboard/EmergencyStopButton.tsx",
+          "lines": [
+            82
+          ]
+        },
+        {
+          "file": "components/dashboard/FolderContents.tsx",
+          "lines": [
+            166,
+            193,
+            200,
+            249,
+            288
+          ]
+        },
+        {
+          "file": "components/dashboard/FTPSettingsCard.tsx",
+          "lines": [
+            172
+          ]
+        },
+        {
+          "file": "components/dashboard/GoogleSettingsTab.tsx",
+          "lines": [
+            131,
+            211,
+            224,
+            304
+          ]
+        },
+        {
+          "file": "components/dashboard/LogsTab.tsx",
+          "lines": [
+            175
+          ]
+        },
+        {
+          "file": "components/dashboard/OverviewTab.tsx",
+          "lines": [
+            208,
+            215
+          ]
+        },
+        {
+          "file": "components/dashboard/PaperlessSettingsTab.tsx",
+          "lines": [
+            74,
+            143,
+            176,
+            183,
+            231,
+            238,
+            290,
+            297,
+            330
+          ]
+        },
+        {
+          "file": "components/dashboard/PipelineTestTab.tsx",
+          "lines": [
+            255
+          ]
+        },
+        {
+          "file": "components/dashboard/QueueCards.tsx",
+          "lines": [
+            100,
+            107,
+            158,
+            197
+          ]
+        },
+        {
+          "file": "components/dashboard/WebhookApiKeyDisplay.tsx",
+          "lines": [
+            93,
+            141
+          ]
+        },
+        {
+          "file": "components/dashboard/WebhookValidationWarning.tsx",
+          "lines": [
+            59,
+            66
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Konfiguration konnte nicht gespeichert werden.",
+      "occurrences": [
+        {
+          "file": "components/setup/Step3DocumentAI.tsx",
+          "lines": [
+            63
+          ]
+        },
+        {
+          "file": "components/setup/Step4GoogleOAuth.tsx",
+          "lines": [
+            58
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Google OAuth übersprungen",
+      "occurrences": [
+        {
+          "file": "components/setup/Step4GoogleOAuth.tsx",
+          "lines": [
+            50
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Sie können Google Calendar & Tasks später in den Einstellungen konfigurieren.",
+      "occurrences": [
+        {
+          "file": "components/setup/Step4GoogleOAuth.tsx",
+          "lines": [
+            51
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Redirect URI wurde in die Zwischenablage kopiert.",
+      "occurrences": [
+        {
+          "file": "components/setup/Step4GoogleOAuth.tsx",
+          "lines": [
+            330
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Kopieren fehlgeschlagen. Bitte manuell kopieren.",
+      "occurrences": [
+        {
+          "file": "components/setup/Step4GoogleOAuth.tsx",
+          "lines": [
+            335
+          ]
+        }
+      ]
+    },
+    {
+      "text": "bei den",
+      "occurrences": [
+        {
+          "file": "components/setup/Step4GoogleOAuth.tsx",
+          "lines": [
+            346
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Bitte füllen Sie alle erforderlichen Felder aus.",
+      "occurrences": [
+        {
+          "file": "components/setup/Step5Email.tsx",
+          "lines": [
+            72
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Test erfolgreich",
+      "occurrences": [
+        {
+          "file": "components/setup/Step5Email.tsx",
+          "lines": [
+            119
+          ]
+        },
+        {
+          "file": "components/dashboard/EmailSettingsCard.tsx",
+          "lines": [
+            107
+          ]
+        },
+        {
+          "file": "components/dashboard/GoogleSettingsTab.tsx",
+          "lines": [
+            154,
+            247
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Test fehlgeschlagen",
+      "occurrences": [
+        {
+          "file": "components/setup/Step5Email.tsx",
+          "lines": [
+            126,
+            134
+          ]
+        },
+        {
+          "file": "components/dashboard/EmailSettingsCard.tsx",
+          "lines": [
+            114,
+            121
+          ]
+        },
+        {
+          "file": "components/dashboard/FTPSettingsCard.tsx",
+          "lines": [
+            125
+          ]
+        },
+        {
+          "file": "components/dashboard/GoogleSettingsTab.tsx",
+          "lines": [
+            160,
+            167,
+            253,
+            260
+          ]
+        }
+      ]
+    },
+    {
+      "text": "E-Mail-Konfiguration konnte nicht gespeichert werden.",
+      "occurrences": [
+        {
+          "file": "components/setup/Step5Email.tsx",
+          "lines": [
+            169
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Paperless-Integration konnte nicht gespeichert werden.",
+      "occurrences": [
+        {
+          "file": "components/setup/Step6PaperlessIntegration.tsx",
+          "lines": [
+            79
+          ]
+        }
+      ]
+    },
+    {
+      "text": "&quot; wird gesetzt",
+      "occurrences": [
+        {
+          "file": "components/setup/Step6PaperlessIntegration.tsx",
+          "lines": [
+            212
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Erweiterte Einstellungen konnten nicht gespeichert werden.",
+      "occurrences": [
+        {
+          "file": "components/setup/Step7Advanced.tsx",
+          "lines": [
+            55
+          ]
+        }
+      ]
+    },
+    {
+      "text": "FTP Server gestartet",
+      "occurrences": [
+        {
+          "file": "components/setup/Step8FTP.tsx",
+          "lines": [
+            86
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Warnung",
+      "occurrences": [
+        {
+          "file": "components/setup/Step8FTP.tsx",
+          "lines": [
+            91
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Sprache gespeichert",
+      "occurrences": [
+        {
+          "file": "components/dashboard/AdvancedSettingsTab.tsx",
+          "lines": [
+            102
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Die Seite wird neu geladen...",
+      "occurrences": [
+        {
+          "file": "components/dashboard/AdvancedSettingsTab.tsx",
+          "lines": [
+            103
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Konnte Sprache nicht speichern",
+      "occurrences": [
+        {
+          "file": "components/dashboard/AdvancedSettingsTab.tsx",
+          "lines": [
+            117
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Design gespeichert",
+      "occurrences": [
+        {
+          "file": "components/dashboard/AdvancedSettingsTab.tsx",
+          "lines": [
+            168
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Konnte Design nicht speichern",
+      "occurrences": [
+        {
+          "file": "components/dashboard/AdvancedSettingsTab.tsx",
+          "lines": [
+            178
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Der Standard-Prompt wurde geladen",
+      "occurrences": [
+        {
+          "file": "components/dashboard/AdvancedSettingsTab.tsx",
+          "lines": [
+            224
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Konnte Standard-Prompt nicht laden",
+      "occurrences": [
+        {
+          "file": "components/dashboard/AdvancedSettingsTab.tsx",
+          "lines": [
+            231
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Prompt-Template gespeichert",
+      "occurrences": [
+        {
+          "file": "components/dashboard/AdvancedSettingsTab.tsx",
+          "lines": [
+            252
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Konnte Prompt-Template nicht speichern",
+      "occurrences": [
+        {
+          "file": "components/dashboard/AdvancedSettingsTab.tsx",
+          "lines": [
+            261
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Setup zurückgesetzt",
+      "occurrences": [
+        {
+          "file": "components/dashboard/AdvancedSettingsTab.tsx",
+          "lines": [
+            282
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Sie werden zum Setup-Wizard weitergeleitet...",
+      "occurrences": [
+        {
+          "file": "components/dashboard/AdvancedSettingsTab.tsx",
+          "lines": [
+            283
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Setup konnte nicht zurückgesetzt werden.",
+      "occurrences": [
+        {
+          "file": "components/dashboard/AdvancedSettingsTab.tsx",
+          "lines": [
+            295
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Daten konnten nicht geladen werden",
+      "occurrences": [
+        {
+          "file": "components/dashboard/AnalyzeTab.tsx",
+          "lines": [
+            125
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Paperless Integration Einstellungen wurden gespeichert",
+      "occurrences": [
+        {
+          "file": "components/dashboard/AnalyzeTab.tsx",
+          "lines": [
+            153
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Einstellungen konnten nicht gespeichert werden",
+      "occurrences": [
+        {
+          "file": "components/dashboard/AnalyzeTab.tsx",
+          "lines": [
+            158,
+            227
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Verarbeitung konnte nicht gestartet werden",
+      "occurrences": [
+        {
+          "file": "components/dashboard/AnalyzeTab.tsx",
+          "lines": [
+            190
+          ]
+        }
+      ]
+    },
+    {
+      "text": "KI-Verhalten Einstellungen wurden gespeichert",
+      "occurrences": [
+        {
+          "file": "components/dashboard/AnalyzeTab.tsx",
+          "lines": [
+            221
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Tag erstellt",
+      "occurrences": [
+        {
+          "file": "components/dashboard/AnalyzeTab.tsx",
+          "lines": [
+            255
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Tag konnte nicht erstellt werden",
+      "occurrences": [
+        {
+          "file": "components/dashboard/AnalyzeTab.tsx",
+          "lines": [
+            269
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Feld erstellt",
+      "occurrences": [
+        {
+          "file": "components/dashboard/AnalyzeTab.tsx",
+          "lines": [
+            300
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Feld konnte nicht erstellt werden",
+      "occurrences": [
+        {
+          "file": "components/dashboard/AnalyzeTab.tsx",
+          "lines": [
+            315
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Konnte nicht in Zwischenablage kopieren. Bitte manuell kopieren.",
+      "occurrences": [
+        {
+          "file": "components/dashboard/AnalyzeTab.tsx",
+          "lines": [
+            355
+          ]
+        },
+        {
+          "file": "components/dashboard/WebhookApiKeyDisplay.tsx",
+          "lines": [
+            94
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Konnte Metadaten nicht laden",
+      "occurrences": [
+        {
+          "file": "components/dashboard/AnalyzeTab.tsx",
+          "lines": [
+            374
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Erfolgreich gelöscht",
+      "occurrences": [
+        {
+          "file": "components/dashboard/DocumentsTab.tsx",
+          "lines": [
+            148
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Dokumente konnten nicht gelöscht werden",
+      "occurrences": [
+        {
+          "file": "components/dashboard/DocumentsTab.tsx",
+          "lines": [
+            161
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Duplikat wird erneut verarbeitet",
+      "occurrences": [
+        {
+          "file": "components/dashboard/DocumentsTab.tsx",
+          "lines": [
+            397
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Dokument wurde mit neuem Hash zurück in den Consume-Ordner verschoben",
+      "occurrences": [
+        {
+          "file": "components/dashboard/DocumentsTab.tsx",
+          "lines": [
+            398
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Dokument wird erneut verarbeitet",
+      "occurrences": [
+        {
+          "file": "components/dashboard/DocumentsTab.tsx",
+          "lines": [
+            411
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Verarbeitung wurde neu gestartet",
+      "occurrences": [
+        {
+          "file": "components/dashboard/DocumentsTab.tsx",
+          "lines": [
+            412
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Ungültiger Dateityp",
+      "occurrences": [
+        {
+          "file": "components/dashboard/DocumentUpload.tsx",
+          "lines": [
+            74
+          ]
+        },
+        {
+          "file": "components/dashboard/PipelineTestTab.tsx",
+          "lines": [
+            209
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Datei zu groß",
+      "occurrences": [
+        {
+          "file": "components/dashboard/DocumentUpload.tsx",
+          "lines": [
+            83
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Setup nicht abgeschlossen.",
+      "occurrences": [
+        {
+          "file": "components/dashboard/DocumentUpload.tsx",
+          "lines": [
+            176
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Interner Server-Fehler. Bitte versuchen Sie es erneut oder prüfen Sie die Server-Logs.",
+      "occurrences": [
+        {
+          "file": "components/dashboard/DocumentUpload.tsx",
+          "lines": [
+            179
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Upload erfolgreich",
+      "occurrences": [
+        {
+          "file": "components/dashboard/DocumentUpload.tsx",
+          "lines": [
+            210
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Upload teilweise erfolgreich",
+      "occurrences": [
+        {
+          "file": "components/dashboard/DocumentUpload.tsx",
+          "lines": [
+            234
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Alle Uploads fehlgeschlagen",
+      "occurrences": [
+        {
+          "file": "components/dashboard/DocumentUpload.tsx",
+          "lines": [
+            282
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Upload fehlgeschlagen",
+      "occurrences": [
+        {
+          "file": "components/dashboard/DocumentUpload.tsx",
+          "lines": [
+            307
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Email deaktiviert",
+      "occurrences": [
+        {
+          "file": "components/dashboard/EmailSettingsCard.tsx",
+          "lines": [
+            62
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Test-Email wird gesendet",
+      "occurrences": [
+        {
+          "file": "components/dashboard/EmailSettingsCard.tsx",
+          "lines": [
+            72
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Email-Einstellungen gespeichert",
+      "occurrences": [
+        {
+          "file": "components/dashboard/EmailSettingsCard.tsx",
+          "lines": [
+            159
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Konnte nicht speichern",
+      "occurrences": [
+        {
+          "file": "components/dashboard/EmailSettingsCard.tsx",
+          "lines": [
+            167
+          ]
+        },
+        {
+          "file": "components/dashboard/FTPSettingsCard.tsx",
+          "lines": [
+            173
+          ]
+        },
+        {
+          "file": "components/dashboard/GoogleSettingsTab.tsx",
+          "lines": [
+            212,
+            305
+          ]
+        },
+        {
+          "file": "components/dashboard/PaperlessSettingsTab.tsx",
+          "lines": [
+            144,
+            331
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Emergency Stop konnte nicht geändert werden",
+      "occurrences": [
+        {
+          "file": "components/dashboard/EmergencyStopButton.tsx",
+          "lines": [
+            83
+          ]
+        }
+      ]
+    },
+    {
+      "text": "AI-Dokumentenanalyse wird gestoppt",
+      "occurrences": [
+        {
+          "file": "components/dashboard/EmergencyStopButton.tsx",
+          "lines": [
+            134
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Datei-Verarbeitung wird gestoppt",
+      "occurrences": [
+        {
+          "file": "components/dashboard/EmergencyStopButton.tsx",
+          "lines": [
+            135
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Worker wird pausiert",
+      "occurrences": [
+        {
+          "file": "components/dashboard/EmergencyStopButton.tsx",
+          "lines": [
+            136
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Webhooks werden blockiert",
+      "occurrences": [
+        {
+          "file": "components/dashboard/EmergencyStopButton.tsx",
+          "lines": [
+            137
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Polling wird pausiert",
+      "occurrences": [
+        {
+          "file": "components/dashboard/EmergencyStopButton.tsx",
+          "lines": [
+            138
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Webhooks werden akzeptiert",
+      "occurrences": [
+        {
+          "file": "components/dashboard/EmergencyStopButton.tsx",
+          "lines": [
+            150
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Fehler beim Leeren",
+      "occurrences": [
+        {
+          "file": "components/dashboard/FolderContents.tsx",
+          "lines": [
+            159
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Verarbeitung ausgelöst",
+      "occurrences": [
+        {
+          "file": "components/dashboard/FolderContents.tsx",
+          "lines": [
+            185
+          ]
+        },
+        {
+          "file": "components/dashboard/QueueCards.tsx",
+          "lines": [
+            92
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Fehler beim Wiederholen",
+      "occurrences": [
+        {
+          "file": "components/dashboard/FolderContents.tsx",
+          "lines": [
+            242
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Dokument gelöscht",
+      "occurrences": [
+        {
+          "file": "components/dashboard/FolderContents.tsx",
+          "lines": [
+            273
+          ]
+        },
+        {
+          "file": "components/dashboard/QueueCards.tsx",
+          "lines": [
+            182
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Fehler beim Löschen",
+      "occurrences": [
+        {
+          "file": "components/dashboard/FolderContents.tsx",
+          "lines": [
+            281
+          ]
+        },
+        {
+          "file": "components/dashboard/QueueCards.tsx",
+          "lines": [
+            190
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Test wird ausgeführt",
+      "occurrences": [
+        {
+          "file": "components/dashboard/FTPSettingsCard.tsx",
+          "lines": [
+            98
+          ]
+        }
+      ]
+    },
+    {
+      "text": "FTP-Server Status wird geprüft...",
+      "occurrences": [
+        {
+          "file": "components/dashboard/FTPSettingsCard.tsx",
+          "lines": [
+            99
+          ]
+        }
+      ]
+    },
+    {
+      "text": "FTP-Server läuft",
+      "occurrences": [
+        {
+          "file": "components/dashboard/FTPSettingsCard.tsx",
+          "lines": [
+            111
+          ]
+        }
+      ]
+    },
+    {
+      "text": "FTP-Server nicht aktiv",
+      "occurrences": [
+        {
+          "file": "components/dashboard/FTPSettingsCard.tsx",
+          "lines": [
+            118
+          ]
+        }
+      ]
+    },
+    {
+      "text": "FTP-Server Einstellungen werden übernommen...",
+      "occurrences": [
+        {
+          "file": "components/dashboard/FTPSettingsCard.tsx",
+          "lines": [
+            157
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Gemini API ist funktionsfähig",
+      "occurrences": [
+        {
+          "file": "components/dashboard/GoogleSettingsTab.tsx",
+          "lines": [
+            155
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Gemini AI Einstellungen gespeichert",
+      "occurrences": [
+        {
+          "file": "components/dashboard/GoogleSettingsTab.tsx",
+          "lines": [
+            196
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Bitte alle Felder ausfüllen",
+      "occurrences": [
+        {
+          "file": "components/dashboard/GoogleSettingsTab.tsx",
+          "lines": [
+            225
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Document AI Verbindung erfolgreich",
+      "occurrences": [
+        {
+          "file": "components/dashboard/GoogleSettingsTab.tsx",
+          "lines": [
+            248
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Document AI Einstellungen gespeichert",
+      "occurrences": [
+        {
+          "file": "components/dashboard/GoogleSettingsTab.tsx",
+          "lines": [
+            283
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Suche fehlgeschlagen",
+      "occurrences": [
+        {
+          "file": "components/dashboard/LogsTab.tsx",
+          "lines": [
+            228
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Konnte nicht in Logs suchen",
+      "occurrences": [
+        {
+          "file": "components/dashboard/LogsTab.tsx",
+          "lines": [
+            229
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Bitte URL und Token angeben",
+      "occurrences": [
+        {
+          "file": "components/dashboard/PaperlessSettingsTab.tsx",
+          "lines": [
+            75
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Verbindung erfolgreich",
+      "occurrences": [
+        {
+          "file": "components/dashboard/PaperlessSettingsTab.tsx",
+          "lines": [
+            97
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Paperless-NGX ist erreichbar",
+      "occurrences": [
+        {
+          "file": "components/dashboard/PaperlessSettingsTab.tsx",
+          "lines": [
+            98
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Verbindung fehlgeschlagen",
+      "occurrences": [
+        {
+          "file": "components/dashboard/PaperlessSettingsTab.tsx",
+          "lines": [
+            103,
+            110
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Paperless-NGX Einstellungen gespeichert",
+      "occurrences": [
+        {
+          "file": "components/dashboard/PaperlessSettingsTab.tsx",
+          "lines": [
+            136
+          ]
+        }
+      ]
+    },
+    {
+      "text": "OCR-Einstellungen prüfen",
+      "occurrences": [
+        {
+          "file": "components/dashboard/PaperlessSettingsTab.tsx",
+          "lines": [
+            169
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Netzwerkfehler beim Prüfen der OCR-Einstellungen",
+      "occurrences": [
+        {
+          "file": "components/dashboard/PaperlessSettingsTab.tsx",
+          "lines": [
+            184
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Alle Workflows sind vorhanden und korrekt konfiguriert",
+      "occurrences": [
+        {
+          "file": "components/dashboard/PaperlessSettingsTab.tsx",
+          "lines": [
+            211
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Workflows prüfen",
+      "occurrences": [
+        {
+          "file": "components/dashboard/PaperlessSettingsTab.tsx",
+          "lines": [
+            220
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Netzwerkfehler beim Prüfen der Workflows",
+      "occurrences": [
+        {
+          "file": "components/dashboard/PaperlessSettingsTab.tsx",
+          "lines": [
+            239
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Workflows erstellt",
+      "occurrences": [
+        {
+          "file": "components/dashboard/PaperlessSettingsTab.tsx",
+          "lines": [
+            270
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Netzwerkfehler beim Erstellen der Workflows",
+      "occurrences": [
+        {
+          "file": "components/dashboard/PaperlessSettingsTab.tsx",
+          "lines": [
+            298
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Polling Einstellungen gespeichert und Polling neu gestartet",
+      "occurrences": [
+        {
+          "file": "components/dashboard/PaperlessSettingsTab.tsx",
+          "lines": [
+            325
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Verbindung zu Ihrer Paperless-NGX Instanz",
+      "occurrences": [
+        {
+          "file": "components/dashboard/PaperlessSettingsTab.tsx",
+          "lines": [
+            343
+          ]
+        }
+      ]
+    },
+    {
+      "text": "- Triggert AI-Analyse bei neuen Dokumenten",
+      "occurrences": [
+        {
+          "file": "components/dashboard/PaperlessSettingsTab.tsx",
+          "lines": [
+            461
+          ]
+        }
+      ]
+    },
+    {
+      "text": "- Triggert Action-Verarbeitung bei Updates",
+      "occurrences": [
+        {
+          "file": "components/dashboard/PaperlessSettingsTab.tsx",
+          "lines": [
+            462
+          ]
+        }
+      ]
+    },
+    {
+      "text": "1. Upload & Duplikatsprüfung",
+      "occurrences": [
+        {
+          "file": "components/dashboard/PipelineTestTab.tsx",
+          "lines": [
+            104
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Bitte wählen Sie eine PDF-Datei",
+      "occurrences": [
+        {
+          "file": "components/dashboard/PipelineTestTab.tsx",
+          "lines": [
+            210,
+            223
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Keine Datei ausgewählt",
+      "occurrences": [
+        {
+          "file": "components/dashboard/PipelineTestTab.tsx",
+          "lines": [
+            222
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Pipeline-Test gestartet",
+      "occurrences": [
+        {
+          "file": "components/dashboard/PipelineTestTab.tsx",
+          "lines": [
+            247
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Die Verarbeitung läuft...",
+      "occurrences": [
+        {
+          "file": "components/dashboard/PipelineTestTab.tsx",
+          "lines": [
+            248
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Das hochgeladene Dokument existiert bereits im System:",
+      "occurrences": [
+        {
+          "file": "components/dashboard/PipelineTestTab.tsx",
+          "lines": [
+            484
+          ]
+        }
+      ]
+    },
+    {
+      "text": "• Der Test endet erfolgreich wenn keine Action Required erkannt wird",
+      "occurrences": [
+        {
+          "file": "components/dashboard/PipelineTestTab.tsx",
+          "lines": [
+            522
+          ]
+        }
+      ]
+    },
+    {
+      "text": "In Zwischenablage kopiert",
+      "occurrences": [
+        {
+          "file": "components/dashboard/WebhookApiKeyDisplay.tsx",
+          "lines": [
+            85
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Webhook API Key wurde erfolgreich kopiert",
+      "occurrences": [
+        {
+          "file": "components/dashboard/WebhookApiKeyDisplay.tsx",
+          "lines": [
+            86
+          ]
+        }
+      ]
+    },
+    {
+      "text": "API Key generiert, aber Workflows konnten nicht automatisch aktualisiert werden. Bitte manuell in Paperless aktualisieren.",
+      "occurrences": [
+        {
+          "file": "components/dashboard/WebhookApiKeyDisplay.tsx",
+          "lines": [
+            127
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Der Webhook API Key wurde erfolgreich neu generiert. Bitte aktualisieren Sie die Paperless Workflows.",
+      "occurrences": [
+        {
+          "file": "components/dashboard/WebhookApiKeyDisplay.tsx",
+          "lines": [
+            133
+          ]
+        }
+      ]
+    },
+    {
+      "text": "API Key konnte nicht neu generiert werden",
+      "occurrences": [
+        {
+          "file": "components/dashboard/WebhookApiKeyDisplay.tsx",
+          "lines": [
+            142
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Workflows aktualisiert",
+      "occurrences": [
+        {
+          "file": "components/dashboard/WebhookValidationWarning.tsx",
+          "lines": [
+            52
+          ]
+        }
+      ]
+    },
+    {
+      "text": "Workflows konnten nicht aktualisiert werden",
+      "occurrences": [
+        {
+          "file": "components/dashboard/WebhookValidationWarning.tsx",
+          "lines": [
+            60,
+            67
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faArrowRight, faEye, faEyeSlash, faCheckCircle, faTimesCircle, faCopy, faKey, faSpinner, faUpload, faFileText, faExternalLinkAlt, faCalendar, faListUl, faEnvelope, faServer, faCog } from '@fortawesome/free-solid-svg-icons';
+import { useTranslations } from 'next-intl';
 
 interface StepProps {
   onNext: (data: Record<string, any>) => void;
@@ -16,6 +17,8 @@ interface StepProps {
 }
 
 export default function Step3DocumentAI({ onNext, onBack, data }: StepProps) {
+  const t = useTranslations('setup');
+
   const { toast } = useToast();
 
   const [projectId, setProjectId] = useState(data.googleCloudProjectId || '');
@@ -52,15 +55,15 @@ export default function Step3DocumentAI({ onNext, onBack, data }: StepProps) {
       });
 
       toast({
-        title: "Document AI übersprungen",
-        description: "Sie können Document AI später in den Einstellungen konfigurieren.",
+        title: t('document_ai_uebersprungen'),
+        description: t('sie_koennen_document_ai_spaeter_in_den_einstellung'),
       });
 
       onNext({});
     } catch (error) {
       toast({
-        title: "Fehler",
-        description: "Konfiguration konnte nicht gespeichert werden.",
+        title: t('fehler'),
+        description: t('konfiguration_konnte_nicht_gespeichert_werden'),
         variant: "destructive",
       });
     }

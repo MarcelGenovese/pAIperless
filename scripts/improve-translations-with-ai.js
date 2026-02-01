@@ -133,8 +133,8 @@ async function main() {
       } else if (typeof value === 'string') {
         const enValue = enObj[key] || '';
 
-        // Only improve if English looks auto-generated (has German characters or poor quality)
-        if (enValue.match(/[äöüß]|ae|oe|ue|ss/) || enValue.toLowerCase() === value.toLowerCase()) {
+        // Improve if: has TODO placeholder, has German characters, or looks auto-generated
+        if (enValue.startsWith('[TODO:') || enValue.match(/[äöüß]|ae|oe|ue|ss/) || enValue.toLowerCase() === value.toLowerCase()) {
           translationPairs.push({
             key: fullKey,
             de: value,

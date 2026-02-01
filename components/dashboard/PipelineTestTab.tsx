@@ -101,7 +101,7 @@ export default function PipelineTestTab() {
   const initialSteps: PipelineStep[] = [
     {
       id: 'upload',
-      title: '1. Upload & Duplikatsprüfung',
+      title: t('1_upload_duplikatspruefung'),
       status: 'pending',
       icon: faUpload,
       details: []
@@ -206,8 +206,8 @@ export default function PipelineTestTab() {
     if (file) {
       if (file.type !== 'application/pdf') {
         toast({
-          title: 'Ungültiger Dateityp',
-          description: 'Bitte wählen Sie eine PDF-Datei',
+          title: t('ungueltiger_dateityp'),
+          description: t('bitte_waehlen_sie_eine_pdf_datei'),
           variant: 'destructive',
         });
         return;
@@ -219,8 +219,8 @@ export default function PipelineTestTab() {
   const startTest = async () => {
     if (!selectedFile) {
       toast({
-        title: 'Keine Datei ausgewählt',
-        description: 'Bitte wählen Sie eine PDF-Datei',
+        title: t('keine_datei_ausgewaehlt'),
+        description: t('bitte_waehlen_sie_eine_pdf_datei'),
         variant: 'destructive',
       });
       return;
@@ -244,15 +244,15 @@ export default function PipelineTestTab() {
       if (data.testId) {
         setTestId(data.testId);
         toast({
-          title: 'Pipeline-Test gestartet',
-          description: 'Die Verarbeitung läuft...',
+          title: t('pipeline_test_gestartet'),
+          description: t('die_verarbeitung_laeuft'),
         });
       } else {
         throw new Error(data.error || 'Test konnte nicht gestartet werden');
       }
     } catch (error: any) {
       toast({
-        title: 'Fehler',
+        title: t('fehler'),
         description: error.message,
         variant: 'destructive',
       });
@@ -481,7 +481,7 @@ export default function PipelineTestTab() {
           <CardContent className="p-4">
             <h4 className="text-sm font-semibold mb-2">Duplikat-Information</h4>
             <div className="space-y-2 text-sm">
-              <p>Das hochgeladene Dokument existiert bereits im System:</p>
+              <p>{t('das_hochgeladene_dokument_existiert_bereits_im_sys')}</p>
               <div className="flex flex-col gap-1">
                 <div>
                   <span className="font-medium">Dokument ID:</span>{' '}
@@ -519,7 +519,7 @@ export default function PipelineTestTab() {
               <li>{t('der_test_zeigt_jeden_schritt_der_verarbeitung_in_e')}</li>
               <li>{t('alle_fehler_entscheidungen_und_ergebnisse_werden_a')}</li>
               <li>{t('die_seite_kann_waehrend_des_tests_gewechselt_werde')}</li>
-              <li>• Der Test endet erfolgreich wenn keine Action Required erkannt wird</li>
+              <li>{t('der_test_endet_erfolgreich_wenn_keine_action_requi')}</li>
             </ul>
           </CardContent>
         </Card>

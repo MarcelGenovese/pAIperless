@@ -79,8 +79,8 @@ export default function EmergencyStopButton() {
     } catch (error) {
       console.error('Failed to toggle emergency stop:', error);
       toast({
-        title: 'Fehler',
-        description: 'Emergency Stop konnte nicht geändert werden',
+        title: t('fehler'),
+        description: t('emergency_stop_konnte_nicht_geaendert_werden'),
         variant: 'destructive',
       });
     } finally {
@@ -131,11 +131,11 @@ export default function EmergencyStopButton() {
                     Dies stoppt ALLE laufenden Verarbeitungen sofort:
                   </strong>
                   <ul className="list-disc list-inside mt-2 space-y-1">
-                    <li>AI-Dokumentenanalyse wird gestoppt</li>
-                    <li>Datei-Verarbeitung wird gestoppt</li>
-                    <li>Worker wird pausiert</li>
-                    <li>Webhooks werden blockiert</li>
-                    <li>Polling wird pausiert</li>
+                    <li>{t('ai_dokumentenanalyse_wird_gestoppt')}</li>
+                    <li>{t('datei_verarbeitung_wird_gestoppt')}</li>
+                    <li>{t('worker_wird_pausiert')}</li>
+                    <li>{t('webhooks_werden_blockiert')}</li>
+                    <li>{t('polling_wird_pausiert')}</li>
                   </ul>
                   <p className="mt-3 text-amber-600 dark:text-amber-400">
                     ⚠️ Verwenden Sie dies nur in Notfällen!
@@ -147,7 +147,7 @@ export default function EmergencyStopButton() {
                   <ul className="list-disc list-inside mt-2 space-y-1">
                     <li>Worker kann Dateien verarbeiten</li>
                     <li>AI-Analyse kann starten</li>
-                    <li>Webhooks werden akzeptiert</li>
+                    <li>{t('webhooks_werden_akzeptiert')}</li>
                     <li>{t('polling_laeuft_weiter')}</li>
                   </ul>
                 </>

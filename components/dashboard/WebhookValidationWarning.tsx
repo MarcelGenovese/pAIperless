@@ -5,8 +5,11 @@ import { Button } from '@/components/ui/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle, faSpinner, faSync } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslations } from 'next-intl';
 
 export default function WebhookValidationWarning() {
+  const t = useTranslations('dashboard');
+
   const { toast } = useToast();
   const [validationStatus, setValidationStatus] = useState<{
     valid: boolean;
@@ -49,22 +52,22 @@ export default function WebhookValidationWarning() {
 
       if (data.success) {
         toast({
-          title: 'Workflows aktualisiert',
+          title: t('workflows_aktualisiert'),
           description: `${data.updated} Workflow(s) wurden erfolgreich aktualisiert.`,
         });
         // Recheck validation
         await checkValidation();
       } else {
         toast({
-          title: 'Fehler',
-          description: 'Workflows konnten nicht aktualisiert werden',
+          title: t('fehler'),
+          description: t('workflows_konnten_nicht_aktualisiert_werden'),
           variant: 'destructive',
         });
       }
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Workflows konnten nicht aktualisiert werden',
+        title: t('fehler'),
+        description: t('workflows_konnten_nicht_aktualisiert_werden'),
         variant: 'destructive',
       });
     } finally {

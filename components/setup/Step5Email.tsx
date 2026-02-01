@@ -68,8 +68,8 @@ export default function Step5Email({ onNext, onBack, data }: StepProps) {
   const handleTestEmail = async () => {
     if (!canProceed) {
       toast({
-        title: "Fehler",
-        description: "Bitte füllen Sie alle erforderlichen Felder aus.",
+        title: t('fehler'),
+        description: t('bitte_fuellen_sie_alle_erforderlichen_felder_aus'),
         variant: "destructive",
       });
       return;
@@ -116,14 +116,14 @@ export default function Step5Email({ onNext, onBack, data }: StepProps) {
 
       if (response.ok && result.success) {
         toast({
-          title: "Test erfolgreich",
+          title: t('test_erfolgreich'),
           description: result.message,
         });
       } else {
         // Show detailed error message
         const errorMsg = result.message || result.details || 'Fehler beim Senden der Test-Email';
         toast({
-          title: "Test fehlgeschlagen",
+          title: t('test_fehlgeschlagen'),
           description: errorMsg,
           variant: "destructive",
         });
@@ -131,7 +131,7 @@ export default function Step5Email({ onNext, onBack, data }: StepProps) {
     } catch (error: any) {
       console.error('[Step5Email] Test error:', error);
       toast({
-        title: "Test fehlgeschlagen",
+        title: t('test_fehlgeschlagen'),
         description: error.message || "Netzwerkfehler",
         variant: "destructive",
       });
@@ -165,8 +165,8 @@ export default function Step5Email({ onNext, onBack, data }: StepProps) {
       onNext({});
     } catch (error) {
       toast({
-        title: "Fehler",
-        description: "E-Mail-Konfiguration konnte nicht gespeichert werden.",
+        title: t('fehler'),
+        description: t('e_mail_konfiguration_konnte_nicht_gespeichert_werd'),
         variant: "destructive",
       });
     }

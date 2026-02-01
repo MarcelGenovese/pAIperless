@@ -95,8 +95,8 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
   const testFtp = async () => {
     setIsTesting(true);
     toast({
-      title: 'Test wird ausgeführt',
-      description: 'FTP-Server Status wird geprüft...',
+      title: t('test_wird_ausgefuehrt'),
+      description: t('ftp_server_status_wird_geprueft'),
     });
 
     try {
@@ -108,21 +108,21 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
 
       if (data.ftp?.running) {
         toast({
-          title: 'FTP-Server läuft',
+          title: t('ftp_server_laeuft'),
           description: `Port: ${ftpData.port} - ${data.ftp.message}`,
           variant: 'success',
         });
         setFtpData({ ...ftpData, tested: true });
       } else {
         toast({
-          title: 'FTP-Server nicht aktiv',
+          title: t('ftp_server_nicht_aktiv'),
           description: data.ftp?.message || 'Server ist gestoppt oder deaktiviert',
           variant: 'destructive',
         });
       }
     } catch (error) {
       toast({
-        title: 'Test fehlgeschlagen',
+        title: t('test_fehlgeschlagen'),
         description: 'Netzwerkfehler',
         variant: 'destructive',
       });
@@ -154,7 +154,7 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
 
       toast({
         title: 'Gespeichert',
-        description: 'FTP-Server Einstellungen werden übernommen...',
+        description: t('ftp_server_einstellungen_werden_uebernommen'),
         variant: 'success',
       });
 
@@ -169,8 +169,8 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
       setFtpData({ ...ftpData, tested: false });
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Konnte nicht speichern',
+        title: t('fehler'),
+        description: t('konnte_nicht_speichern'),
         variant: 'destructive',
       });
     } finally {

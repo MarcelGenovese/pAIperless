@@ -145,7 +145,7 @@ export default function DocumentsTab() {
 
       if (response.ok) {
         toast({
-          title: 'Erfolgreich gelöscht',
+          title: t('erfolgreich_geloescht'),
           description: `${selectedIds.length} Dokument(e) gelöscht`,
           variant: 'success',
         });
@@ -157,8 +157,8 @@ export default function DocumentsTab() {
       }
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Dokumente konnten nicht gelöscht werden',
+        title: t('fehler'),
+        description: t('dokumente_konnten_nicht_geloescht_werden'),
         variant: 'destructive',
       });
     } finally {
@@ -394,8 +394,8 @@ export default function DocumentsTab() {
 
                                 if (response.ok) {
                                   toast({
-                                    title: 'Duplikat wird erneut verarbeitet',
-                                    description: 'Dokument wurde mit neuem Hash zurück in den Consume-Ordner verschoben',
+                                    title: t('duplikat_wird_erneut_verarbeitet'),
+                                    description: t('dokument_wurde_mit_neuem_hash_zurueck_in_den_consu'),
                                     variant: 'success',
                                   });
                                 } else {
@@ -408,8 +408,8 @@ export default function DocumentsTab() {
                                   method: 'POST',
                                 });
                                 toast({
-                                  title: 'Dokument wird erneut verarbeitet',
-                                  description: 'Verarbeitung wurde neu gestartet',
+                                  title: t('dokument_wird_erneut_verarbeitet'),
+                                  description: t('verarbeitung_wurde_neu_gestartet'),
                                   variant: 'success',
                                 });
                               }
@@ -418,7 +418,7 @@ export default function DocumentsTab() {
                             } catch (error: any) {
                               console.error('Failed to retry document:', error);
                               toast({
-                                title: 'Fehler',
+                                title: t('fehler'),
                                 description: error.message || 'Dokument konnte nicht erneut verarbeitet werden',
                                 variant: 'destructive',
                               });

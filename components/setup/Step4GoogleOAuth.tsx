@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faArrowRight, faEye, faEyeSlash, faCheckCircle, faTimesCircle, faCopy, faKey, faSpinner, faUpload, faFileText, faExternalLinkAlt, faCalendar, faListUl, faEnvelope, faServer, faCog } from '@fortawesome/free-solid-svg-icons';
+import { useTranslations } from 'next-intl';
 
 interface StepProps {
   onNext: (data: Record<string, any>) => void;
@@ -16,6 +17,8 @@ interface StepProps {
 }
 
 export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
+  const t = useTranslations('setup');
+
   const { toast } = useToast();
 
   const [clientId, setClientId] = useState(data.googleOAuthClientId || '');
@@ -47,15 +50,15 @@ export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
       });
 
       toast({
-        title: "Google OAuth übersprungen",
-        description: "Sie können Google Calendar & Tasks später in den Einstellungen konfigurieren.",
+        title: t('google_oauth_uebersprungen'),
+        description: t('sie_koennen_google_calendar_tasks_spaeter_in_den_e'),
       });
 
       onNext({});
     } catch (error) {
       toast({
-        title: "Fehler",
-        description: "Konfiguration konnte nicht gespeichert werden.",
+        title: t('fehler'),
+        description: t('konfiguration_konnte_nicht_gespeichert_werden'),
         variant: "destructive",
       });
     }
@@ -327,12 +330,12 @@ export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
                       await navigator.clipboard.writeText(`${window.location.origin}/api/auth/google/callback`);
                       toast({
                         title: "Kopiert!",
-                        description: "Redirect URI wurde in die Zwischenablage kopiert.",
+                        description: t('redirect_uri_wurde_in_die_zwischenablage_kopiert'),
                       });
                     } catch (error) {
                       toast({
-                        title: "Fehler",
-                        description: "Kopieren fehlgeschlagen. Bitte manuell kopieren.",
+                        title: t('fehler'),
+                        description: t('kopieren_fehlgeschlagen_bitte_manuell_kopieren'),
                         variant: "destructive",
                       });
                     }
@@ -343,7 +346,7 @@ export default function Step4GoogleOAuth({ onNext, onBack, data }: StepProps) {
               </Button>
             </div>
             <p className="text-xs text-blue-700 dark:text-blue-300">
-              Diese URL muss in der Google Cloud Console unter <strong>APIs & Dienste → Anmeldedaten → OAuth 2.0-Client-IDs</strong> bei den <strong>Autorisierten Weiterleitungs-URIs</strong> eingetragen werden.
+              Diese URL muss in der Google Cloud Console unter <strong>APIs & Dienste → Anmeldedaten → OAuth 2.0-Client-IDs</strong>{t('bei_den')}<strong>Autorisierten Weiterleitungs-URIs</strong> eingetragen werden.
             </p>
           </div>
 

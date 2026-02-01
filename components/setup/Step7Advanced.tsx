@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faArrowRight, faCog, faClock } from '@fortawesome/free-solid-svg-icons';
+import { useTranslations } from 'next-intl';
 
 interface StepProps {
   onNext: (data: Record<string, any>) => void;
@@ -16,6 +17,8 @@ interface StepProps {
 }
 
 export default function Step7Advanced({ onNext, onBack, data }: StepProps) {
+  const t = useTranslations('setup');
+
   const { toast } = useToast();
 
   // Consume folder polling is always enabled (filesystem watcher)
@@ -51,8 +54,8 @@ export default function Step7Advanced({ onNext, onBack, data }: StepProps) {
       onNext({});
     } catch (error) {
       toast({
-        title: "Fehler",
-        description: "Erweiterte Einstellungen konnten nicht gespeichert werden.",
+        title: t('fehler'),
+        description: t('erweiterte_einstellungen_konnten_nicht_gespeichert'),
         variant: "destructive",
       });
     }

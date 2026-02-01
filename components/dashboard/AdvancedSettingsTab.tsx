@@ -99,8 +99,8 @@ export default function AdvancedSettingsTab() {
       if (response.ok) {
         setCurrentLanguage(language);
         toast({
-          title: 'Sprache gespeichert',
-          description: 'Die Seite wird neu geladen...',
+          title: t('sprache_gespeichert'),
+          description: t('die_seite_wird_neu_geladen'),
           variant: 'success',
         });
 
@@ -113,8 +113,8 @@ export default function AdvancedSettingsTab() {
       }
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Konnte Sprache nicht speichern',
+        title: t('fehler'),
+        description: t('konnte_sprache_nicht_speichern'),
         variant: 'destructive',
       });
     } finally {
@@ -165,7 +165,7 @@ export default function AdvancedSettingsTab() {
           document.documentElement.classList.remove('dark');
         }
         toast({
-          title: 'Design gespeichert',
+          title: t('design_gespeichert'),
           description: checked ? 'Dark Mode aktiviert' : 'Light Mode aktiviert',
           variant: 'success',
         });
@@ -174,8 +174,8 @@ export default function AdvancedSettingsTab() {
       }
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Konnte Design nicht speichern',
+        title: t('fehler'),
+        description: t('konnte_design_nicht_speichern'),
         variant: 'destructive',
       });
     } finally {
@@ -221,14 +221,14 @@ export default function AdvancedSettingsTab() {
         setPromptTemplate(data.template || '');
         toast({
           title: 'Standard geladen',
-          description: 'Der Standard-Prompt wurde geladen',
+          description: t('der_standard_prompt_wurde_geladen'),
           variant: 'success',
         });
       }
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Konnte Standard-Prompt nicht laden',
+        title: t('fehler'),
+        description: t('konnte_standard_prompt_nicht_laden'),
         variant: 'destructive',
       });
     } finally {
@@ -249,7 +249,7 @@ export default function AdvancedSettingsTab() {
         setInitialPromptTemplate(promptTemplate);
         toast({
           title: 'Gespeichert',
-          description: 'Prompt-Template gespeichert',
+          description: t('prompt_template_gespeichert'),
           variant: 'success',
         });
       } else {
@@ -257,8 +257,8 @@ export default function AdvancedSettingsTab() {
       }
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Konnte Prompt-Template nicht speichern',
+        title: t('fehler'),
+        description: t('konnte_prompt_template_nicht_speichern'),
         variant: 'destructive',
       });
     } finally {
@@ -279,8 +279,8 @@ export default function AdvancedSettingsTab() {
 
       if (response.ok) {
         toast({
-          title: "Setup zurückgesetzt",
-          description: "Sie werden zum Setup-Wizard weitergeleitet...",
+          title: t('setup_zurueckgesetzt'),
+          description: t('sie_werden_zum_setup_wizard_weitergeleitet'),
         });
 
         setTimeout(() => {
@@ -291,8 +291,8 @@ export default function AdvancedSettingsTab() {
       }
     } catch (error) {
       toast({
-        title: "Fehler",
-        description: "Setup konnte nicht zurückgesetzt werden.",
+        title: t('fehler'),
+        description: t('setup_konnte_nicht_zurueckgesetzt_werden'),
         variant: "destructive",
       });
       setIsResettingSetup(false);
@@ -322,7 +322,7 @@ export default function AdvancedSettingsTab() {
       }
     } catch (error: any) {
       toast({
-        title: 'Fehler',
+        title: t('fehler'),
         description: error.message || 'Ordner konnten nicht bereinigt werden',
         variant: 'destructive',
       });
@@ -352,7 +352,7 @@ export default function AdvancedSettingsTab() {
       }
     } catch (error: any) {
       toast({
-        title: 'Fehler',
+        title: t('fehler'),
         description: error.message || 'Bereinigung fehlgeschlagen',
         variant: 'destructive',
       });
@@ -387,7 +387,7 @@ export default function AdvancedSettingsTab() {
       }
     } catch (error: any) {
       toast({
-        title: 'Fehler',
+        title: t('fehler'),
         description: error.message || 'Komplette Bereinigung fehlgeschlagen',
         variant: 'destructive',
       });

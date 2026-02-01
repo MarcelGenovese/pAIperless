@@ -59,7 +59,7 @@ export default function EmailSettingsCard({ initialData = {} }: EmailSettingsCar
   const testEmail = async () => {
     if (!emailData.enabled) {
       toast({
-        title: 'Email deaktiviert',
+        title: t('email_deaktiviert'),
         description: 'Bitte aktivieren Sie Email-Benachrichtigungen',
         variant: 'destructive',
       });
@@ -69,7 +69,7 @@ export default function EmailSettingsCard({ initialData = {} }: EmailSettingsCar
     setIsTesting(true);
 
     toast({
-      title: 'Test-Email wird gesendet',
+      title: t('test_email_wird_gesendet'),
       description: 'Bitte warten...',
     });
 
@@ -104,21 +104,21 @@ export default function EmailSettingsCard({ initialData = {} }: EmailSettingsCar
 
       if (response.ok && result.success) {
         toast({
-          title: 'Test erfolgreich',
+          title: t('test_erfolgreich'),
           description: result.message,
           variant: 'success',
         });
         setEmailData({ ...emailData, tested: true });
       } else {
         toast({
-          title: 'Test fehlgeschlagen',
+          title: t('test_fehlgeschlagen'),
           description: result.message || 'Fehler beim Senden',
           variant: 'destructive',
         });
       }
     } catch (error) {
       toast({
-        title: 'Test fehlgeschlagen',
+        title: t('test_fehlgeschlagen'),
         description: 'Netzwerkfehler',
         variant: 'destructive',
       });
@@ -156,15 +156,15 @@ export default function EmailSettingsCard({ initialData = {} }: EmailSettingsCar
 
       toast({
         title: 'Gespeichert',
-        description: 'Email-Einstellungen gespeichert',
+        description: t('email_einstellungen_gespeichert'),
         variant: 'success',
       });
 
       setEmailData({ ...emailData, tested: false });
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Konnte nicht speichern',
+        title: t('fehler'),
+        description: t('konnte_nicht_speichern'),
         variant: 'destructive',
       });
     } finally {

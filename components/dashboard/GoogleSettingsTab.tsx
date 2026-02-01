@@ -128,7 +128,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
   const testGemini = async () => {
     if (!geminiData.apiKey) {
       toast({
-        title: 'Fehler',
+        title: t('fehler'),
         description: 'Bitte API Key angeben',
         variant: 'destructive',
       });
@@ -151,20 +151,20 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
       if (response.ok) {
         setGeminiData({ ...geminiData, tested: true });
         toast({
-          title: 'Test erfolgreich',
-          description: 'Gemini API ist funktionsfähig',
+          title: t('test_erfolgreich'),
+          description: t('gemini_api_ist_funktionsfaehig'),
           variant: 'success',
         });
       } else {
         toast({
-          title: 'Test fehlgeschlagen',
+          title: t('test_fehlgeschlagen'),
           description: result.error || 'Fehler beim Testen',
           variant: 'destructive',
         });
       }
     } catch (error) {
       toast({
-        title: 'Test fehlgeschlagen',
+        title: t('test_fehlgeschlagen'),
         description: 'Netzwerkfehler',
         variant: 'destructive',
       });
@@ -193,7 +193,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
 
       toast({
         title: 'Gespeichert',
-        description: 'Gemini AI Einstellungen gespeichert',
+        description: t('gemini_ai_einstellungen_gespeichert'),
         variant: 'success',
       });
 
@@ -208,8 +208,8 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
       setGeminiData({ ...geminiData, tested: false });
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Konnte nicht speichern',
+        title: t('fehler'),
+        description: t('konnte_nicht_speichern'),
         variant: 'destructive',
       });
     } finally {
@@ -221,8 +221,8 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
   const testDocumentAI = async () => {
     if (!documentAIData.projectId || !documentAIData.processorId || !documentAIData.credentials) {
       toast({
-        title: 'Fehler',
-        description: 'Bitte alle Felder ausfüllen',
+        title: t('fehler'),
+        description: t('bitte_alle_felder_ausfuellen'),
         variant: 'destructive',
       });
       return;
@@ -244,20 +244,20 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
       if (response.ok) {
         setDocumentAIData({ ...documentAIData, tested: true });
         toast({
-          title: 'Test erfolgreich',
-          description: 'Document AI Verbindung erfolgreich',
+          title: t('test_erfolgreich'),
+          description: t('document_ai_verbindung_erfolgreich'),
           variant: 'success',
         });
       } else {
         toast({
-          title: 'Test fehlgeschlagen',
+          title: t('test_fehlgeschlagen'),
           description: result.error || 'Fehler beim Testen',
           variant: 'destructive',
         });
       }
     } catch (error) {
       toast({
-        title: 'Test fehlgeschlagen',
+        title: t('test_fehlgeschlagen'),
         description: 'Netzwerkfehler',
         variant: 'destructive',
       });
@@ -280,7 +280,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
 
       toast({
         title: 'Gespeichert',
-        description: 'Document AI Einstellungen gespeichert',
+        description: t('document_ai_einstellungen_gespeichert'),
         variant: 'success',
       });
 
@@ -301,8 +301,8 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
       setDocumentAIData({ ...documentAIData, tested: false });
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Konnte nicht speichern',
+        title: t('fehler'),
+        description: t('konnte_nicht_speichern'),
         variant: 'destructive',
       });
     } finally {

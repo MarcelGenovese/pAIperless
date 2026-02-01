@@ -121,8 +121,8 @@ export default function AnalyzeTab() {
     } catch (error) {
       console.error('Failed to load data:', error);
       toast({
-        title: 'Fehler',
-        description: 'Daten konnten nicht geladen werden',
+        title: t('fehler'),
+        description: t('daten_konnten_nicht_geladen_werden'),
         variant: 'destructive',
       });
     } finally {
@@ -150,12 +150,12 @@ export default function AnalyzeTab() {
 
       toast({
         title: 'Gespeichert',
-        description: 'Paperless Integration Einstellungen wurden gespeichert',
+        description: t('paperless_integration_einstellungen_wurden_gespeic'),
       });
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Einstellungen konnten nicht gespeichert werden',
+        title: t('fehler'),
+        description: t('einstellungen_konnten_nicht_gespeichert_werden'),
         variant: 'destructive',
       });
     } finally {
@@ -179,15 +179,15 @@ export default function AnalyzeTab() {
         });
       } else {
         toast({
-          title: 'Fehler',
+          title: t('fehler'),
           description: result.error || 'Verarbeitung fehlgeschlagen',
           variant: 'destructive',
         });
       }
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Verarbeitung konnte nicht gestartet werden',
+        title: t('fehler'),
+        description: t('verarbeitung_konnte_nicht_gestartet_werden'),
         variant: 'destructive',
       });
     } finally {
@@ -218,13 +218,13 @@ export default function AnalyzeTab() {
 
       toast({
         title: 'Gespeichert',
-        description: 'KI-Verhalten Einstellungen wurden gespeichert',
+        description: t('ki_verhalten_einstellungen_wurden_gespeichert'),
       });
       setHasChanges(false);
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Einstellungen konnten nicht gespeichert werden',
+        title: t('fehler'),
+        description: t('einstellungen_konnten_nicht_gespeichert_werden'),
         variant: 'destructive',
       });
     } finally {
@@ -235,7 +235,7 @@ export default function AnalyzeTab() {
   const createTag = async () => {
     if (!newTagName.trim()) {
       toast({
-        title: 'Fehler',
+        title: t('fehler'),
         description: 'Bitte Tag-Namen eingeben',
         variant: 'destructive',
       });
@@ -252,7 +252,7 @@ export default function AnalyzeTab() {
 
       if (response.ok) {
         toast({
-          title: 'Tag erstellt',
+          title: t('tag_erstellt'),
           description: `Tag "${newTagName}" wurde in Paperless erstellt`,
         });
         setNewTagName('');
@@ -265,8 +265,8 @@ export default function AnalyzeTab() {
       }
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Tag konnte nicht erstellt werden',
+        title: t('fehler'),
+        description: t('tag_konnte_nicht_erstellt_werden'),
         variant: 'destructive',
       });
     } finally {
@@ -277,7 +277,7 @@ export default function AnalyzeTab() {
   const createCustomField = async () => {
     if (!newFieldName.trim()) {
       toast({
-        title: 'Fehler',
+        title: t('fehler'),
         description: 'Bitte Feld-Namen eingeben',
         variant: 'destructive',
       });
@@ -297,7 +297,7 @@ export default function AnalyzeTab() {
 
       if (response.ok) {
         toast({
-          title: 'Feld erstellt',
+          title: t('feld_erstellt'),
           description: `Benutzerdefiniertes Feld "${newFieldName}" wurde erstellt`,
         });
         setNewFieldName('');
@@ -311,8 +311,8 @@ export default function AnalyzeTab() {
       }
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Feld konnte nicht erstellt werden',
+        title: t('fehler'),
+        description: t('feld_konnte_nicht_erstellt_werden'),
         variant: 'destructive',
       });
     } finally {
@@ -351,8 +351,8 @@ export default function AnalyzeTab() {
       });
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Konnte nicht in Zwischenablage kopieren. Bitte manuell kopieren.',
+        title: t('fehler'),
+        description: t('konnte_nicht_in_zwischenablage_kopieren_bitte_manu'),
         variant: 'destructive',
       });
       console.error('Clipboard error:', error);
@@ -370,8 +370,8 @@ export default function AnalyzeTab() {
       });
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Konnte Metadaten nicht laden',
+        title: t('fehler'),
+        description: t('konnte_metadaten_nicht_laden'),
         variant: 'destructive',
       });
     }

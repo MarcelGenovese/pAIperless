@@ -71,8 +71,8 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
   const testPaperless = async () => {
     if (!paperlessData.url || !paperlessData.token) {
       toast({
-        title: 'Fehler',
-        description: 'Bitte URL und Token angeben',
+        title: t('fehler'),
+        description: t('bitte_url_und_token_angeben'),
         variant: 'destructive',
       });
       return;
@@ -94,20 +94,20 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
       if (response.ok) {
         setPaperlessData({ ...paperlessData, tested: true });
         toast({
-          title: 'Verbindung erfolgreich',
-          description: 'Paperless-NGX ist erreichbar',
+          title: t('verbindung_erfolgreich'),
+          description: t('paperless_ngx_ist_erreichbar'),
           variant: 'success',
         });
       } else {
         toast({
-          title: 'Verbindung fehlgeschlagen',
+          title: t('verbindung_fehlgeschlagen'),
           description: result.error || 'Fehler beim Verbinden',
           variant: 'destructive',
         });
       }
     } catch (error) {
       toast({
-        title: 'Verbindung fehlgeschlagen',
+        title: t('verbindung_fehlgeschlagen'),
         description: 'Netzwerkfehler',
         variant: 'destructive',
       });
@@ -133,15 +133,15 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
 
       toast({
         title: 'Gespeichert',
-        description: 'Paperless-NGX Einstellungen gespeichert',
+        description: t('paperless_ngx_einstellungen_gespeichert'),
         variant: 'success',
       });
 
       setPaperlessData({ ...paperlessData, tested: false });
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Konnte nicht speichern',
+        title: t('fehler'),
+        description: t('konnte_nicht_speichern'),
         variant: 'destructive',
       });
     } finally {
@@ -166,22 +166,22 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
           });
         } else {
           toast({
-            title: 'OCR-Einstellungen prüfen',
+            title: t('ocr_einstellungen_pruefen'),
             description: result.message,
             variant: 'destructive',
           });
         }
       } else {
         toast({
-          title: 'Fehler',
+          title: t('fehler'),
           description: result.error || 'Konnte OCR-Einstellungen nicht prüfen',
           variant: 'destructive',
         });
       }
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Netzwerkfehler beim Prüfen der OCR-Einstellungen',
+        title: t('fehler'),
+        description: t('netzwerkfehler_beim_pruefen_der_ocr_einstellungen'),
         variant: 'destructive',
       });
     } finally {
@@ -208,7 +208,7 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
           });
           toast({
             title: 'Workflows korrekt',
-            description: 'Alle Workflows sind vorhanden und korrekt konfiguriert',
+            description: t('alle_workflows_sind_vorhanden_und_korrekt_konfigur'),
           });
         } else {
           const missingCount = totalRequired - validCount;
@@ -217,7 +217,7 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
             message: `${missingCount} Workflow(s) fehlen oder sind falsch konfiguriert`,
           });
           toast({
-            title: 'Workflows prüfen',
+            title: t('workflows_pruefen'),
             description: `${missingCount} Workflow(s) müssen erstellt oder aktualisiert werden`,
             variant: 'destructive',
           });
@@ -228,15 +228,15 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
           message: result.error || 'Konnte Workflows nicht prüfen',
         });
         toast({
-          title: 'Fehler',
+          title: t('fehler'),
           description: result.error || 'Konnte Workflows nicht prüfen',
           variant: 'destructive',
         });
       }
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Netzwerkfehler beim Prüfen der Workflows',
+        title: t('fehler'),
+        description: t('netzwerkfehler_beim_pruefen_der_workflows'),
         variant: 'destructive',
       });
     } finally {
@@ -267,7 +267,7 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
 
         if (createdCount > 0) {
           toast({
-            title: 'Workflows erstellt',
+            title: t('workflows_erstellt'),
             description: `${createdCount} Workflow(s) wurden erfolgreich erstellt`,
           });
         } else {
@@ -287,15 +287,15 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
           failed: failedCount,
         });
         toast({
-          title: 'Fehler',
+          title: t('fehler'),
           description: result.error || 'Konnte Workflows nicht erstellen',
           variant: 'destructive',
         });
       }
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Netzwerkfehler beim Erstellen der Workflows',
+        title: t('fehler'),
+        description: t('netzwerkfehler_beim_erstellen_der_workflows'),
         variant: 'destructive',
       });
     } finally {
@@ -322,13 +322,13 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
 
       toast({
         title: 'Gespeichert',
-        description: 'Polling Einstellungen gespeichert und Polling neu gestartet',
+        description: t('polling_einstellungen_gespeichert_und_polling_neu_'),
         variant: 'success',
       });
     } catch (error) {
       toast({
-        title: 'Fehler',
-        description: 'Konnte nicht speichern',
+        title: t('fehler'),
+        description: t('konnte_nicht_speichern'),
         variant: 'destructive',
       });
     }
@@ -340,7 +340,7 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
       <Card>
         <CardHeader>
           <CardTitle>Paperless-NGX Verbindung</CardTitle>
-          <CardDescription>Verbindung zu Ihrer Paperless-NGX Instanz</CardDescription>
+          <CardDescription>{t('verbindung_zu_ihrer_paperless_ngx_instanz')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -458,8 +458,8 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
               pAIperless benötigt zwei Workflows in Paperless-NGX:
             </p>
             <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
-              <li><strong>paiperless_document_added</strong> - Triggert AI-Analyse bei neuen Dokumenten</li>
-              <li><strong>paiperless_document_updated</strong> - Triggert Action-Verarbeitung bei Updates</li>
+              <li><strong>paiperless_document_added</strong>{t('triggert_ai_analyse_bei_neuen_dokumenten')}</li>
+              <li><strong>paiperless_document_updated</strong>{t('triggert_action_verarbeitung_bei_updates')}</li>
             </ul>
           </div>
 

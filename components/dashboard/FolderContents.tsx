@@ -156,14 +156,14 @@ export default function FolderContents() {
         await loadFolders();
       } else {
         toast({
-          title: 'Fehler beim Leeren',
+          title: t('fehler_beim_leeren'),
           description: data.error || 'Unbekannter Fehler',
           variant: 'destructive',
         });
       }
     } catch (error: any) {
       toast({
-        title: 'Fehler',
+        title: t('fehler'),
         description: error.message || 'Fehler beim Leeren des Ordners',
         variant: 'destructive',
       });
@@ -182,7 +182,7 @@ export default function FolderContents() {
       if (response.ok) {
         const data = await response.json();
         toast({
-          title: 'Verarbeitung ausgelöst',
+          title: t('verarbeitung_ausgeloest'),
           description: data.message || 'Verarbeitung wurde manuell ausgelöst',
           variant: 'success',
         });
@@ -190,14 +190,14 @@ export default function FolderContents() {
       } else {
         const data = await response.json();
         toast({
-          title: 'Fehler',
+          title: t('fehler'),
           description: data.error || 'Fehler beim Auslösen',
           variant: 'destructive',
         });
       }
     } catch (error: any) {
       toast({
-        title: 'Fehler',
+        title: t('fehler'),
         description: error.message || 'Fehler beim Auslösen der Verarbeitung',
         variant: 'destructive',
       });
@@ -239,14 +239,14 @@ export default function FolderContents() {
       } else {
         const data = await response.json();
         toast({
-          title: 'Fehler beim Wiederholen',
+          title: t('fehler_beim_wiederholen'),
           description: data.error || 'Unbekannter Fehler',
           variant: 'destructive',
         });
       }
     } catch (error: any) {
       toast({
-        title: 'Fehler',
+        title: t('fehler'),
         description: error.message || 'Dokument konnte nicht erneut verarbeitet werden',
         variant: 'destructive',
       });
@@ -270,7 +270,7 @@ export default function FolderContents() {
 
       if (response.ok) {
         toast({
-          title: 'Dokument gelöscht',
+          title: t('dokument_geloescht'),
           description: `"${filename}" wurde erfolgreich gelöscht`,
           variant: 'success',
         });
@@ -278,14 +278,14 @@ export default function FolderContents() {
       } else {
         const data = await response.json();
         toast({
-          title: 'Fehler beim Löschen',
+          title: t('fehler_beim_loeschen'),
           description: data.error || 'Unbekannter Fehler',
           variant: 'destructive',
         });
       }
     } catch (error: any) {
       toast({
-        title: 'Fehler',
+        title: t('fehler'),
         description: error.message || 'Dokument konnte nicht gelöscht werden',
         variant: 'destructive',
       });
@@ -515,9 +515,7 @@ export default function FolderContents() {
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <FontAwesomeIcon icon={faExclamationTriangle} className="text-red-600" />
-                  Fehler
-                  <span className="ml-auto text-sm font-normal text-muted-foreground">
+                  <FontAwesomeIcon icon={faExclamationTriangle} className="text-red-600" />{t('fehler')}<span className="ml-auto text-sm font-normal text-muted-foreground">
                     {errorDocuments.length} / {queueCounts.error} DB
                   </span>
                 </CardTitle>

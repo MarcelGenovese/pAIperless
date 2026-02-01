@@ -1,0 +1,454 @@
+{
+  "Document AI übersprungen": {
+    "category": "setup",
+    "key": "document_ai_uebersprungen"
+  },
+  "Sie können Document AI später in den Einstellungen konfigurieren.": {
+    "category": "setup",
+    "key": "sie_koennen_document_ai_spaeter_in_den_einstellung"
+  },
+  "Fehler": {
+    "category": "setup",
+    "key": "fehler"
+  },
+  "Konfiguration konnte nicht gespeichert werden.": {
+    "category": "setup",
+    "key": "konfiguration_konnte_nicht_gespeichert_werden"
+  },
+  "Google OAuth übersprungen": {
+    "category": "setup",
+    "key": "google_oauth_uebersprungen"
+  },
+  "Sie können Google Calendar & Tasks später in den Einstellungen konfigurieren.": {
+    "category": "setup",
+    "key": "sie_koennen_google_calendar_tasks_spaeter_in_den_e"
+  },
+  "Redirect URI wurde in die Zwischenablage kopiert.": {
+    "category": "setup",
+    "key": "redirect_uri_wurde_in_die_zwischenablage_kopiert"
+  },
+  "Kopieren fehlgeschlagen. Bitte manuell kopieren.": {
+    "category": "setup",
+    "key": "kopieren_fehlgeschlagen_bitte_manuell_kopieren"
+  },
+  "bei den": {
+    "category": "setup",
+    "key": "bei_den"
+  },
+  "Bitte füllen Sie alle erforderlichen Felder aus.": {
+    "category": "setup",
+    "key": "bitte_fuellen_sie_alle_erforderlichen_felder_aus"
+  },
+  "Test erfolgreich": {
+    "category": "setup",
+    "key": "test_erfolgreich"
+  },
+  "Test fehlgeschlagen": {
+    "category": "setup",
+    "key": "test_fehlgeschlagen"
+  },
+  "E-Mail-Konfiguration konnte nicht gespeichert werden.": {
+    "category": "setup",
+    "key": "e_mail_konfiguration_konnte_nicht_gespeichert_werd"
+  },
+  "Paperless-Integration konnte nicht gespeichert werden.": {
+    "category": "setup",
+    "key": "paperless_integration_konnte_nicht_gespeichert_wer"
+  },
+  "&quot; wird gesetzt": {
+    "category": "setup",
+    "key": "quot_wird_gesetzt"
+  },
+  "Erweiterte Einstellungen konnten nicht gespeichert werden.": {
+    "category": "setup",
+    "key": "erweiterte_einstellungen_konnten_nicht_gespeichert"
+  },
+  "FTP Server gestartet": {
+    "category": "setup",
+    "key": "ftp_server_gestartet"
+  },
+  "Warnung": {
+    "category": "setup",
+    "key": "warnung"
+  },
+  "Sprache gespeichert": {
+    "category": "dashboard",
+    "key": "sprache_gespeichert"
+  },
+  "Die Seite wird neu geladen...": {
+    "category": "dashboard",
+    "key": "die_seite_wird_neu_geladen"
+  },
+  "Konnte Sprache nicht speichern": {
+    "category": "dashboard",
+    "key": "konnte_sprache_nicht_speichern"
+  },
+  "Design gespeichert": {
+    "category": "dashboard",
+    "key": "design_gespeichert"
+  },
+  "Konnte Design nicht speichern": {
+    "category": "dashboard",
+    "key": "konnte_design_nicht_speichern"
+  },
+  "Der Standard-Prompt wurde geladen": {
+    "category": "dashboard",
+    "key": "der_standard_prompt_wurde_geladen"
+  },
+  "Konnte Standard-Prompt nicht laden": {
+    "category": "dashboard",
+    "key": "konnte_standard_prompt_nicht_laden"
+  },
+  "Prompt-Template gespeichert": {
+    "category": "dashboard",
+    "key": "prompt_template_gespeichert"
+  },
+  "Konnte Prompt-Template nicht speichern": {
+    "category": "dashboard",
+    "key": "konnte_prompt_template_nicht_speichern"
+  },
+  "Setup zurückgesetzt": {
+    "category": "dashboard",
+    "key": "setup_zurueckgesetzt"
+  },
+  "Sie werden zum Setup-Wizard weitergeleitet...": {
+    "category": "dashboard",
+    "key": "sie_werden_zum_setup_wizard_weitergeleitet"
+  },
+  "Setup konnte nicht zurückgesetzt werden.": {
+    "category": "dashboard",
+    "key": "setup_konnte_nicht_zurueckgesetzt_werden"
+  },
+  "Daten konnten nicht geladen werden": {
+    "category": "dashboard",
+    "key": "daten_konnten_nicht_geladen_werden"
+  },
+  "Paperless Integration Einstellungen wurden gespeichert": {
+    "category": "dashboard",
+    "key": "paperless_integration_einstellungen_wurden_gespeic"
+  },
+  "Einstellungen konnten nicht gespeichert werden": {
+    "category": "dashboard",
+    "key": "einstellungen_konnten_nicht_gespeichert_werden"
+  },
+  "Verarbeitung konnte nicht gestartet werden": {
+    "category": "dashboard",
+    "key": "verarbeitung_konnte_nicht_gestartet_werden"
+  },
+  "KI-Verhalten Einstellungen wurden gespeichert": {
+    "category": "dashboard",
+    "key": "ki_verhalten_einstellungen_wurden_gespeichert"
+  },
+  "Tag erstellt": {
+    "category": "dashboard",
+    "key": "tag_erstellt"
+  },
+  "Tag konnte nicht erstellt werden": {
+    "category": "dashboard",
+    "key": "tag_konnte_nicht_erstellt_werden"
+  },
+  "Feld erstellt": {
+    "category": "dashboard",
+    "key": "feld_erstellt"
+  },
+  "Feld konnte nicht erstellt werden": {
+    "category": "dashboard",
+    "key": "feld_konnte_nicht_erstellt_werden"
+  },
+  "Konnte nicht in Zwischenablage kopieren. Bitte manuell kopieren.": {
+    "category": "dashboard",
+    "key": "konnte_nicht_in_zwischenablage_kopieren_bitte_manu"
+  },
+  "Konnte Metadaten nicht laden": {
+    "category": "dashboard",
+    "key": "konnte_metadaten_nicht_laden"
+  },
+  "Erfolgreich gelöscht": {
+    "category": "dashboard",
+    "key": "erfolgreich_geloescht"
+  },
+  "Dokumente konnten nicht gelöscht werden": {
+    "category": "dashboard",
+    "key": "dokumente_konnten_nicht_geloescht_werden"
+  },
+  "Duplikat wird erneut verarbeitet": {
+    "category": "dashboard",
+    "key": "duplikat_wird_erneut_verarbeitet"
+  },
+  "Dokument wurde mit neuem Hash zurück in den Consume-Ordner verschoben": {
+    "category": "dashboard",
+    "key": "dokument_wurde_mit_neuem_hash_zurueck_in_den_consu"
+  },
+  "Dokument wird erneut verarbeitet": {
+    "category": "dashboard",
+    "key": "dokument_wird_erneut_verarbeitet"
+  },
+  "Verarbeitung wurde neu gestartet": {
+    "category": "dashboard",
+    "key": "verarbeitung_wurde_neu_gestartet"
+  },
+  "Ungültiger Dateityp": {
+    "category": "dashboard",
+    "key": "ungueltiger_dateityp"
+  },
+  "Datei zu groß": {
+    "category": "dashboard",
+    "key": "datei_zu_gross"
+  },
+  "Setup nicht abgeschlossen.": {
+    "category": "dashboard",
+    "key": "setup_nicht_abgeschlossen"
+  },
+  "Interner Server-Fehler. Bitte versuchen Sie es erneut oder prüfen Sie die Server-Logs.": {
+    "category": "dashboard",
+    "key": "interner_server_fehler_bitte_versuchen_sie_es_erne"
+  },
+  "Upload erfolgreich": {
+    "category": "dashboard",
+    "key": "upload_erfolgreich"
+  },
+  "Upload teilweise erfolgreich": {
+    "category": "dashboard",
+    "key": "upload_teilweise_erfolgreich"
+  },
+  "Alle Uploads fehlgeschlagen": {
+    "category": "dashboard",
+    "key": "alle_uploads_fehlgeschlagen"
+  },
+  "Upload fehlgeschlagen": {
+    "category": "dashboard",
+    "key": "upload_fehlgeschlagen"
+  },
+  "Email deaktiviert": {
+    "category": "dashboard",
+    "key": "email_deaktiviert"
+  },
+  "Test-Email wird gesendet": {
+    "category": "dashboard",
+    "key": "test_email_wird_gesendet"
+  },
+  "Email-Einstellungen gespeichert": {
+    "category": "dashboard",
+    "key": "email_einstellungen_gespeichert"
+  },
+  "Konnte nicht speichern": {
+    "category": "dashboard",
+    "key": "konnte_nicht_speichern"
+  },
+  "Emergency Stop konnte nicht geändert werden": {
+    "category": "dashboard",
+    "key": "emergency_stop_konnte_nicht_geaendert_werden"
+  },
+  "AI-Dokumentenanalyse wird gestoppt": {
+    "category": "dashboard",
+    "key": "ai_dokumentenanalyse_wird_gestoppt"
+  },
+  "Datei-Verarbeitung wird gestoppt": {
+    "category": "dashboard",
+    "key": "datei_verarbeitung_wird_gestoppt"
+  },
+  "Worker wird pausiert": {
+    "category": "dashboard",
+    "key": "worker_wird_pausiert"
+  },
+  "Webhooks werden blockiert": {
+    "category": "dashboard",
+    "key": "webhooks_werden_blockiert"
+  },
+  "Polling wird pausiert": {
+    "category": "dashboard",
+    "key": "polling_wird_pausiert"
+  },
+  "Webhooks werden akzeptiert": {
+    "category": "dashboard",
+    "key": "webhooks_werden_akzeptiert"
+  },
+  "Fehler beim Leeren": {
+    "category": "dashboard",
+    "key": "fehler_beim_leeren"
+  },
+  "Verarbeitung ausgelöst": {
+    "category": "dashboard",
+    "key": "verarbeitung_ausgeloest"
+  },
+  "Fehler beim Wiederholen": {
+    "category": "dashboard",
+    "key": "fehler_beim_wiederholen"
+  },
+  "Dokument gelöscht": {
+    "category": "dashboard",
+    "key": "dokument_geloescht"
+  },
+  "Fehler beim Löschen": {
+    "category": "dashboard",
+    "key": "fehler_beim_loeschen"
+  },
+  "Test wird ausgeführt": {
+    "category": "dashboard",
+    "key": "test_wird_ausgefuehrt"
+  },
+  "FTP-Server Status wird geprüft...": {
+    "category": "dashboard",
+    "key": "ftp_server_status_wird_geprueft"
+  },
+  "FTP-Server läuft": {
+    "category": "dashboard",
+    "key": "ftp_server_laeuft"
+  },
+  "FTP-Server nicht aktiv": {
+    "category": "dashboard",
+    "key": "ftp_server_nicht_aktiv"
+  },
+  "FTP-Server Einstellungen werden übernommen...": {
+    "category": "dashboard",
+    "key": "ftp_server_einstellungen_werden_uebernommen"
+  },
+  "Gemini API ist funktionsfähig": {
+    "category": "dashboard",
+    "key": "gemini_api_ist_funktionsfaehig"
+  },
+  "Gemini AI Einstellungen gespeichert": {
+    "category": "dashboard",
+    "key": "gemini_ai_einstellungen_gespeichert"
+  },
+  "Bitte alle Felder ausfüllen": {
+    "category": "dashboard",
+    "key": "bitte_alle_felder_ausfuellen"
+  },
+  "Document AI Verbindung erfolgreich": {
+    "category": "dashboard",
+    "key": "document_ai_verbindung_erfolgreich"
+  },
+  "Document AI Einstellungen gespeichert": {
+    "category": "dashboard",
+    "key": "document_ai_einstellungen_gespeichert"
+  },
+  "Suche fehlgeschlagen": {
+    "category": "dashboard",
+    "key": "suche_fehlgeschlagen"
+  },
+  "Konnte nicht in Logs suchen": {
+    "category": "dashboard",
+    "key": "konnte_nicht_in_logs_suchen"
+  },
+  "Bitte URL und Token angeben": {
+    "category": "dashboard",
+    "key": "bitte_url_und_token_angeben"
+  },
+  "Verbindung erfolgreich": {
+    "category": "dashboard",
+    "key": "verbindung_erfolgreich"
+  },
+  "Paperless-NGX ist erreichbar": {
+    "category": "dashboard",
+    "key": "paperless_ngx_ist_erreichbar"
+  },
+  "Verbindung fehlgeschlagen": {
+    "category": "dashboard",
+    "key": "verbindung_fehlgeschlagen"
+  },
+  "Paperless-NGX Einstellungen gespeichert": {
+    "category": "dashboard",
+    "key": "paperless_ngx_einstellungen_gespeichert"
+  },
+  "OCR-Einstellungen prüfen": {
+    "category": "dashboard",
+    "key": "ocr_einstellungen_pruefen"
+  },
+  "Netzwerkfehler beim Prüfen der OCR-Einstellungen": {
+    "category": "dashboard",
+    "key": "netzwerkfehler_beim_pruefen_der_ocr_einstellungen"
+  },
+  "Alle Workflows sind vorhanden und korrekt konfiguriert": {
+    "category": "dashboard",
+    "key": "alle_workflows_sind_vorhanden_und_korrekt_konfigur"
+  },
+  "Workflows prüfen": {
+    "category": "dashboard",
+    "key": "workflows_pruefen"
+  },
+  "Netzwerkfehler beim Prüfen der Workflows": {
+    "category": "dashboard",
+    "key": "netzwerkfehler_beim_pruefen_der_workflows"
+  },
+  "Workflows erstellt": {
+    "category": "dashboard",
+    "key": "workflows_erstellt"
+  },
+  "Netzwerkfehler beim Erstellen der Workflows": {
+    "category": "dashboard",
+    "key": "netzwerkfehler_beim_erstellen_der_workflows"
+  },
+  "Polling Einstellungen gespeichert und Polling neu gestartet": {
+    "category": "dashboard",
+    "key": "polling_einstellungen_gespeichert_und_polling_neu_"
+  },
+  "Verbindung zu Ihrer Paperless-NGX Instanz": {
+    "category": "dashboard",
+    "key": "verbindung_zu_ihrer_paperless_ngx_instanz"
+  },
+  "- Triggert AI-Analyse bei neuen Dokumenten": {
+    "category": "dashboard",
+    "key": "triggert_ai_analyse_bei_neuen_dokumenten"
+  },
+  "- Triggert Action-Verarbeitung bei Updates": {
+    "category": "dashboard",
+    "key": "triggert_action_verarbeitung_bei_updates"
+  },
+  "1. Upload & Duplikatsprüfung": {
+    "category": "dashboard",
+    "key": "1_upload_duplikatspruefung"
+  },
+  "Bitte wählen Sie eine PDF-Datei": {
+    "category": "dashboard",
+    "key": "bitte_waehlen_sie_eine_pdf_datei"
+  },
+  "Keine Datei ausgewählt": {
+    "category": "dashboard",
+    "key": "keine_datei_ausgewaehlt"
+  },
+  "Pipeline-Test gestartet": {
+    "category": "dashboard",
+    "key": "pipeline_test_gestartet"
+  },
+  "Die Verarbeitung läuft...": {
+    "category": "dashboard",
+    "key": "die_verarbeitung_laeuft"
+  },
+  "Das hochgeladene Dokument existiert bereits im System:": {
+    "category": "dashboard",
+    "key": "das_hochgeladene_dokument_existiert_bereits_im_sys"
+  },
+  "• Der Test endet erfolgreich wenn keine Action Required erkannt wird": {
+    "category": "dashboard",
+    "key": "der_test_endet_erfolgreich_wenn_keine_action_requi"
+  },
+  "In Zwischenablage kopiert": {
+    "category": "dashboard",
+    "key": "in_zwischenablage_kopiert"
+  },
+  "Webhook API Key wurde erfolgreich kopiert": {
+    "category": "dashboard",
+    "key": "webhook_api_key_wurde_erfolgreich_kopiert"
+  },
+  "API Key generiert, aber Workflows konnten nicht automatisch aktualisiert werden. Bitte manuell in Paperless aktualisieren.": {
+    "category": "dashboard",
+    "key": "api_key_generiert_aber_workflows_konnten_nicht_aut"
+  },
+  "Der Webhook API Key wurde erfolgreich neu generiert. Bitte aktualisieren Sie die Paperless Workflows.": {
+    "category": "dashboard",
+    "key": "der_webhook_api_key_wurde_erfolgreich_neu_generier"
+  },
+  "API Key konnte nicht neu generiert werden": {
+    "category": "dashboard",
+    "key": "api_key_konnte_nicht_neu_generiert_werden"
+  },
+  "Workflows aktualisiert": {
+    "category": "dashboard",
+    "key": "workflows_aktualisiert"
+  },
+  "Workflows konnten nicht aktualisiert werden": {
+    "category": "dashboard",
+    "key": "workflows_konnten_nicht_aktualisiert_werden"
+  }
+}

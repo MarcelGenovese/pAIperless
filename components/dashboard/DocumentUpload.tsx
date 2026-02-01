@@ -13,6 +13,7 @@ import {
   faTrash
 } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslations } from 'next-intl';
 
 interface UploadFile {
   file: File;
@@ -26,6 +27,8 @@ interface DocumentUploadProps {
 }
 
 export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
+  const t = useTranslations('dashboard');
+
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -71,7 +74,7 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
         // Only allow PDFs
         if (!file.name.toLowerCase().endsWith('.pdf')) {
           toast({
-            title: 'Ungültiger Dateityp',
+            title: t('ungueltiger_dateityp'),
             description: `${file.name} ist keine PDF-Datei`,
             variant: 'destructive',
           });
@@ -80,7 +83,7 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
         // Check file size (max 100MB)
         if (file.size > 100 * 1024 * 1024) {
           toast({
-            title: 'Datei zu groß',
+            title: t('datei_zu_gross'),
             description: `${file.name} überschreitet die maximale Größe von 100MB`,
             variant: 'destructive',
           });
@@ -207,7 +210,7 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
         }
 
         toast({
-          title: 'Upload erfolgreich',
+          title: t('upload_erfolgreich'),
           description: result.message || `${result.uploaded.length} Datei(en) hochgeladen`,
         });
 
@@ -231,7 +234,7 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
           });
 
           toast({
-            title: 'Upload teilweise erfolgreich',
+            title: t('upload_teilweise_erfolgreich'),
             description: `${result.uploaded.length} erfolgreich, ${result.errors.length} fehlgeschlagen`,
             variant: 'destructive',
           });
@@ -279,7 +282,7 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
           );
 
           toast({
-            title: 'Alle Uploads fehlgeschlagen',
+            title: t('alle_uploads_fehlgeschlagen'),
             description: result.errors.length === 1
               ? result.errors[0].error
               : `${result.errors.length} Dateien konnten nicht hochgeladen werden`,
@@ -304,7 +307,7 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
       );
 
       toast({
-        title: 'Upload fehlgeschlagen',
+        title: t('upload_fehlgeschlagen'),
         description: error.message || 'Ein Fehler ist aufgetreten',
         variant: 'destructive',
       });

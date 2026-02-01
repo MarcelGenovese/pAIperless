@@ -75,8 +75,8 @@ export default function Step6PaperlessIntegration({ onNext, onBack, data }: Step
       onNext({});
     } catch (error) {
       toast({
-        title: "Fehler",
-        description: "Paperless-Integration konnte nicht gespeichert werden.",
+        title: t('fehler'),
+        description: t('paperless_integration_konnte_nicht_gespeichert_wer'),
         variant: "destructive",
       });
     }
@@ -209,7 +209,7 @@ export default function Step6PaperlessIntegration({ onNext, onBack, data }: Step
               <li>{t('dokument_wird_hochgeladen_und_mit_ocr_verarbeitet')}</li>
               <li>System setzt Tag &quot;<strong>{tagAiTodo}</strong>&quot;</li>
               <li>{t('gemini_ai_analysiert_das_dokument_und_entfernt_den')}</li>
-              <li>Falls Handlung erkannt: Tag &quot;<strong>{tagActionRequired}</strong>&quot; wird gesetzt</li>
+              <li>Falls Handlung erkannt: Tag &quot;<strong>{tagActionRequired}</strong>{t('quot_wird_gesetzt')}</li>
               <li>Fields &quot;<strong>{fieldActionDescription}</strong>{t('quot_und_quot')}<strong>{fieldDueDate}</strong>{t('quot_werden_gefuellt')}</li>
               <li>{t('google_calendar_event_und_task_werden_erstellt')}</li>
             </ol>

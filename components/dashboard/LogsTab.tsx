@@ -172,7 +172,7 @@ export default function LogsTab() {
       }
     } catch (error: any) {
       toast({
-        title: 'Fehler',
+        title: t('fehler'),
         description: error.message || 'Cleanup fehlgeschlagen',
         variant: 'destructive',
       });
@@ -225,8 +225,8 @@ export default function LogsTab() {
     } catch (error) {
       console.error('Failed to search logs:', error);
       toast({
-        title: 'Suche fehlgeschlagen',
-        description: 'Konnte nicht in Logs suchen',
+        title: t('suche_fehlgeschlagen'),
+        description: t('konnte_nicht_in_logs_suchen'),
         variant: 'destructive',
       });
     } finally {
