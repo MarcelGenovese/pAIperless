@@ -360,9 +360,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
               }}
               placeholder="gemini-1.5-flash"
             />
-            <p className="text-xs text-muted-foreground mt-1">
-              Empfohlen: gemini-1.5-flash oder gemini-2.0-flash-exp
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">{t('empfohlen_gemini_1_5_flash_oder_gemini_2_0_flash_e')}</p>
           </div>
           <div>
             <Label htmlFor="gemini-token-limit">Monatliches Token-Limit</Label>
@@ -383,9 +381,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
           {/* Pricing Section */}
           <div className="pt-4 border-t">
             <h4 className="text-sm font-semibold mb-3">Preisberechnung</h4>
-            <p className="text-xs text-muted-foreground mb-4">
-              Geben Sie die Kosten pro Token-Einheit an für die Kostenberechnung
-            </p>
+            <p className="text-xs text-muted-foreground mb-4">{t('geben_sie_die_kosten_pro_token_einheit_an_fuer_die')}</p>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="gemini-cost-amount">Kosten ($)</Label>
@@ -414,9 +410,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
                   }}
                   placeholder="1000000"
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Token-Einheit (z.B. 1000000 für 1M)
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">{t('token_einheit_z_b_1000000_fuer_1m')}</p>
               </div>
             </div>
           </div>
@@ -487,9 +481,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
           {/* Processing Limits */}
           <div className="pt-4 border-t">
             <h4 className="text-sm font-semibold mb-3">Verarbeitungslimits</h4>
-            <p className="text-xs text-muted-foreground mb-4">
-              PDFs die diese Limits überschreiten werden direkt an Paperless weitergeleitet (nutzt Tesseract OCR)
-            </p>
+            <p className="text-xs text-muted-foreground mb-4">{t('pdfs_die_diese_limits_ueberschreiten_werden_direkt')}</p>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -545,9 +537,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
           {/* Pricing Section */}
           <div className="pt-4 border-t">
             <h4 className="text-sm font-semibold mb-3">Preisberechnung</h4>
-            <p className="text-xs text-muted-foreground mb-4">
-              Geben Sie die Kosten pro Seiten-Einheit an für die Kostenberechnung
-            </p>
+            <p className="text-xs text-muted-foreground mb-4">{t('geben_sie_die_kosten_pro_seiten_einheit_an_fuer_di')}</p>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="doc-ai-cost-amount">Kosten ($)</Label>
@@ -576,9 +566,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
                   }}
                   placeholder="1000"
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Seiten-Einheit (z.B. 1000 für pro 1000 Seiten)
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">{t('seiten_einheit_z_b_1000_fuer_pro_1000_seiten')}</p>
               </div>
             </div>
           </div>
@@ -594,13 +582,9 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
               }}
               className="w-4 h-4 rounded border-gray-300"
             />
-            <Label htmlFor="doc-ai-enabled" className="cursor-pointer">
-              Document AI Verarbeitung aktivieren
-            </Label>
+            <Label htmlFor="doc-ai-enabled" className="cursor-pointer">{t('document_ai_verarbeitung_aktivieren')}</Label>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Wenn deaktiviert, werden alle Dokumente direkt an Paperless weitergeleitet
-          </p>
+          <p className="text-xs text-muted-foreground">{t('wenn_deaktiviert_werden_alle_dokumente_direkt_an_p')}</p>
 
           {/* Skip searchable PDFs option */}
           <div className="flex items-center space-x-2 pt-2 pl-6 border-l-2 border-blue-200 ml-2">
@@ -614,13 +598,10 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
               className="w-4 h-4 rounded border-gray-300"
               disabled={documentAIData.enabled !== 'true'}
             />
-            <Label htmlFor="doc-ai-skip-searchable" className={`cursor-pointer ${documentAIData.enabled !== 'true' ? 'text-muted-foreground' : ''}`}>
-              PDFs mit Text-Layer überspringen (💰 Kosten sparen!)
-            </Label>
+            <Label htmlFor="doc-ai-skip-searchable" className={`cursor-pointer ${documentAIData.enabled !== 'true' ? 'text-muted-foreground' : ''}`}>{t('pdfs_mit_text_layer_ueberspringen_kosten_sparen')}</Label>
           </div>
           <p className="text-xs text-muted-foreground pl-6">
-            <strong>WICHTIG:</strong> Wenn aktiviert, werden PDFs die bereits durchsuchbar sind (Text-Layer vorhanden) NICHT an Document AI geschickt. Dies spart erhebliche API-Kosten! Paperless verwendet dann Tesseract OCR als Fallback.
-          </p>
+            <strong>WICHTIG:</strong>{t('wenn_aktiviert_werden_pdfs_die_bereits_durchsuchba')}</p>
 
           <div>
             <Label htmlFor="doc-ai-creds">Service Account Credentials (JSON)</Label>

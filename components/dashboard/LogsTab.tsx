@@ -340,11 +340,7 @@ export default function LogsTab() {
             <FontAwesomeIcon icon={faTerminal} />
             Live Logs
           </CardTitle>
-          <CardDescription>
-            Live Logs aus dem Docker Container + Datenbank-Suche für historische Logs.
-            Filter nach Level & Source wirken auf beide. Text-Suche durchsucht Nachricht, Source (system, middleware, worker...) & Level,
-            "Suchen" durchsucht zusätzlich alte Logs (automatisch nach 4 Wochen gelöscht).
-          </CardDescription>
+          <CardDescription>{t('live_logs_aus_dem_docker_container_datenbank_suche')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap items-center gap-4">
@@ -517,9 +513,7 @@ export default function LogsTab() {
                   size="sm"
                   onClick={clearSearch}
                 >
-                  <FontAwesomeIcon icon={faTrash} className="mr-2" />
-                  Zurücksetzen
-                </Button>
+                  <FontAwesomeIcon icon={faTrash} className="mr-2" />{t('zuruecksetzen')}</Button>
               )}
             </div>
             <p className="text-xs text-muted-foreground mt-2">

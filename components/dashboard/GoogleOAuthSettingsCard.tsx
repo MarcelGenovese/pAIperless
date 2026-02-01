@@ -69,7 +69,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
     if (!oauthData.clientId || !oauthData.clientSecret) {
       toast({
         title: t('fehler'),
-        description: 'Bitte Client ID und Secret angeben',
+        description: t('bitte_client_id_und_secret_angeben'),
         variant: 'destructive',
       });
       return;
@@ -206,7 +206,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
 
       toast({
         title: 'Gespeichert',
-        description: 'Google OAuth Einstellungen gespeichert',
+        description: t('google_oauth_einstellungen_gespeichert'),
         variant: 'success',
       });
 
@@ -232,14 +232,14 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
       setIsAuthorized(true);
       loadResources();
       toast({
-        title: 'Autorisierung erfolgreich',
+        title: t('autorisierung_erfolgreich'),
         description: 'Mit Google verbunden',
         variant: 'success',
       });
       window.history.replaceState({}, '', window.location.pathname);
     } else if (error) {
       toast({
-        title: 'Autorisierung fehlgeschlagen',
+        title: t('autorisierung_fehlgeschlagen'),
         description: decodeURIComponent(error),
         variant: 'destructive',
       });
@@ -374,9 +374,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
                 }}
                 placeholder="30"
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                Wie oft soll geprüft werden, ob Tasks als erledigt markiert wurden? (Standard: 30 Minuten)
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">{t('wie_oft_soll_geprueft_werden_ob_tasks_als_erledigt')}</p>
             </div>
           </>
         )}

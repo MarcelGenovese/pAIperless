@@ -411,9 +411,7 @@ export default function AdvancedSettingsTab() {
               onClick={() => setShowResetConfirm(true)}
               disabled={isResettingSetup}
             >
-              <FontAwesomeIcon icon={faRedo} className="mr-2" />
-              Setup erneut ausführen
-            </Button>
+              <FontAwesomeIcon icon={faRedo} className="mr-2" />{t('setup_erneut_ausfuehren')}</Button>
           ) : (
             <div className="p-4 border border-yellow-500 dark:border-yellow-600 rounded-lg bg-yellow-50 dark:bg-[hsl(45,40%,15%)]">
               <div className="flex items-start gap-3 mb-4">
@@ -422,14 +420,8 @@ export default function AdvancedSettingsTab() {
                   className="text-yellow-600 text-xl mt-1"
                 />
                 <div>
-                  <h3 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-2">
-                    Setup zurücksetzen?
-                  </h3>
-                  <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-3">
-                    Dies setzt die Setup-Konfiguration zurück und leitet Sie zum Setup-Wizard weiter.
-                    <strong className="block mt-1">Ihre vorhandenen Einstellungen bleiben erhalten</strong> und
-                    werden im Wizard vorausgefüllt.
-                  </p>
+                  <h3 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-2">{t('setup_zuruecksetzen')}</h3>
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-3">{t('dies_setzt_die_setup_konfiguration_zurueck_und_lei')}<strong className="block mt-1">Ihre vorhandenen Einstellungen bleiben erhalten</strong>{t('und_werden_im_wizard_vorausgefuellt')}</p>
                   <div className="flex gap-2">
                     <Button
                       onClick={handleResetSetup}
@@ -478,9 +470,7 @@ export default function AdvancedSettingsTab() {
             </Select>
             {isSavingLanguage && (
               <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
-                Speichert und lädt neu...
-              </p>
+                <FontAwesomeIcon icon={faSpinner} className="animate-spin" />{t('speichert_und_laedt_neu')}</p>
             )}
           </div>
         </CardContent>
@@ -520,9 +510,7 @@ export default function AdvancedSettingsTab() {
       <Card>
         <CardHeader>
           <CardTitle>Prompt Template</CardTitle>
-          <CardDescription>
-            Anpassen des Prompts für Gemini AI Dokumentenanalyse. Verwenden Sie {'{{'} DOCUMENT_CONTENT {'}}'} als Platzhalter für den Dokumenteninhalt.
-          </CardDescription>
+          <CardDescription>{t('anpassen_des_prompts_fuer_gemini_ai_dokumentenanal')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -535,9 +523,7 @@ export default function AdvancedSettingsTab() {
               placeholder="Lade Prompt..."
               disabled={isLoadingPrompt}
             />
-            <p className="text-xs text-muted-foreground mt-2">
-              Dieser Prompt wird an Gemini AI gesendet, um Dokumente zu analysieren und Metadaten zu extrahieren.
-            </p>
+            <p className="text-xs text-muted-foreground mt-2">{t('dieser_prompt_wird_an_gemini_ai_gesendet_um_dokume')}</p>
           </div>
 
           <div className="flex gap-2">
@@ -614,10 +600,7 @@ export default function AdvancedSettingsTab() {
                 <p className="text-sm text-blue-900 dark:text-blue-100 font-medium mb-1">
                   Polling vs. Webhooks
                 </p>
-                <p className="text-xs text-blue-800 dark:text-blue-200">
-                  Webhooks sind die bevorzugte Methode für Echtzeit-Benachrichtigungen.
-                  Polling sollte nur als Fallback aktiviert werden, wenn Webhooks nicht verfügbar sind.
-                </p>
+                <p className="text-xs text-blue-800 dark:text-blue-200">{t('webhooks_sind_die_bevorzugte_methode_fuer_echtzeit')}</p>
               </div>
             </div>
 
@@ -627,10 +610,7 @@ export default function AdvancedSettingsTab() {
                 <p className="text-sm text-blue-900 dark:text-blue-100 font-medium mb-1">
                   Deduplication
                 </p>
-                <p className="text-xs text-blue-800 dark:text-blue-200">
-                  Das System verwendet SHA-256 Hashing zur Erkennung von Duplikaten.
-                  Bereits verarbeitete Dateien werden automatisch abgelehnt.
-                </p>
+                <p className="text-xs text-blue-800 dark:text-blue-200">{t('das_system_verwendet_sha_256_hashing_zur_erkennung')}</p>
               </div>
             </div>
 
@@ -640,10 +620,7 @@ export default function AdvancedSettingsTab() {
                 <p className="text-sm text-blue-900 dark:text-blue-100 font-medium mb-1">
                   Cost Optimization
                 </p>
-                <p className="text-xs text-blue-800 dark:text-blue-200">
-                  Document AI und Gemini werden nur für neue, eindeutige Dokumente aufgerufen.
-                  Große Dateien (über Limit) werden automatisch übersprungen und verwenden Tesseract OCR.
-                </p>
+                <p className="text-xs text-blue-800 dark:text-blue-200">{t('document_ai_und_gemini_werden_nur_fuer_neue_eindeu')}</p>
               </div>
             </div>
           </div>
@@ -663,9 +640,7 @@ export default function AdvancedSettingsTab() {
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <h3 className="font-semibold mb-1">Ordner bereinigen</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Löscht alle Dateien aus Consume, Processing, Error und Completed Ordnern
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t('loescht_alle_dateien_aus_consume_processing_error_')}</p>
                 </div>
               </div>
               {!showClearFoldersConfirm ? (
@@ -682,9 +657,7 @@ export default function AdvancedSettingsTab() {
                 <div className="p-3 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded">
                   <div className="flex items-start gap-2 mb-3">
                     <FontAwesomeIcon icon={faExclamationTriangle} className="text-yellow-600 mt-0.5" />
-                    <p className="text-sm text-yellow-900 dark:text-yellow-100">
-                      Alle Dateien in den Ordnern werden gelöscht. Diese Aktion kann nicht rückgängig gemacht werden!
-                    </p>
+                    <p className="text-sm text-yellow-900 dark:text-yellow-100">{t('alle_dateien_in_den_ordnern_werden_geloescht_diese')}</p>
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -712,9 +685,7 @@ export default function AdvancedSettingsTab() {
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <h3 className="font-semibold mb-1">Ausstehende Dokumente bereinigen</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Löscht Dokumente aus der Datenbank mit Status PENDING, PREPROCESSING, OCR_IN_PROGRESS, etc.
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t('loescht_dokumente_aus_der_datenbank_mit_status_pen')}</p>
                 </div>
               </div>
               {!showClearPendingConfirm ? (
@@ -731,9 +702,7 @@ export default function AdvancedSettingsTab() {
                 <div className="p-3 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded">
                   <div className="flex items-start gap-2 mb-3">
                     <FontAwesomeIcon icon={faExclamationTriangle} className="text-yellow-600 mt-0.5" />
-                    <p className="text-sm text-yellow-900 dark:text-yellow-100">
-                      Alle ausstehenden Dokumente werden aus der Datenbank gelöscht.
-                    </p>
+                    <p className="text-sm text-yellow-900 dark:text-yellow-100">{t('alle_ausstehenden_dokumente_werden_aus_der_datenba')}</p>
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -765,9 +734,7 @@ export default function AdvancedSettingsTab() {
                     Komplette Bereinigung
                   </h3>
                   <p className="text-sm text-red-800 dark:text-red-200">
-                    <strong>ACHTUNG:</strong> Löscht ALLE Dokumenten-Historie, Hashes und Dateien aus allen Ordnern.
-                    Die Dokumentenverarbeitung wird komplett auf Null gesetzt.
-                  </p>
+                    <strong>ACHTUNG:</strong>{t('loescht_alle_dokumenten_historie_hashes_und_dateie')}</p>
                 </div>
               </div>
               {!showFullResetConfirm ? (
@@ -777,9 +744,7 @@ export default function AdvancedSettingsTab() {
                   onClick={() => setShowFullResetConfirm(true)}
                   disabled={isFullReset}
                 >
-                  <FontAwesomeIcon icon={faExclamationCircle} className="mr-2" />
-                  Alles zurücksetzen
-                </Button>
+                  <FontAwesomeIcon icon={faExclamationCircle} className="mr-2" />{t('alles_zuruecksetzen')}</Button>
               ) : (
                 <div className="p-3 bg-red-100 dark:bg-red-950/40 border border-red-300 dark:border-red-800 rounded">
                   <div className="flex items-start gap-2 mb-3">
@@ -829,15 +794,11 @@ export default function AdvancedSettingsTab() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              Logs können über die Docker-Konsole eingesehen werden:
-            </p>
+            <p className="text-sm text-muted-foreground">{t('logs_koennen_ueber_die_docker_konsole_eingesehen_w')}</p>
             <div className="bg-gray-900 dark:bg-gray-950 text-gray-100 p-3 rounded-md font-mono text-xs">
               <code>docker logs -f paiperless</code>
             </div>
-            <p className="text-sm text-muted-foreground mt-4">
-              Für Shell-Zugriff auf den Container:
-            </p>
+            <p className="text-sm text-muted-foreground mt-4">{t('fuer_shell_zugriff_auf_den_container')}</p>
             <div className="bg-gray-900 dark:bg-gray-950 text-gray-100 p-3 rounded-md font-mono text-xs">
               <code>docker exec -it paiperless /bin/sh</code>
             </div>

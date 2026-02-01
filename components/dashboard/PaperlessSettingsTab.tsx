@@ -384,21 +384,16 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
       <Card>
         <CardHeader>
           <CardTitle>Paperless OCR-Einstellungen</CardTitle>
-          <CardDescription>
-            Prüft ob Paperless korrekt konfiguriert ist um Document AI Ergebnisse nicht zu überschreiben
-          </CardDescription>
+          <CardDescription>{t('prueft_ob_paperless_korrekt_konfiguriert_ist_um_do')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="p-4 border rounded-lg bg-blue-50 dark:bg-[hsl(0,0%,15%)]">
             <h4 className="font-semibold mb-2">{t('wichtig_fuer_document_ai')}</h4>
-            <p className="text-sm text-muted-foreground mb-2">
-              Damit Paperless die OCR-Ergebnisse von Document AI nicht überschreibt, muss der OCR-Modus auf
-              <strong className="text-foreground"> &quot;skip&quot; </strong> oder
+            <p className="text-sm text-muted-foreground mb-2">{t('damit_paperless_die_ocr_ergebnisse_von_document_ai')}<strong className="text-foreground"> &quot;skip&quot; </strong> oder
               <strong className="text-foreground"> &quot;skip_noarchive&quot; </strong> gesetzt sein.
             </p>
             <p className="text-sm text-muted-foreground">
-              Diese Einstellung kannst du in Paperless unter <strong>Administration → Settings → OCR</strong> ändern.
-            </p>
+              Diese Einstellung kannst du in Paperless unter <strong>Administration → Settings → OCR</strong>{t('aendern')}</p>
           </div>
 
           {ocrStatus && (
@@ -447,16 +442,12 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
       <Card>
         <CardHeader>
           <CardTitle>Paperless Workflows</CardTitle>
-          <CardDescription>
-            Prüft und erstellt die erforderlichen Webhooks für die AI-Verarbeitung
-          </CardDescription>
+          <CardDescription>{t('prueft_und_erstellt_die_erforderlichen_webhooks_fu')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="p-4 border rounded-lg bg-blue-50 dark:bg-[hsl(0,0%,15%)]">
             <h4 className="font-semibold mb-2">ℹ️ Erforderliche Workflows</h4>
-            <p className="text-sm text-muted-foreground mb-2">
-              pAIperless benötigt zwei Workflows in Paperless-NGX:
-            </p>
+            <p className="text-sm text-muted-foreground mb-2">{t('paiperless_benoetigt_zwei_workflows_in_paperless_n')}</p>
             <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
               <li><strong>paiperless_document_added</strong>{t('triggert_ai_analyse_bei_neuen_dokumenten')}</li>
               <li><strong>paiperless_document_updated</strong>{t('triggert_action_verarbeitung_bei_updates')}</li>
@@ -546,7 +537,7 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
             {/* Action Tag Polling */}
             <div className="flex items-center justify-between p-4 border rounded-lg">
               <div>
-                <Label htmlFor="poll-action" className="text-base">Action Tag Polling</Label>
+                <Label htmlFor="poll-action" className="text-base">{t('action_tag_polling')}</Label>
                 <p className="text-sm text-muted-foreground">{t('pruefe_auf_action_required_tags')}</p>
               </div>
               <Switch

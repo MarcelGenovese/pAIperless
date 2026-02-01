@@ -175,7 +175,7 @@ export default function AnalyzeTab() {
 
       if (result.success) {
         toast({
-          title: 'Verarbeitung abgeschlossen',
+          title: t('verarbeitung_abgeschlossen'),
           description: `${result.successful} von ${result.total} Dokumenten erfolgreich verarbeitet`,
         });
       } else {
@@ -269,7 +269,7 @@ export default function AnalyzeTab() {
     if (!newTagName.trim()) {
       toast({
         title: t('fehler'),
-        description: 'Bitte Tag-Namen eingeben',
+        description: t('bitte_tag_namen_eingeben'),
         variant: 'destructive',
       });
       return;
@@ -311,7 +311,7 @@ export default function AnalyzeTab() {
     if (!newFieldName.trim()) {
       toast({
         title: t('fehler'),
-        description: 'Bitte Feld-Namen eingeben',
+        description: t('bitte_feld_namen_eingeben'),
         variant: 'destructive',
       });
       return;
@@ -651,9 +651,7 @@ export default function AnalyzeTab() {
             <FontAwesomeIcon icon={faBrain} className="text-blue-600" />
             AI Analyze Configuration
           </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Konfigurieren Sie, wie die KI Dokumente analysiert und Metadaten extrahiert
-          </p>
+          <p className="text-sm text-muted-foreground mt-1">{t('konfigurieren_sie_wie_die_ki_dokumente_analysiert_')}</p>
         </div>
         <div className="flex gap-2">
           <Button
@@ -680,12 +678,8 @@ export default function AnalyzeTab() {
       <Card className="bg-blue-50 dark:bg-[hsl(0,0%,15%)] border-blue-200 dark:border-[hsl(0,0%,25%)]">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <FontAwesomeIcon icon={faPlay} className="text-blue-600" />
-            Manuelle Verarbeitung
-          </CardTitle>
-          <CardDescription>
-            Verarbeiten Sie sofort alle Dokumente mit dem Tag "{tagAiTodo || 'ai_todo'}"
-          </CardDescription>
+            <FontAwesomeIcon icon={faPlay} className="text-blue-600" />{t('manuelle_verarbeitung')}</CardTitle>
+          <CardDescription>{t('verarbeiten_sie_sofort_alle_dokumente_mit_dem_tag_')}</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-3">
@@ -712,9 +706,7 @@ export default function AnalyzeTab() {
             </Button>
           </div>
           {isProcessingLocked && !processing && (
-            <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
-              ⚠️ Eine AI-Verarbeitung läuft bereits. Bitte warten Sie, bis diese abgeschlossen ist.
-            </p>
+            <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">{t('eine_ai_verarbeitung_laeuft_bereits_bitte_warten_s')}</p>
           )}
         </CardContent>
       </Card>
@@ -723,9 +715,7 @@ export default function AnalyzeTab() {
       <Card>
         <CardHeader>
           <CardTitle>Paperless Integration</CardTitle>
-          <CardDescription>
-            Wählen Sie die Tags und Felder aus, die für die Verarbeitung verwendet werden
-          </CardDescription>
+          <CardDescription>{t('waehlen_sie_die_tags_und_felder_aus_die_fuer_die_v')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -750,9 +740,7 @@ export default function AnalyzeTab() {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
-                Dokumente mit diesem Tag werden von der KI analysiert
-              </p>
+              <p className="text-xs text-muted-foreground">{t('dokumente_mit_diesem_tag_werden_von_der_ki_analysi')}</p>
             </div>
 
             {/* Tag Action Required */}
@@ -776,9 +764,7 @@ export default function AnalyzeTab() {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
-                Dokumente mit erkannten Aktionen erhalten diesen Tag
-              </p>
+              <p className="text-xs text-muted-foreground">{t('dokumente_mit_erkannten_aktionen_erhalten_diesen_t')}</p>
             </div>
 
             {/* Field Action Description */}
@@ -860,9 +846,7 @@ export default function AnalyzeTab() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <FontAwesomeIcon icon={faTag} />
-            Tag-Verwaltung
-          </CardTitle>
+            <FontAwesomeIcon icon={faTag} />{t('tag_verwaltung')}</CardTitle>
           <CardDescription>
             Neue Tags in Paperless erstellen
           </CardDescription>
@@ -870,7 +854,7 @@ export default function AnalyzeTab() {
         <CardContent>
           <div className="flex gap-2">
             <Input
-              placeholder="Neuer Tag-Name..."
+              placeholder={t('neuer_tag_name')}
               value={newTagName}
               onChange={(e) => setNewTagName(e.target.value)}
               onKeyDown={(e) => {
@@ -915,7 +899,7 @@ export default function AnalyzeTab() {
         <CardContent>
           <div className="flex gap-2">
             <Input
-              placeholder="Feld-Name..."
+              placeholder={t('feld_name')}
               value={newFieldName}
               onChange={(e) => setNewFieldName(e.target.value)}
               className="flex-1"
@@ -964,9 +948,7 @@ export default function AnalyzeTab() {
             <FontAwesomeIcon icon={faListCheck} />
             Benutzerdefinierte Felder in Paperless
           </CardTitle>
-          <CardDescription>
-            Diese Felder können von der KI befüllt werden
-          </CardDescription>
+          <CardDescription>{t('diese_felder_koennen_von_der_ki_befuellt_werden')}</CardDescription>
         </CardHeader>
         <CardContent>
           {metadata && metadata.customFields.length > 0 ? (
@@ -1006,9 +988,7 @@ export default function AnalyzeTab() {
             <FontAwesomeIcon icon={faCode} />
             Erwartete JSON-Struktur
           </CardTitle>
-          <CardDescription>
-            Diese Struktur wird automatisch generiert und an die KI übermittelt
-          </CardDescription>
+          <CardDescription>{t('diese_struktur_wird_automatisch_generiert_und_an_d')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Textarea
@@ -1041,7 +1021,7 @@ export default function AnalyzeTab() {
         <CardContent className="space-y-6">
           {/* Tag Mode */}
           <div className="space-y-2">
-            <Label htmlFor="tag-mode">Tag-Generierungsmodus</Label>
+            <Label htmlFor="tag-mode">{t('tag_generierungsmodus')}</Label>
             <Select
               value={tagMode}
               onValueChange={(value: TagMode) => {
@@ -1085,9 +1065,7 @@ export default function AnalyzeTab() {
                 setHasChanges(true);
               }}
             />
-            <p className="text-xs text-muted-foreground">
-              Die KI darf maximal diese Anzahl Tags pro Dokument vergeben
-            </p>
+            <p className="text-xs text-muted-foreground">{t('die_ki_darf_maximal_diese_anzahl_tags_pro_dokument')}</p>
           </div>
 
           {/* Strict Correspondents */}
@@ -1096,9 +1074,7 @@ export default function AnalyzeTab() {
               <Label htmlFor="strict-correspondents">
                 Nur vorhandene Korrespondenten verwenden
               </Label>
-              <p className="text-sm text-muted-foreground">
-                KI darf nur aus existierenden Korrespondenten wählen
-              </p>
+              <p className="text-sm text-muted-foreground">{t('ki_darf_nur_aus_existierenden_korrespondenten_waeh')}</p>
             </div>
             <Switch
               id="strict-correspondents"
@@ -1116,9 +1092,7 @@ export default function AnalyzeTab() {
               <Label htmlFor="strict-document-types">
                 Nur vorhandene Dokumententypen verwenden
               </Label>
-              <p className="text-sm text-muted-foreground">
-                KI darf nur aus existierenden Dokumententypen wählen
-              </p>
+              <p className="text-sm text-muted-foreground">{t('ki_darf_nur_aus_existierenden_dokumententypen_waeh')}</p>
             </div>
             <Switch
               id="strict-document-types"
@@ -1136,9 +1110,7 @@ export default function AnalyzeTab() {
               <Label htmlFor="strict-storage-paths">
                 Nur vorhandene Storage Paths verwenden
               </Label>
-              <p className="text-sm text-muted-foreground">
-                KI darf nur aus existierenden Storage Paths wählen
-              </p>
+              <p className="text-sm text-muted-foreground">{t('ki_darf_nur_aus_existierenden_storage_paths_waehle')}</p>
             </div>
             <Switch
               id="strict-storage-paths"
@@ -1153,12 +1125,8 @@ export default function AnalyzeTab() {
           {/* Fill Custom Fields */}
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="fill-custom-fields">
-                Benutzerdefinierte Felder automatisch ausfüllen
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                KI füllt alle benutzerdefinierten Felder nach bestem Ermessen aus
-              </p>
+              <Label htmlFor="fill-custom-fields">{t('benutzerdefinierte_felder_automatisch_ausfuellen')}</Label>
+              <p className="text-sm text-muted-foreground">{t('ki_fuellt_alle_benutzerdefinierten_felder_nach_bes')}</p>
             </div>
             <Switch
               id="fill-custom-fields"
@@ -1172,13 +1140,8 @@ export default function AnalyzeTab() {
 
           {/* Custom Prompt */}
           <div className="space-y-2">
-            <Label htmlFor="custom-prompt">
-              Zusätzliche Anweisungen (Optional)
-            </Label>
-            <p className="text-sm text-muted-foreground">
-              Fügen Sie spezifische Anweisungen für das Feintuning hinzu.
-              Die grundlegenden Regeln werden automatisch generiert.
-            </p>
+            <Label htmlFor="custom-prompt">{t('zusaetzliche_anweisungen_optional')}</Label>
+            <p className="text-sm text-muted-foreground">{t('fuegen_sie_spezifische_anweisungen_fuer_das_feintu')}</p>
             <Textarea
               id="custom-prompt"
               value={customPrompt}
@@ -1217,10 +1180,7 @@ export default function AnalyzeTab() {
       <Card>
         <CardHeader>
           <CardTitle>{t('vollstaendiger_prompt_vorschau')}</CardTitle>
-          <CardDescription>
-            Dies ist der komplette Prompt, der an die KI gesendet wird (automatisch generiert).
-            Listen werden nur hinzugefügt wenn die entsprechenden Strict-Modi aktiv sind.
-          </CardDescription>
+          <CardDescription>{t('dies_ist_der_komplette_prompt_der_an_die_ki_gesend')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Textarea

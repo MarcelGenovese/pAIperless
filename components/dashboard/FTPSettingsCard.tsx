@@ -213,9 +213,7 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
             <Label htmlFor="ftp-enabled" className="text-base">
               FTP Server aktivieren
             </Label>
-            <p className="text-xs text-muted-foreground">
-              Ermöglicht Upload von Dokumenten über FTP
-            </p>
+            <p className="text-xs text-muted-foreground">{t('ermoeglicht_upload_von_dokumenten_ueber_ftp')}</p>
           </div>
           <Switch
             id="ftp-enabled"
@@ -290,20 +288,13 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
                 }}
                 placeholder={t('192_168_1_100_oder_domain_com')}
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                Die IP-Adresse oder Domain, die Clients für Datenverbindungen verwenden.
-                Standard: Hostname aus Paperless-URL
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">{t('die_ip_adresse_oder_domain_die_clients_fuer_datenv')}</p>
             </div>
 
             <div className="flex items-center justify-between p-4 border rounded-lg">
               <div className="space-y-0.5">
-                <Label htmlFor="ftp-tls" className="text-base">
-                  TLS/SSL Verschlüsselung
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  FTPS für sichere Verbindungen (empfohlen)
-                </p>
+                <Label htmlFor="ftp-tls" className="text-base">{t('tls_ssl_verschluesselung')}</Label>
+                <p className="text-xs text-muted-foreground">{t('ftps_fuer_sichere_verbindungen_empfohlen')}</p>
               </div>
               <Switch
                 id="ftp-tls"

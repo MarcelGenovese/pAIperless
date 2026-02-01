@@ -179,9 +179,7 @@ export default function OverviewTab() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.pendingActions}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Dokumente mit action_required Tag
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">{t('dokumente_mit_action_required_tag')}</p>
             <Button
               variant="outline"
               size="sm"
@@ -437,9 +435,7 @@ export default function OverviewTab() {
           <CardTitle>Letzte Dokumente</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Für eine vollständige Liste verwenden Sie den Dokumente-Tab
-          </p>
+          <p className="text-sm text-muted-foreground">{t('fuer_eine_vollstaendige_liste_verwenden_sie_den_do')}</p>
         </CardContent>
       </Card>
 
@@ -459,10 +455,8 @@ export default function OverviewTab() {
             </div>
             <div className="text-center p-4 border rounded-lg hover:border-[#27417A] transition-colors">
               <FontAwesomeIcon icon={faBolt} className="text-4xl mb-2 text-[#27417A]" />
-              <h3 className="font-semibold mb-1">Auto-Verarbeitung</h3>
-              <p className="text-sm text-muted-foreground">
-                OCR, Tagging und Analyse automatisch
-              </p>
+              <h3 className="font-semibold mb-1">{t('auto_verarbeitung')}</h3>
+              <p className="text-sm text-muted-foreground">{t('ocr_tagging_und_analyse_automatisch')}</p>
             </div>
             <div className="text-center p-4 border rounded-lg hover:border-[#27417A] transition-colors">
               <FontAwesomeIcon icon={faChartBar} className="text-4xl mb-2 text-[#27417A]" />

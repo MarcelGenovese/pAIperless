@@ -184,9 +184,7 @@ export default function EmailSettingsCard({ initialData = {} }: EmailSettingsCar
             <Label htmlFor="email-enabled" className="text-base">
               E-Mail-Benachrichtigungen aktivieren
             </Label>
-            <p className="text-xs text-muted-foreground">
-              Erhalten Sie Benachrichtigungen über verarbeitete Dokumente
-            </p>
+            <p className="text-xs text-muted-foreground">{t('erhalten_sie_benachrichtigungen_ueber_verarbeitete')}</p>
           </div>
           <Switch
             id="email-enabled"
@@ -301,9 +299,7 @@ export default function EmailSettingsCard({ initialData = {} }: EmailSettingsCar
                 }}
                 placeholder="admin@example.com, user@example.com"
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                Kommagetrennte Liste von E-Mail-Adressen
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">{t('kommagetrennte_liste_von_e_mail_adressen')}</p>
             </div>
 
             {/* Notification Settings */}
@@ -312,12 +308,8 @@ export default function EmailSettingsCard({ initialData = {} }: EmailSettingsCar
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 border rounded-lg bg-gray-50 dark:bg-gray-900">
                   <div className="space-y-0.5">
-                    <Label htmlFor="notify-success" className="text-sm font-medium">
-                      Erfolgreiche Verarbeitung
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Benachrichtigung bei erfolgreich verarbeiteten Dokumenten
-                    </p>
+                    <Label htmlFor="notify-success" className="text-sm font-medium">{t('erfolgreiche_verarbeitung')}</Label>
+                    <p className="text-xs text-muted-foreground">{t('benachrichtigung_bei_erfolgreich_verarbeiteten_dok')}</p>
                   </div>
                   <Switch
                     id="notify-success"
@@ -330,9 +322,7 @@ export default function EmailSettingsCard({ initialData = {} }: EmailSettingsCar
 
                 <div className="flex items-center justify-between p-3 border rounded-lg bg-gray-50 dark:bg-gray-900">
                   <div className="space-y-0.5">
-                    <Label htmlFor="notify-error" className="text-sm font-medium">
-                      Fehler bei Verarbeitung
-                    </Label>
+                    <Label htmlFor="notify-error" className="text-sm font-medium">{t('fehler_bei_verarbeitung')}</Label>
                     <p className="text-xs text-muted-foreground">
                       Benachrichtigung bei fehlgeschlagenen Dokumenten
                     </p>
@@ -366,12 +356,8 @@ export default function EmailSettingsCard({ initialData = {} }: EmailSettingsCar
 
                 <div className="flex items-center justify-between p-3 border rounded-lg bg-gray-50 dark:bg-gray-900">
                   <div className="space-y-0.5">
-                    <Label htmlFor="notify-api-warning" className="text-sm font-medium">
-                      API-Limit Warnung
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Warnung vor Erreichen des API-Limits
-                    </p>
+                    <Label htmlFor="notify-api-warning" className="text-sm font-medium">{t('api_limit_warnung')}</Label>
+                    <p className="text-xs text-muted-foreground">{t('warnung_vor_erreichen_des_api_limits')}</p>
                   </div>
                   <Switch
                     id="notify-api-warning"

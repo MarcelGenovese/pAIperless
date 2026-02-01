@@ -405,9 +405,7 @@ export default function FolderContents() {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold">Verarbeitungs-Pipeline</h3>
-          <p className="text-sm text-muted-foreground">
-            Echtzeit-Übersicht der Dokumente in der Verarbeitung
-          </p>
+          <p className="text-sm text-muted-foreground">{t('echtzeit_uebersicht_der_dokumente_in_der_verarbeit')}</p>
         </div>
         <Button
           variant="outline"
@@ -437,9 +435,7 @@ export default function FolderContents() {
                     {folders.consume.length} / {queueCounts.pending} DB
                   </span>
                 </CardTitle>
-                <CardDescription className="text-xs mt-1">
-                  Neue Dateien, die auf Verarbeitung warten
-                </CardDescription>
+                <CardDescription className="text-xs mt-1">{t('neue_dateien_die_auf_verarbeitung_warten')}</CardDescription>
               </div>
               <div className="flex gap-2">
                 <Button
@@ -519,9 +515,7 @@ export default function FolderContents() {
                     {errorDocuments.length} / {queueCounts.error} DB
                   </span>
                 </CardTitle>
-                <CardDescription className="text-xs mt-1">
-                  Fehlerhafte Dateien (Duplikate oder Fehler)
-                </CardDescription>
+                <CardDescription className="text-xs mt-1">{t('fehlerhafte_dateien_duplikate_oder_fehler')}</CardDescription>
               </div>
               {errorDocuments.length > 0 && (
                 <Button

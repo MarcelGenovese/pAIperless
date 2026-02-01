@@ -228,9 +228,7 @@ export default function DocumentsTab() {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold">Dokumente</h2>
-        <p className="text-sm text-muted-foreground">
-          Übersicht aller verarbeiteten Dokumente (automatische Aktualisierung alle 10 Sekunden)
-        </p>
+        <p className="text-sm text-muted-foreground">{t('uebersicht_aller_verarbeiteten_dokumente_automatis')}</p>
       </div>
 
       {/* Upload Component */}
@@ -244,9 +242,7 @@ export default function DocumentsTab() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Verarbeitungshistorie</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                Vollständige Historie aller verarbeiteten Dokumente aus der Datenbank
-              </p>
+              <p className="text-sm text-muted-foreground mt-1">{t('vollstaendige_historie_aller_verarbeiteten_dokumen')}</p>
             </div>
             {selectedIds.length > 0 && (
               <Button
@@ -436,9 +432,7 @@ export default function DocumentsTab() {
                         <Tabs defaultValue="ocr" className="w-full">
                           <TabsList className="grid w-full grid-cols-2">
                             <TabsTrigger value="ocr">
-                              <FontAwesomeIcon icon={faFileAlt} className="mr-2" />
-                              OCR Verarbeitung
-                            </TabsTrigger>
+                              <FontAwesomeIcon icon={faFileAlt} className="mr-2" />{t('ocr_verarbeitung')}</TabsTrigger>
                             <TabsTrigger value="ai-tagging">
                               <FontAwesomeIcon icon={faRobot} className="mr-2" />
                               KI-Tagging
@@ -460,9 +454,7 @@ export default function DocumentsTab() {
                               </div>
                             ) : (
                               <div className="p-3 rounded-lg bg-gray-100 dark:bg-gray-800">
-                                <p className="text-xs text-muted-foreground">
-                                  Keine Document AI OCR Verarbeitung (übersprungen oder Tesseract verwendet)
-                                </p>
+                                <p className="text-xs text-muted-foreground">{t('keine_document_ai_ocr_verarbeitung_uebersprungen_o')}</p>
                               </div>
                             )}
 
@@ -471,9 +463,7 @@ export default function DocumentsTab() {
                                 <div className="flex items-center justify-between mb-2">
                                   <div className="flex items-center gap-2">
                                     <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />
-                                    <span className="font-semibold text-sm text-green-900 dark:text-green-100">
-                                      An Paperless übertragen
-                                    </span>
+                                    <span className="font-semibold text-sm text-green-900 dark:text-green-100">{t('an_paperless_uebertragen')}</span>
                                   </div>
                                   <Button
                                     variant="outline"
@@ -642,9 +632,7 @@ export default function DocumentsTab() {
                               </div>
                             ) : (
                               <div className="p-3 rounded-lg bg-gray-100 dark:bg-gray-800">
-                                <p className="text-xs text-muted-foreground">
-                                  Keine KI-Analyse-Daten verfügbar
-                                </p>
+                                <p className="text-xs text-muted-foreground">{t('keine_ki_analyse_daten_verfuegbar')}</p>
                               </div>
                             )}
                           </TabsContent>
@@ -668,9 +656,7 @@ export default function DocumentsTab() {
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
                     >
-                      <FontAwesomeIcon icon={faChevronLeft} className="mr-2" />
-                      Zurück
-                    </Button>
+                      <FontAwesomeIcon icon={faChevronLeft} className="mr-2" />{t('zurueck')}</Button>
                     <Button
                       variant="outline"
                       size="sm"
@@ -712,14 +698,10 @@ export default function DocumentsTab() {
               >
                 {deleting ? (
                   <>
-                    <FontAwesomeIcon icon={faSpinner} className="mr-2 animate-spin" />
-                    Löschen...
-                  </>
+                    <FontAwesomeIcon icon={faSpinner} className="mr-2 animate-spin" />{t('loeschen')}</>
                 ) : (
                   <>
-                    <FontAwesomeIcon icon={faTrash} className="mr-2" />
-                    Löschen
-                  </>
+                    <FontAwesomeIcon icon={faTrash} className="mr-2" />{t('loeschen')}</>
                 )}
               </Button>
             </div>

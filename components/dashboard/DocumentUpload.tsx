@@ -374,12 +374,8 @@ export default function DocumentUpload({ onUploadComplete }: DocumentUploadProps
           <p className="text-lg font-semibold mb-2">
             {isDragging ? 'Dateien hier ablegen' : 'Dateien hochladen'}
           </p>
-          <p className="text-sm text-muted-foreground mb-2">
-            Ziehen Sie PDF-Dateien hierher oder klicken Sie zum Auswählen
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Maximale Dateigröße: 100MB pro Datei
-          </p>
+          <p className="text-sm text-muted-foreground mb-2">{t('ziehen_sie_pdf_dateien_hierher_oder_klicken_sie_zu')}</p>
+          <p className="text-xs text-muted-foreground">{t('maximale_dateigroesse_100mb_pro_datei')}</p>
           <input
             ref={fileInputRef}
             type="file"

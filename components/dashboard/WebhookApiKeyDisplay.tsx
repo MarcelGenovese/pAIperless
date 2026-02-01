@@ -214,12 +214,8 @@ export default function WebhookApiKeyDisplay() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Webhook API Key neu generieren?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Dies wird einen neuen Webhook API Key generieren. Der alte Key wird ungültig.
-              <br /><br />
-              <strong>Wichtig:</strong> Sie müssen den neuen Key in allen Paperless Workflows aktualisieren,
-              sonst funktionieren die Webhooks nicht mehr.
-            </AlertDialogDescription>
+            <AlertDialogDescription>{t('dies_wird_einen_neuen_webhook_api_key_generieren_d')}<br /><br />
+              <strong>Wichtig:</strong>{t('sie_muessen_den_neuen_key_in_allen_paperless_workf')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Abbrechen</AlertDialogCancel>

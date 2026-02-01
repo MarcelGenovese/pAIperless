@@ -348,9 +348,7 @@ export default function QueueCards() {
                       disabled={retrying === doc.id || deleting === doc.id}
                       className="text-red-600 hover:text-red-700"
                     >
-                      <FontAwesomeIcon icon={faTrash} className="mr-2" />
-                      Löschen
-                    </Button>
+                      <FontAwesomeIcon icon={faTrash} className="mr-2" />{t('loeschen')}</Button>
                   </div>
                 </div>
               ))}

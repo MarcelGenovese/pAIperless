@@ -384,9 +384,7 @@ export default function PipelineTestTab() {
             <label
               htmlFor="skip-duplicate-check"
               className="text-sm text-yellow-900 dark:text-yellow-100 cursor-pointer"
-            >
-              Duplikatsprüfung überspringen (Dokument verarbeiten auch wenn es bereits existiert)
-            </label>
+            >{t('duplikatspruefung_ueberspringen_dokument_verarbeit')}</label>
           </div>
 
           {selectedFile && (
@@ -484,7 +482,7 @@ export default function PipelineTestTab() {
               <p>{t('das_hochgeladene_dokument_existiert_bereits_im_sys')}</p>
               <div className="flex flex-col gap-1">
                 <div>
-                  <span className="font-medium">Dokument ID:</span>{' '}
+                  <span className="font-medium">{t('dokument_id')}</span>{' '}
                   <span className="font-mono">{testStatus.duplicateDocId}</span>
                 </div>
                 {testStatus.duplicatePaperlessId && (
@@ -564,8 +562,8 @@ export default function PipelineTestTab() {
                 <div className="space-y-2">
                   <h5 className="font-semibold text-blue-600 dark:text-blue-400">Paperless Integration</h5>
                   <div className="space-y-1 text-xs">
-                    <div><span className="font-medium">AI Todo Tag:</span> {configInfo.tagAiTodo || 'N/A'}</div>
-                    <div><span className="font-medium">Action Required Tag:</span> {configInfo.tagActionRequired || 'N/A'}</div>
+                    <div><span className="font-medium">{t('ai_todo_tag')}</span> {configInfo.tagAiTodo || 'N/A'}</div>
+                    <div><span className="font-medium">{t('action_required_tag')}</span> {configInfo.tagActionRequired || 'N/A'}</div>
                     <div><span className="font-medium">Action Description Field:</span> {configInfo.fieldActionDescription || 'N/A'}</div>
                     <div><span className="font-medium">Due Date Field:</span> {configInfo.fieldDueDate || 'N/A'}</div>
                   </div>
@@ -587,7 +585,7 @@ export default function PipelineTestTab() {
                   <h5 className="font-semibold text-blue-600 dark:text-blue-400">Gemini AI</h5>
                   <div className="space-y-1 text-xs">
                     <div><span className="font-medium">Model:</span> {configInfo.geminiModel || 'N/A'}</div>
-                    <div><span className="font-medium">Tag Mode:</span> {configInfo.geminiTagMode || 'N/A'}</div>
+                    <div><span className="font-medium">{t('tag_mode')}</span> {configInfo.geminiTagMode || 'N/A'}</div>
                     <div><span className="font-medium">Max Tags:</span> {configInfo.geminiMaxTags || 'N/A'}</div>
                     <div><span className="font-medium">Custom Fields:</span> {configInfo.geminiFillCustomFields ? 'Ja' : 'Nein'}</div>
                     <div><span className="font-medium">Strict Correspondents:</span> {configInfo.geminiStrictCorrespondents ? 'Ja' : 'Nein'}</div>
@@ -597,7 +595,7 @@ export default function PipelineTestTab() {
 
                 {/* Polling */}
                 <div className="space-y-2">
-                  <h5 className="font-semibold text-blue-600 dark:text-blue-400">Verarbeitung</h5>
+                  <h5 className="font-semibold text-blue-600 dark:text-blue-400">{t('verarbeitung')}</h5>
                   <div className="space-y-1 text-xs">
                     <div><span className="font-medium">AI Todo Polling:</span> {configInfo.pollAiTodoEnabled ? 'Aktiviert' : 'Deaktiviert'}</div>
                     {configInfo.pollAiTodoEnabled && (
