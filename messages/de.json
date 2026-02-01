@@ -135,7 +135,10 @@
     "quot_wird_gesetzt": "&quot; wird gesetzt",
     "erweiterte_einstellungen_konnten_nicht_gespeichert": "Erweiterte Einstellungen konnten nicht gespeichert werden.",
     "ftp_server_gestartet": "FTP Server gestartet",
-    "warnung": "Warnung"
+    "warnung": "Warnung",
+    "test_error": "Test Error",
+    "test_successful_setup": "Test Successful",
+    "test_failed_setup": "Test Failed"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -304,7 +307,17 @@
     "use_only_in_emergencies": "⚠️ Verwenden Sie dies nur in Notfällen!",
     "cancel": "Abbrechen",
     "yes_stop": "🚨 Ja, stoppen!",
-    "yes_continue": "✅ Ja, fortsetzen"
+    "yes_continue": "✅ Ja, fortsetzen",
+    "preprocessing": "2. Vorverarbeitung",
+    "document_ai_ocr": "3. Document AI OCR",
+    "paperless_upload": "4. Paperless Upload",
+    "ai_tagging": "5. AI-Tagging",
+    "action_required_detection": "6. Action Required Erkennung",
+    "calendar_and_tasks": "7. Calendar & Tasks",
+    "task_completion_simulation": "8. Task-Abhaken (Simulation)",
+    "ai_tagging_details": "AI Tagging Details",
+    "generated_prompt_without_document": "Generierter Prompt (ohne Dokument)",
+    "gemini_ai_response": "Gemini KI-Antwort"
   },
   "settings": {
     "title": "Einstellungen",
@@ -321,7 +334,17 @@
     "selectLanguage": "Sprache auswählen",
     "languageSaved": "Sprache gespeichert",
     "languageSavedDescription": "Die Seite wird neu geladen, um die neue Sprache anzuzeigen.",
-    "fehler": "Fehler"
+    "fehler": "Fehler",
+    "test_successful": "Test erfolgreich! 🎉",
+    "test_partially_successful": "Test teilweise erfolgreich",
+    "test_failed": "Test fehlgeschlagen",
+    "successful": "Erfolgreich",
+    "calendars_and_task_lists_loaded": "Kalender und Aufgabenlisten geladen",
+    "could_not_load_resources": "Konnte Ressourcen nicht laden",
+    "please_select_calendar_and_task_list": "Bitte Kalender und Aufgabenliste auswählen",
+    "test_entry_created_in_calendar_and_tasks": "Test-Eintrag in Kalender und Aufgaben erstellt. Diese bleiben als Erfolgserlebnis bestehen!",
+    "some_tests_failed": "Einige Tests sind fehlgeschlagen",
+    "network_error_during_testing": "Netzwerkfehler beim Testen"
   },
   "components": {
     "laedt": "Lädt...",

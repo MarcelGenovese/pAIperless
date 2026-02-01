@@ -253,7 +253,7 @@ export default function Step1Paperless({ onNext, onBack, data }: Step1PaperlessP
       setWebhooksExist(false);
       console.error('Webhooks test exception:', error);
       toast({
-        title: 'Test Error',
+        title: t('test_error'),
         description: error.message || 'An error occurred while checking webhooks',
         variant: 'destructive',
       });

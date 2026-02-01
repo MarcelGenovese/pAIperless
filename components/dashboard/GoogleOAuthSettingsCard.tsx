@@ -119,8 +119,8 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
         if (resources.calendars) setCalendars(resources.calendars);
         if (resources.taskLists) setTaskLists(resources.taskLists);
         toast({
-          title: 'Erfolgreich',
-          description: 'Kalender und Aufgabenlisten geladen',
+          title: t('successful'),
+          description: t('calendars_and_task_lists_loaded'),
           variant: 'success',
         });
       } else {
@@ -129,7 +129,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
     } catch (error) {
       toast({
         title: t('fehler'),
-        description: 'Konnte Ressourcen nicht laden',
+        description: t('could_not_load_resources'),
         variant: 'destructive',
       });
     } finally {
@@ -141,7 +141,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
     if (!oauthData.calendarId || !oauthData.taskListId) {
       toast({
         title: t('fehler'),
-        description: 'Bitte Kalender und Aufgabenliste auswählen',
+        description: t('please_select_calendar_and_task_list'),
         variant: 'destructive',
       });
       return;
@@ -163,21 +163,21 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
       if (result.success) {
         setOAuthData({ ...oauthData, tested: true });
         toast({
-          title: 'Test erfolgreich! 🎉',
-          description: 'Test-Eintrag in Kalender und Aufgaben erstellt. Diese bleiben als Erfolgserlebnis bestehen!',
+          title: t('test_successful'),
+          description: t('test_entry_created_in_calendar_and_tasks'),
           variant: 'success',
         });
       } else {
         toast({
-          title: 'Test teilweise erfolgreich',
-          description: result.message || 'Einige Tests sind fehlgeschlagen',
+          title: t('test_partially_successful'),
+          description: result.message || t('some_tests_failed'),
           variant: 'destructive',
         });
       }
     } catch (error) {
       toast({
-        title: 'Test fehlgeschlagen',
-        description: 'Netzwerkfehler beim Testen',
+        title: t('test_failed'),
+        description: t('network_error_during_testing'),
         variant: 'destructive',
       });
     } finally {

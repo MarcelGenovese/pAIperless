@@ -135,7 +135,10 @@
     "quot_wird_gesetzt": "&quot; is being set",
     "erweiterte_einstellungen_konnten_nicht_gespeichert": "Advanced settings could not be saved.",
     "ftp_server_gestartet": "FTP server started",
-    "warnung": "Warning"
+    "warnung": "Warning",
+    "test_error": "Test Error",
+    "test_successful_setup": "Test Successful",
+    "test_failed_setup": "Test Failed"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -304,7 +307,17 @@
     "use_only_in_emergencies": "⚠️ Use this only in emergencies!",
     "cancel": "Cancel",
     "yes_stop": "🚨 Yes, stop!",
-    "yes_continue": "✅ Yes, continue"
+    "yes_continue": "✅ Yes, continue",
+    "preprocessing": "2. Preprocessing",
+    "document_ai_ocr": "3. Document AI OCR",
+    "paperless_upload": "4. Paperless Upload",
+    "ai_tagging": "5. AI Tagging",
+    "action_required_detection": "6. Action Required Detection",
+    "calendar_and_tasks": "7. Calendar & Tasks",
+    "task_completion_simulation": "8. Task Completion (Simulation)",
+    "ai_tagging_details": "AI Tagging Details",
+    "generated_prompt_without_document": "Generated Prompt (without document)",
+    "gemini_ai_response": "Gemini AI Response"
   },
   "settings": {
     "title": "Settings",
@@ -321,7 +334,17 @@
     "selectLanguage": "Select language",
     "languageSaved": "Language saved",
     "languageSavedDescription": "The page will reload to display the new language.",
-    "fehler": "Error"
+    "fehler": "Error",
+    "test_successful": "Test Successful! 🎉",
+    "test_partially_successful": "Test Partially Successful",
+    "test_failed": "Test Failed",
+    "successful": "Successful",
+    "calendars_and_task_lists_loaded": "Calendars and task lists loaded",
+    "could_not_load_resources": "Could not load resources",
+    "please_select_calendar_and_task_list": "Please select calendar and task list",
+    "test_entry_created_in_calendar_and_tasks": "Test entry created in calendar and tasks. These remain as proof of success!",
+    "some_tests_failed": "Some tests failed",
+    "network_error_during_testing": "Network error during testing"
   },
   "components": {
     "laedt": "Loading...",

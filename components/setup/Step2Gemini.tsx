@@ -104,7 +104,7 @@ export default function Step2Gemini({ onNext, onBack, data }: Step2GeminiProps) 
       if (response.ok) {
         setTestResult('success');
         toast({
-          title: 'Test Successful',
+          title: t('test_successful_setup'),
           description: 'Gemini API is working correctly',
         });
 
@@ -126,7 +126,7 @@ export default function Step2Gemini({ onNext, onBack, data }: Step2GeminiProps) 
         console.error('Gemini test error - showing to user:', errorMsg);
 
         toast({
-          title: 'Test Failed',
+          title: t('test_failed_setup'),
           description: errorMsg,
           variant: 'destructive',
         });
@@ -135,7 +135,7 @@ export default function Step2Gemini({ onNext, onBack, data }: Step2GeminiProps) 
       setTestResult('error');
       console.error('Gemini test exception:', error);
       toast({
-        title: 'Test Error',
+        title: t('test_error'),
         description: error.message || 'An error occurred during testing',
         variant: 'destructive',
       });

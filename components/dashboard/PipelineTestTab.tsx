@@ -108,49 +108,49 @@ export default function PipelineTestTab() {
     },
     {
       id: 'preprocessing',
-      title: '2. Vorverarbeitung',
+      title: t('preprocessing'),
       status: 'pending',
       icon: faCog,
       details: []
     },
     {
       id: 'ocr',
-      title: '3. Document AI OCR',
+      title: t('document_ai_ocr'),
       status: 'pending',
       icon: faFileAlt,
       details: []
     },
     {
       id: 'paperless_upload',
-      title: '4. Paperless Upload',
+      title: t('paperless_upload'),
       status: 'pending',
       icon: faCheckCircle,
       details: []
     },
     {
       id: 'ai_tagging',
-      title: '5. AI-Tagging',
+      title: t('ai_tagging'),
       status: 'pending',
       icon: faRobot,
       details: []
     },
     {
       id: 'action_detection',
-      title: '6. Action Required Erkennung',
+      title: t('action_required_detection'),
       status: 'pending',
       icon: faExclamationCircle,
       details: []
     },
     {
       id: 'calendar_tasks',
-      title: '7. Calendar & Tasks',
+      title: t('calendar_and_tasks'),
       status: 'pending',
       icon: faCalendar,
       details: []
     },
     {
       id: 'task_completion',
-      title: '8. Task-Abhaken (Simulation)',
+      title: t('task_completion_simulation'),
       status: 'pending',
       icon: faListCheck,
       details: []
@@ -317,7 +317,7 @@ export default function PipelineTestTab() {
     content += `• Gesamt: ${tokensInput + tokensOutput}`;
 
     setModalContent({
-      title: 'AI Tagging Details',
+      title: t('ai_tagging_details'),
       content
     });
     setShowModal(true);
@@ -327,7 +327,7 @@ export default function PipelineTestTab() {
     if (!testStatus?.aiTaggingData?.prompt) return;
 
     setModalContent({
-      title: 'Generierter Prompt (ohne Dokument)',
+      title: t('generated_prompt_without_document'),
       content: testStatus.aiTaggingData.prompt
     });
     setShowModal(true);
@@ -337,7 +337,7 @@ export default function PipelineTestTab() {
     if (!testStatus?.aiTaggingData?.response) return;
 
     setModalContent({
-      title: 'Gemini KI-Antwort',
+      title: t('gemini_ai_response'),
       content: testStatus.aiTaggingData.response
     });
     setShowModal(true);
