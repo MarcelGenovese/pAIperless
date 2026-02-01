@@ -10,6 +10,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faEye, faEyeSlash, faSpinner, faSave } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
 import GoogleOAuthSettingsCard from './GoogleOAuthSettingsCard';
+import { useTranslations } from 'next-intl';
+
 
 interface GoogleSettingsTabProps {
   initialData?: {
@@ -36,6 +38,8 @@ interface GoogleSettingsTabProps {
 }
 
 export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTabProps) {
+  const t = useTranslations('settings');
+
   const { toast } = useToast();
 
   // Store initial values for comparison
@@ -322,7 +326,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
       <Card>
         <CardHeader>
           <CardTitle>Gemini AI</CardTitle>
-          <CardDescription>Google Gemini für intelligentes Tagging und Analyse</CardDescription>
+          <CardDescription>{t('google_gemini_fuer_intelligentes_tagging_und_analy')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -443,7 +447,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
       <Card>
         <CardHeader>
           <CardTitle>Google Cloud Document AI</CardTitle>
-          <CardDescription>OCR für Dokumentenverarbeitung</CardDescription>
+          <CardDescription>{t('ocr_fuer_dokumentenverarbeitung')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -505,7 +509,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
               </div>
 
               <div>
-                <Label htmlFor="doc-ai-max-size">Max. Dateigröße (MB)</Label>
+                <Label htmlFor="doc-ai-max-size">{t('max_dateigroesse_mb')}</Label>
                 <Input
                   id="doc-ai-max-size"
                   type="number"

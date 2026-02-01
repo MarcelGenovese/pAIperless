@@ -10,6 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faExternalLinkAlt, faCalendar, faListUl, faEye, faEyeSlash, faSpinner, faSave, faRotate } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
+
 
 interface GoogleOAuthSettingsCardProps {
   initialData?: {
@@ -22,6 +24,8 @@ interface GoogleOAuthSettingsCardProps {
 }
 
 export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAuthSettingsCardProps) {
+  const t = useTranslations('settings');
+
   const { toast } = useToast();
 
   const [oauthData, setOAuthData] = useState({
@@ -247,7 +251,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
     <Card>
       <CardHeader>
         <CardTitle>Google OAuth (Calendar & Tasks)</CardTitle>
-        <CardDescription>Verbindung zu Google Kalender und Aufgaben</CardDescription>
+        <CardDescription>{t('verbindung_zu_google_kalender_und_aufgaben')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Authorization Status */}
@@ -319,7 +323,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
                 }}
               >
                 <SelectTrigger id="calendar-select">
-                  <SelectValue placeholder="Kalender wählen..." />
+                  <SelectValue placeholder={t('kalender_waehlen')} />
                 </SelectTrigger>
                 <SelectContent>
                   {calendars.map((cal) => (
@@ -343,7 +347,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
                 }}
               >
                 <SelectTrigger id="tasklist-select">
-                  <SelectValue placeholder="Aufgabenliste wählen..." />
+                  <SelectValue placeholder={t('aufgabenliste_waehlen')} />
                 </SelectTrigger>
                 <SelectContent>
                   {taskLists.map((list) => (

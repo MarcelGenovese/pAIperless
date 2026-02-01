@@ -20,8 +20,12 @@ import {
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { useTranslations } from 'next-intl';
+
 
 export default function AdvancedSettingsTab() {
+  const t = useTranslations('settings');
+
   const router = useRouter();
   const { toast } = useToast();
 
@@ -398,7 +402,7 @@ export default function AdvancedSettingsTab() {
       <Card>
         <CardHeader>
           <CardTitle>Setup Wizard</CardTitle>
-          <CardDescription>Setup-Wizard erneut ausführen</CardDescription>
+          <CardDescription>{t('setup_wizard_erneut_ausfuehren')}</CardDescription>
         </CardHeader>
         <CardContent>
           {!showResetConfirm ? (
@@ -454,18 +458,18 @@ export default function AdvancedSettingsTab() {
       <Card>
         <CardHeader>
           <CardTitle>Sprache</CardTitle>
-          <CardDescription>Ändern Sie die Anzeigesprache der Anwendung</CardDescription>
+          <CardDescription>{t('aendern_sie_die_anzeigesprache_der_anwendung')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <Label htmlFor="language-select">Sprache auswählen</Label>
+            <Label htmlFor="language-select">{t('selectLanguage')}</Label>
             <Select
               value={currentLanguage}
               onValueChange={handleLanguageChange}
               disabled={isLoadingLanguage || isSavingLanguage}
             >
               <SelectTrigger id="language-select" className="w-[280px]">
-                <SelectValue placeholder="Sprache wählen..." />
+                <SelectValue placeholder={t('sprache_waehlen')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="de">Deutsch</SelectItem>
@@ -486,7 +490,7 @@ export default function AdvancedSettingsTab() {
       <Card>
         <CardHeader>
           <CardTitle>Design</CardTitle>
-          <CardDescription>Wählen Sie zwischen hellem und dunklem Design</CardDescription>
+          <CardDescription>{t('waehlen_sie_zwischen_hellem_und_dunklem_design')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between">
@@ -566,7 +570,7 @@ export default function AdvancedSettingsTab() {
       <Card>
         <CardHeader>
           <CardTitle>System Informationen</CardTitle>
-          <CardDescription>Diagnose und technische Details</CardDescription>
+          <CardDescription>{t('diagnose_und_technische_details')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-3 text-sm">
@@ -600,7 +604,7 @@ export default function AdvancedSettingsTab() {
       <Card>
         <CardHeader>
           <CardTitle>Diagnose</CardTitle>
-          <CardDescription>System-Zustand und Empfehlungen</CardDescription>
+          <CardDescription>{t('system_zustand_und_empfehlungen')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -650,7 +654,7 @@ export default function AdvancedSettingsTab() {
       <Card>
         <CardHeader>
           <CardTitle>Datenbereinigung</CardTitle>
-          <CardDescription>Bereinigen Sie Ordner und Datenbank von alten/ausstehenden Daten</CardDescription>
+          <CardDescription>{t('bereinigen_sie_ordner_und_datenbank_von_alten_auss')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -782,14 +786,14 @@ export default function AdvancedSettingsTab() {
                     <FontAwesomeIcon icon={faExclamationCircle} className="text-red-600 mt-0.5" />
                     <div className="text-sm text-red-900 dark:text-red-100">
                       <p className="font-semibold mb-1">Sind Sie ABSOLUT sicher?</p>
-                      <p>Dies wird löschen:</p>
+                      <p>{t('dies_wird_loeschen')}</p>
                       <ul className="list-disc list-inside mt-1">
-                        <li>Alle Dokumente aus der Datenbank</li>
-                        <li>Alle Hashes (Duplikatschutz wird zurückgesetzt)</li>
+                        <li>{t('alle_dokumente_aus_der_datenbank')}</li>
+                        <li>{t('alle_hashes_duplikatschutz_wird_zurueckgesetzt')}</li>
                         <li>Alle Dateien aus allen Ordnern</li>
                         <li>Alle dokumentbezogenen Logs</li>
                       </ul>
-                      <p className="mt-2 font-semibold">Diese Aktion kann NICHT rückgängig gemacht werden!</p>
+                      <p className="mt-2 font-semibold">{t('diese_aktion_kann_nicht_rueckgaengig_gemacht_werde')}</p>
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -821,7 +825,7 @@ export default function AdvancedSettingsTab() {
       <Card>
         <CardHeader>
           <CardTitle>Logs & Fehlerbehebung</CardTitle>
-          <CardDescription>Zugriff auf System-Logs und Debugging-Informationen</CardDescription>
+          <CardDescription>{t('zugriff_auf_system_logs_und_debugging_informatione')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">

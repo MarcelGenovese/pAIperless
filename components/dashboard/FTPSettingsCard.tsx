@@ -10,6 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faEye, faEyeSlash, faSpinner, faSave } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
+
 
 interface FTPSettingsCardProps {
   initialData?: {
@@ -24,6 +26,8 @@ interface FTPSettingsCardProps {
 }
 
 export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: FTPSettingsCardProps) {
+  const t = useTranslations('settings');
+
   const { toast } = useToast();
 
   const [ftpData, setFtpData] = useState({
@@ -284,7 +288,7 @@ export default function FTPSettingsCard({ initialData = {}, onServiceRestart }: 
                 onChange={(e) => {
                   setFtpData({ ...ftpData, pasvUrl: e.target.value, tested: false });
                 }}
-                placeholder="192.168.1.100 oder domain.com"
+                placeholder={t('192_168_1_100_oder_domain_com')}
               />
               <p className="text-xs text-muted-foreground mt-1">
                 Die IP-Adresse oder Domain, die Clients für Datenverbindungen verwenden.

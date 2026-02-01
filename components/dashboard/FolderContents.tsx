@@ -16,6 +16,8 @@ import {
   faRotateRight
 } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
+
 
 interface FileInfo {
   name: string;
@@ -46,6 +48,8 @@ interface ErrorDocument {
 }
 
 export default function FolderContents() {
+  const t = useTranslations('dashboard');
+
   const { toast } = useToast();
   const [folders, setFolders] = useState<FolderContents>({
     consume: [],
@@ -376,7 +380,7 @@ export default function FolderContents() {
                 onClick={() => handleDelete(doc.id, doc.originalFilename)}
                 disabled={deleting === doc.id}
                 className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-[hsl(0,40%,18%)]"
-                title="Löschen"
+                title={t('loeschen')}
               >
                 <FontAwesomeIcon icon={faTrash} />
               </Button>
@@ -444,7 +448,7 @@ export default function FolderContents() {
                   onClick={triggerManualProcessing}
                   disabled={triggering}
                   className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-[hsl(220,40%,18%)]"
-                  title="Verarbeitung manuell auslösen"
+                  title={t('verarbeitung_manuell_ausloesen')}
                 >
                   <FontAwesomeIcon icon={faSync} className={triggering ? 'animate-spin' : ''} />
                 </Button>

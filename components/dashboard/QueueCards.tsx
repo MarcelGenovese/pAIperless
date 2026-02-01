@@ -15,6 +15,8 @@ import {
   faTrash,
 } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
+
 
 interface QueueData {
   counts: {
@@ -48,6 +50,8 @@ interface QueueData {
 }
 
 export default function QueueCards() {
+  const t = useTranslations('dashboard');
+
   const { toast } = useToast();
   const [queueData, setQueueData] = useState<QueueData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -252,7 +256,7 @@ export default function QueueCards() {
                 onClick={triggerManualProcessing}
                 disabled={triggering}
                 className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-[hsl(220,40%,18%)]"
-                title="Verarbeitung manuell auslösen"
+                title={t('verarbeitung_manuell_ausloesen')}
               >
                 <FontAwesomeIcon icon={faSync} className={triggering ? 'animate-spin' : ''} />
               </Button>

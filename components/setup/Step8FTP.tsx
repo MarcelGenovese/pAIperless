@@ -8,6 +8,8 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faArrowRight, faEye, faEyeSlash, faServer, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { useTranslations } from 'next-intl';
+
 
 interface StepProps {
   onNext: (data: Record<string, any>) => void;
@@ -16,6 +18,8 @@ interface StepProps {
 }
 
 export default function Step8FTP({ onNext, onBack, data }: StepProps) {
+  const t = useTranslations('setup');
+
   const { toast } = useToast();
 
   const [enabled, setEnabled] = useState(false);
@@ -245,7 +249,7 @@ export default function Step8FTP({ onNext, onBack, data }: StepProps) {
                     <span>{ftpUsername}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Verschlüsselung:</span>
+                    <span className="text-muted-foreground">{t('verschluesselung')}</span>
                     <span>{enableTls ? 'FTPS (TLS/SSL)' : 'Keine (unsicher)'}</span>
                   </div>
                 </div>

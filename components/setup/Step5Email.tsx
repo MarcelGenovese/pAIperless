@@ -9,6 +9,8 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faArrowRight, faEye, faEyeSlash, faEnvelope, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { useTranslations } from 'next-intl';
+
 
 interface StepProps {
   onNext: (data: Record<string, any>) => void;
@@ -17,6 +19,8 @@ interface StepProps {
 }
 
 export default function Step5Email({ onNext, onBack, data }: StepProps) {
+  const t = useTranslations('setup');
+
   const { toast } = useToast();
 
   const [enabled, setEnabled] = useState(false);
@@ -237,7 +241,7 @@ export default function Step5Email({ onNext, onBack, data }: StepProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="smtpEncryption">Verschlüsselung</Label>
+                  <Label htmlFor="smtpEncryption">{t('smtpEncryption')}</Label>
                   <Select value={smtpEncryption} onValueChange={setSmtpEncryption}>
                     <SelectTrigger id="smtpEncryption">
                       <SelectValue />
@@ -309,7 +313,7 @@ export default function Step5Email({ onNext, onBack, data }: StepProps) {
 
               {/* Email Recipients */}
               <div className="space-y-2">
-                <Label htmlFor="emailRecipients">Empfänger</Label>
+                <Label htmlFor="emailRecipients">{t('empfaenger')}</Label>
                 <Input
                   id="emailRecipients"
                   type="text"

@@ -10,6 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faEye, faEyeSlash, faSpinner, faSave } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
+
 
 interface PaperlessSettingsTabProps {
   initialData?: {
@@ -25,6 +27,8 @@ interface PaperlessSettingsTabProps {
 }
 
 export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSettingsTabProps) {
+  const t = useTranslations('settings');
+
   const { toast } = useToast();
 
   const [paperlessData, setPaperlessData] = useState({
@@ -356,7 +360,7 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
                 type={showToken ? 'text' : 'password'}
                 value={paperlessData.token}
                 onChange={(e) => setPaperlessData({ ...paperlessData, token: e.target.value, tested: false })}
-                placeholder="Token von Paperless-NGX"
+                placeholder={t('token_von_paperless_ngx')}
               />
               <Button variant="outline" onClick={() => setShowToken(!showToken)} size="icon">
                 <FontAwesomeIcon icon={showToken ? faEyeSlash : faEye} />
@@ -386,7 +390,7 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="p-4 border rounded-lg bg-blue-50 dark:bg-[hsl(0,0%,15%)]">
-            <h4 className="font-semibold mb-2">ℹ️ Wichtig für Document AI</h4>
+            <h4 className="font-semibold mb-2">{t('wichtig_fuer_document_ai')}</h4>
             <p className="text-sm text-muted-foreground mb-2">
               Damit Paperless die OCR-Ergebnisse von Document AI nicht überschreibt, muss der OCR-Modus auf
               <strong className="text-foreground"> &quot;skip&quot; </strong> oder
@@ -511,7 +515,7 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
       <Card>
         <CardHeader>
           <CardTitle>Polling Einstellungen</CardTitle>
-          <CardDescription>Fallback-Überwachung (Webhooks bevorzugt)</CardDescription>
+          <CardDescription>{t('fallback_ueberwachung_webhooks_bevorzugt')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-4">
@@ -519,7 +523,7 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
             <div className="flex items-center justify-between p-4 border rounded-lg">
               <div>
                 <Label htmlFor="poll-consume" className="text-base">Consume Folder Polling</Label>
-                <p className="text-sm text-muted-foreground">Überwache /consume Ordner</p>
+                <p className="text-sm text-muted-foreground">{t('ueberwache_consume_ordner')}</p>
               </div>
               <Switch
                 id="poll-consume"
@@ -543,7 +547,7 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
             <div className="flex items-center justify-between p-4 border rounded-lg">
               <div>
                 <Label htmlFor="poll-action" className="text-base">Action Tag Polling</Label>
-                <p className="text-sm text-muted-foreground">Prüfe auf action_required Tags</p>
+                <p className="text-sm text-muted-foreground">{t('pruefe_auf_action_required_tags')}</p>
               </div>
               <Switch
                 id="poll-action"
@@ -567,7 +571,7 @@ export default function PaperlessSettingsTab({ initialData = {} }: PaperlessSett
             <div className="flex items-center justify-between p-4 border rounded-lg">
               <div>
                 <Label htmlFor="poll-ai-todo" className="text-base">AI Todo Polling</Label>
-                <p className="text-sm text-muted-foreground">Prüfe auf ai_todo Tags</p>
+                <p className="text-sm text-muted-foreground">{t('pruefe_auf_ai_todo_tags')}</p>
               </div>
               <Switch
                 id="poll-ai-todo"

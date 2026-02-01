@@ -21,6 +21,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import DocumentUpload from './DocumentUpload';
 import FolderContents from './FolderContents';
+import { useTranslations } from 'next-intl';
+
 
 interface Document {
   id: string;
@@ -47,6 +49,8 @@ interface AIAnalysis {
 }
 
 export default function DocumentsTab() {
+  const t = useTranslations('dashboard');
+
   const { toast } = useToast();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
@@ -279,7 +283,7 @@ export default function DocumentsTab() {
                       onChange={toggleSelectAll}
                       className="w-4 h-4 rounded border-gray-300 cursor-pointer"
                     />
-                    <span className="text-sm font-medium">Alle auswählen</span>
+                    <span className="text-sm font-medium">{t('alle_auswaehlen')}</span>
                   </div>
                 )}
 
@@ -309,7 +313,7 @@ export default function DocumentsTab() {
                             <button
                               onClick={(e) => openInPaperless(doc.paperlessId!, e)}
                               className="text-blue-600 hover:text-blue-800 transition-colors"
-                              title="In Paperless öffnen"
+                              title={t('in_paperless_oeffnen')}
                             >
                               <FontAwesomeIcon icon={faExternalLinkAlt} className="text-xs" />
                             </button>
@@ -344,7 +348,7 @@ export default function DocumentsTab() {
                               <span
                                 className="inline-flex items-center px-2 py-0.5 rounded bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs cursor-pointer hover:bg-green-200 dark:hover:bg-green-800 transition-colors"
                                 onClick={(e) => openInPaperless(doc.paperlessId!, e)}
-                                title="In Paperless öffnen"
+                                title={t('in_paperless_oeffnen')}
                               >
                                 <FontAwesomeIcon icon={faCheckCircle} className="mr-1" />
                                 Paperless #{doc.paperlessId}
@@ -477,9 +481,7 @@ export default function DocumentsTab() {
                                     onClick={(e) => openInPaperless(doc.paperlessId!, e)}
                                     className="text-xs"
                                   >
-                                    <FontAwesomeIcon icon={faExternalLinkAlt} className="mr-1" />
-                                    In Paperless öffnen
-                                  </Button>
+                                    <FontAwesomeIcon icon={faExternalLinkAlt} className="mr-1" />{t('in_paperless_oeffnen')}</Button>
                                 </div>
                                 <p className="text-xs text-green-800 dark:text-green-200">
                                   Dokument-ID in Paperless: {doc.paperlessId}
@@ -690,7 +692,7 @@ export default function DocumentsTab() {
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-2xl max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold mb-4">Dokumente löschen?</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('dokumente_loeschen')}</h3>
             <p className="text-sm text-muted-foreground mb-6">
               Möchten Sie wirklich {selectedIds.length} Dokument(e) aus der Datenbank löschen?
               Diese Aktion kann nicht rückgängig gemacht werden.

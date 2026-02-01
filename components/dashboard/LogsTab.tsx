@@ -11,6 +11,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTerminal, faTrash, faPause, faPlay, faDownload, faBroom, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslations } from 'next-intl';
+
 
 interface LogEntry {
   timestamp: string;
@@ -20,6 +22,8 @@ interface LogEntry {
 }
 
 export default function LogsTab() {
+  const t = useTranslations('dashboard');
+
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [paused, setPaused] = useState(false);
   const [autoScroll, setAutoScroll] = useState(true);
@@ -478,7 +482,7 @@ export default function LogsTab() {
               <div className="flex-1">
                 <Input
                   type="text"
-                  placeholder="Suche nach Text, Source (system, middleware, worker...) oder Level (ERROR, INFO...)..."
+                  placeholder={t('suche_nach_text_source_system_middleware_worker_od')}
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   onKeyDown={(e) => {

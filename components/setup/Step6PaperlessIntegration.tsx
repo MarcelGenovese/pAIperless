@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faArrowRight, faTag, faFileAlt, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { useTranslations } from 'next-intl';
+
 
 interface StepProps {
   onNext: (data: Record<string, any>) => void;
@@ -15,6 +17,8 @@ interface StepProps {
 }
 
 export default function Step6PaperlessIntegration({ onNext, onBack, data }: StepProps) {
+  const t = useTranslations('setup');
+
   const { toast } = useToast();
 
   const [tagAiTodo, setTagAiTodo] = useState('ai_todo');
@@ -184,7 +188,7 @@ export default function Step6PaperlessIntegration({ onNext, onBack, data }: Step
 
             {/* Due Date Field */}
             <div className="space-y-2">
-              <Label htmlFor="fieldDueDate">Fälligkeitsdatum Feld</Label>
+              <Label htmlFor="fieldDueDate">{t('faelligkeitsdatum_feld')}</Label>
               <Input
                 id="fieldDueDate"
                 type="text"
@@ -202,12 +206,12 @@ export default function Step6PaperlessIntegration({ onNext, onBack, data }: Step
           <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
             <h4 className="font-semibold mb-2 text-sm">Beispiel Workflow:</h4>
             <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
-              <li>Dokument wird hochgeladen und mit OCR verarbeitet</li>
+              <li>{t('dokument_wird_hochgeladen_und_mit_ocr_verarbeitet')}</li>
               <li>System setzt Tag &quot;<strong>{tagAiTodo}</strong>&quot;</li>
-              <li>Gemini AI analysiert das Dokument und entfernt den Tag</li>
+              <li>{t('gemini_ai_analysiert_das_dokument_und_entfernt_den')}</li>
               <li>Falls Handlung erkannt: Tag &quot;<strong>{tagActionRequired}</strong>&quot; wird gesetzt</li>
-              <li>Fields &quot;<strong>{fieldActionDescription}</strong>&quot; und &quot;<strong>{fieldDueDate}</strong>&quot; werden gefüllt</li>
-              <li>Google Calendar Event und Task werden erstellt</li>
+              <li>Fields &quot;<strong>{fieldActionDescription}</strong>{t('quot_und_quot')}<strong>{fieldDueDate}</strong>{t('quot_werden_gefuellt')}</li>
+              <li>{t('google_calendar_event_und_task_werden_erstellt')}</li>
             </ol>
           </div>
         </div>

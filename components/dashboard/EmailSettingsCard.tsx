@@ -10,6 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faEye, faEyeSlash, faEnvelope, faSpinner, faSave } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
+
 
 interface EmailSettingsCardProps {
   initialData?: {
@@ -30,6 +32,8 @@ interface EmailSettingsCardProps {
 }
 
 export default function EmailSettingsCard({ initialData = {} }: EmailSettingsCardProps) {
+  const t = useTranslations('settings');
+
   const { toast } = useToast();
 
   const [emailData, setEmailData] = useState({
@@ -172,7 +176,7 @@ export default function EmailSettingsCard({ initialData = {} }: EmailSettingsCar
     <Card>
       <CardHeader>
         <CardTitle>E-Mail-Benachrichtigungen</CardTitle>
-        <CardDescription>SMTP-Konfiguration für Benachrichtigungen (optional)</CardDescription>
+        <CardDescription>{t('smtp_konfiguration_fuer_benachrichtigungen_optiona')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -222,7 +226,7 @@ export default function EmailSettingsCard({ initialData = {} }: EmailSettingsCar
             </div>
 
             <div>
-              <Label htmlFor="smtp-encryption">Verschlüsselung</Label>
+              <Label htmlFor="smtp-encryption">{t('smtpEncryption')}</Label>
               <select
                 id="smtp-encryption"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
@@ -288,7 +292,7 @@ export default function EmailSettingsCard({ initialData = {} }: EmailSettingsCar
             </div>
 
             <div>
-              <Label htmlFor="email-recipients">Empfänger</Label>
+              <Label htmlFor="email-recipients">{t('empfaenger')}</Label>
               <Input
                 id="email-recipients"
                 value={emailData.emailRecipients}

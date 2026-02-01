@@ -26,6 +26,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
+
 
 interface PipelineStep {
   id: string;
@@ -66,6 +68,8 @@ interface ModalContent {
 }
 
 export default function PipelineTestTab() {
+  const t = useTranslations('dashboard');
+
   const { toast } = useToast();
   const [testing, setTesting] = useState(false);
   const [testId, setTestId] = useState<string | null>(null);
@@ -511,10 +515,10 @@ export default function PipelineTestTab() {
               So funktioniert der Test
             </h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>• Laden Sie eine PDF-Datei hoch um die komplette Pipeline zu testen</li>
-              <li>• Der Test zeigt jeden Schritt der Verarbeitung in Echtzeit</li>
-              <li>• Alle Fehler, Entscheidungen und Ergebnisse werden angezeigt</li>
-              <li>• Die Seite kann während des Tests gewechselt werden - der Status bleibt erhalten</li>
+              <li>{t('laden_sie_eine_pdf_datei_hoch_um_die_komplette_pip')}</li>
+              <li>{t('der_test_zeigt_jeden_schritt_der_verarbeitung_in_e')}</li>
+              <li>{t('alle_fehler_entscheidungen_und_ergebnisse_werden_a')}</li>
+              <li>{t('die_seite_kann_waehrend_des_tests_gewechselt_werde')}</li>
               <li>• Der Test endet erfolgreich wenn keine Action Required erkannt wird</li>
             </ul>
           </CardContent>

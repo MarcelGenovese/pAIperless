@@ -11,6 +11,8 @@ import { Switch } from '@/components/ui/switch';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBrain, faSpinner, faSave, faCode, faListCheck, faPlus, faTag, faRefresh, faFileLines, faCopy, faPlay } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslations } from 'next-intl';
+
 
 interface PaperlessMetadata {
   tags: Array<{ id: number; name: string }>;
@@ -23,6 +25,8 @@ interface PaperlessMetadata {
 type TagMode = 'strict' | 'flexible' | 'free';
 
 export default function AnalyzeTab() {
+  const t = useTranslations('dashboard');
+
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -683,7 +687,7 @@ export default function AnalyzeTab() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Tag AI Todo */}
             <div className="space-y-2">
-              <Label htmlFor="tag-ai-todo">Tag für "AI Todo"</Label>
+              <Label htmlFor="tag-ai-todo">{t('tag_fuer_ai_todo')}</Label>
               <Select
                 value={tagAiTodo}
                 onValueChange={(value) => {
@@ -709,7 +713,7 @@ export default function AnalyzeTab() {
 
             {/* Tag Action Required */}
             <div className="space-y-2">
-              <Label htmlFor="tag-action-required">Tag für "Action Required"</Label>
+              <Label htmlFor="tag-action-required">{t('tag_fuer_action_required')}</Label>
               <Select
                 value={tagActionRequired}
                 onValueChange={(value) => {
@@ -735,7 +739,7 @@ export default function AnalyzeTab() {
 
             {/* Field Action Description */}
             <div className="space-y-2">
-              <Label htmlFor="field-action-desc">Feld für Aktionsbeschreibung</Label>
+              <Label htmlFor="field-action-desc">{t('feld_fuer_aktionsbeschreibung')}</Label>
               <Select
                 value={fieldActionDescription}
                 onValueChange={(value) => {
@@ -761,7 +765,7 @@ export default function AnalyzeTab() {
 
             {/* Field Due Date */}
             <div className="space-y-2">
-              <Label htmlFor="field-due-date">Feld für Fälligkeitsdatum</Label>
+              <Label htmlFor="field-due-date">{t('feld_fuer_faelligkeitsdatum')}</Label>
               <Select
                 value={fieldDueDate}
                 onValueChange={(value) => {
@@ -1138,7 +1142,7 @@ export default function AnalyzeTab() {
                 setCustomPrompt(e.target.value);
                 setHasChanges(true);
               }}
-              placeholder="z.B.: Achte besonders auf Rechnungsnummern und Fälligkeitsdaten..."
+              placeholder={t('z_b_achte_besonders_auf_rechnungsnummern_und_faell')}
               className="h-32"
             />
           </div>
@@ -1168,7 +1172,7 @@ export default function AnalyzeTab() {
       {/* Generated Prompt Preview */}
       <Card>
         <CardHeader>
-          <CardTitle>Vollständiger Prompt (Vorschau)</CardTitle>
+          <CardTitle>{t('vollstaendiger_prompt_vorschau')}</CardTitle>
           <CardDescription>
             Dies ist der komplette Prompt, der an die KI gesendet wird (automatisch generiert).
             Listen werden nur hinzugefügt wenn die entsprechenden Strict-Modi aktiv sind.

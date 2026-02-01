@@ -6,6 +6,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHandPaper, faPlay, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/hooks/use-toast';
 import {
+import { useTranslations } from 'next-intl';
+
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -17,6 +19,8 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function EmergencyStopButton() {
+  const t = useTranslations('dashboard');
+
   const { toast } = useToast();
   const [isActive, setIsActive] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -89,7 +93,7 @@ export default function EmergencyStopButton() {
     return (
       <Button variant="outline" size="sm" disabled>
         <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
-        <span className="hidden sm:inline">Lädt...</span>
+        <span className="hidden sm:inline">{t('loading')}</span>
       </Button>
     );
   }
@@ -145,7 +149,7 @@ export default function EmergencyStopButton() {
                     <li>Worker kann Dateien verarbeiten</li>
                     <li>AI-Analyse kann starten</li>
                     <li>Webhooks werden akzeptiert</li>
-                    <li>Polling läuft weiter</li>
+                    <li>{t('polling_laeuft_weiter')}</li>
                   </ul>
                 </>
               )}

@@ -25,6 +25,8 @@ import {
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
 import QueueCards from './QueueCards';
+import { useTranslations } from 'next-intl';
+
 
 interface ServiceStatus {
   status: 'connected' | 'error' | 'checking' | 'not_configured';
@@ -49,6 +51,8 @@ interface MonthlyUsage {
 }
 
 export default function OverviewTab() {
+  const t = useTranslations('dashboard');
+
   const { toast } = useToast();
   const [stats, setStats] = useState({
     totalDocuments: 0,
@@ -310,7 +314,7 @@ export default function OverviewTab() {
               {/* Estimated Cost */}
               <div className="pt-4 border-t">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Geschätzte Kosten (Monat)</span>
+                  <span className="text-sm text-muted-foreground">{t('geschaetzte_kosten_monat')}</span>
                   <span className="text-lg font-bold text-[#27417A]">
                     ${usage.estimatedCost.toFixed(2)}
                   </span>
@@ -462,7 +466,7 @@ export default function OverviewTab() {
             </div>
             <div className="text-center p-4 border rounded-lg hover:border-[#27417A] transition-colors">
               <FontAwesomeIcon icon={faChartBar} className="text-4xl mb-2 text-[#27417A]" />
-              <h3 className="font-semibold mb-1">Überwachen</h3>
+              <h3 className="font-semibold mb-1">{t('ueberwachen')}</h3>
               <p className="text-sm text-muted-foreground">
                 Fortschritt im Documents-Tab verfolgen
               </p>
