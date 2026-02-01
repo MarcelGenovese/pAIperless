@@ -32,7 +32,6 @@
     "setupComplete": "Setup abgeschlossen!",
     "setupCompleteDescription": "Ihre pAIperless-Instanz ist jetzt konfiguriert und einsatzbereit.",
     "goToDashboard": "Zum Dashboard",
-
     "step1Title": "Mit Paperless-NGX verbinden",
     "step1Description": "Wir verwenden Ihre Paperless-NGX-Instanz für die Authentifizierung und Dokumentenspeicherung. Geben Sie die URL und das Admin-Token ein, um eine Verbindung herzustellen.",
     "paperlessUrl": "Paperless-URL",
@@ -47,7 +46,6 @@
     "webhookInstructions": "Erstellen Sie diese Workflows in Paperless-NGX:",
     "webhookWorkflow1": "paiperless_document_added - Trigger: Dokument hinzugefügt - Aktion: Webhook",
     "webhookWorkflow2": "paiperless_document_updated - Trigger: Dokument aktualisiert - Aktion: Webhook",
-
     "step2Title": "Gemini AI konfigurieren",
     "step2Description": "Gemini analysiert Ihre Dokumente, um Tags, Metadaten zu extrahieren und erforderliche Aktionen zu erkennen. Flash-Modelle bieten das beste Preis-Leistungs-Verhältnis.",
     "geminiApiKey": "Gemini-API-Schlüssel",
@@ -55,7 +53,6 @@
     "testGemini": "Gemini testen",
     "geminiTestSuccess": "Gemini-API funktioniert!",
     "geminiTestFailed": "Gemini-Test fehlgeschlagen. Bitte überprüfen Sie Ihren API-Schlüssel.",
-
     "step3Title": "Google Document AI konfigurieren",
     "step3Description": "Document AI führt hochwertige OCR auf Ihren PDFs durch. Erstellen Sie einen Document OCR-Prozessor und laden Sie Ihre Service-Account-Anmeldeinformationen hoch.",
     "uploadServiceAccount": "Service-Account-JSON hochladen",
@@ -66,7 +63,6 @@
     "documentAITestSuccess": "Document AI funktioniert!",
     "documentAITestFailed": "Document AI-Test fehlgeschlagen.",
     "extractedText": "Extrahierte Textvorschau",
-
     "step4Title": "Google OAuth konfigurieren",
     "step4Description": "Gewähren Sie pAIperless Zugriff zum Erstellen von Kalenderereignissen und Aufgaben für Dokumente, die Maßnahmen erfordern. Wählen Sie aus, welchen Kalender und welche Aufgabenliste verwendet werden soll.",
     "oauthClientId": "OAuth-Client-ID",
@@ -78,7 +74,6 @@
     "calendarId": "Kalender",
     "taskListId": "Aufgabenliste",
     "testCalendarTasks": "Kalender & Aufgaben testen",
-
     "step5Title": "E-Mail-Benachrichtigungen (Optional)",
     "step5Description": "Erhalten Sie Benachrichtigungen über neue Dokumente, Verarbeitungsfehler und abgeschlossene Aktionen. Dieser Schritt ist optional.",
     "enableEmail": "E-Mail-Benachrichtigungen aktivieren",
@@ -91,7 +86,6 @@
     "emailRecipients": "Empfänger-E-Mails",
     "emailRecipientsHelp": "Kommagetrennte Liste",
     "testEmail": "Test-E-Mail senden",
-
     "step6Title": "Paperless-Integration",
     "step6Description": "pAIperless verwendet bestimmte Tags und benutzerdefinierte Felder, um die Dokumentenverarbeitung zu verfolgen. Geben Sie die Namen ein, die Sie in Paperless konfiguriert haben.",
     "tagAiTodo": "Tag: AI Todo",
@@ -99,7 +93,6 @@
     "fieldActionDescription": "Benutzerdefiniertes Feld: Aktionsbeschreibung",
     "fieldDueDate": "Benutzerdefiniertes Feld: Fälligkeitsdatum",
     "validateConfig": "Konfiguration validieren",
-
     "step7Title": "Erweiterte Einstellungen",
     "step7Description": "Passen Sie Polling-Intervalle für Fallback-Überwachung an. Webhooks werden bevorzugt, aber Polling sorgt für Zuverlässigkeit.",
     "enableConsumePolling": "Consume-Ordner-Polling aktivieren",
@@ -108,7 +101,6 @@
     "actionPollingInterval": "Polling-Intervall (Minuten)",
     "enableAiTodoPolling": "AI-Todo-Polling aktivieren",
     "aiTodoPollingInterval": "Polling-Intervall (Minuten)",
-
     "step8Title": "FTP-Server (Optional)",
     "step8Description": "Aktivieren Sie den FTP-Server für Scanner-/Druckerzugriff. Über FTP hochgeladene Dateien werden automatisch verarbeitet.",
     "enableFtp": "FTP-Server aktivieren",
@@ -117,7 +109,15 @@
     "ftpPort": "FTP-Port",
     "enableFtps": "FTPS aktivieren (TLS)",
     "ftpConnectionString": "FTP-Verbindungszeichenfolge",
-    "testFtp": "FTP-Verbindung testen"
+    "testFtp": "FTP-Verbindung testen",
+    "verschluesselung": "Verschlüsselung",
+    "empfaenger": "Empfänger",
+    "faelligkeitsdatum_feld": "Fälligkeitsdatum Feld",
+    "dokument_wird_hochgeladen_und_mit_ocr_verarbeitet": "Dokument wird hochgeladen und mit OCR verarbeitet",
+    "gemini_ai_analysiert_das_dokument_und_entfernt_den": "Gemini AI analysiert das Dokument und entfernt den Tag",
+    "quot_und_quot": "&quot; und &quot;",
+    "quot_werden_gefuellt": "&quot; werden gefüllt",
+    "google_calendar_event_und_task_werden_erstellt": "Google Calendar Event und Task werden erstellt"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -128,7 +128,53 @@
     "workerStatus": "Worker-Status",
     "queueLength": "Warteschlangenlänge",
     "documentsProcessed": "Verarbeitete Dokumente",
-    "documentsWithErrors": "Dokumente mit Fehlern"
+    "documentsWithErrors": "Dokumente mit Fehlern",
+    "setup_wizard_erneut_ausfuehren": "Setup-Wizard erneut ausführen",
+    "aendern_sie_die_anzeigesprache_der_anwendung": "Ändern Sie die Anzeigesprache der Anwendung",
+    "sprache_auswaehlen": "Sprache auswählen",
+    "waehlen_sie_zwischen_hellem_und_dunklem_design": "Wählen Sie zwischen hellem und dunklem Design",
+    "diagnose_und_technische_details": "Diagnose und technische Details",
+    "system_zustand_und_empfehlungen": "System-Zustand und Empfehlungen",
+    "bereinigen_sie_ordner_und_datenbank_von_alten_auss": "Bereinigen Sie Ordner und Datenbank von alten/ausstehenden Daten",
+    "dies_wird_loeschen": "Dies wird löschen:",
+    "alle_dokumente_aus_der_datenbank": "Alle Dokumente aus der Datenbank",
+    "alle_hashes_duplikatschutz_wird_zurueckgesetzt": "Alle Hashes (Duplikatschutz wird zurückgesetzt)",
+    "diese_aktion_kann_nicht_rueckgaengig_gemacht_werde": "Diese Aktion kann NICHT rückgängig gemacht werden!",
+    "zugriff_auf_system_logs_und_debugging_informatione": "Zugriff auf System-Logs und Debugging-Informationen",
+    "sprache_waehlen": "Sprache wählen...",
+    "tag_fuer_ai_todo": "Tag für \"AI Todo\"",
+    "tag_fuer_action_required": "Tag für \"Action Required\"",
+    "feld_fuer_aktionsbeschreibung": "Feld für Aktionsbeschreibung",
+    "feld_fuer_faelligkeitsdatum": "Feld für Fälligkeitsdatum",
+    "vollstaendiger_prompt_vorschau": "Vollständiger Prompt (Vorschau)",
+    "z_b_achte_besonders_auf_rechnungsnummern_und_faell": "z.B.: Achte besonders auf Rechnungsnummern und Fälligkeitsdaten...",
+    "alle_auswaehlen": "Alle auswählen",
+    "dokumente_loeschen": "Dokumente löschen?",
+    "in_paperless_oeffnen": "In Paperless öffnen",
+    "smtp_konfiguration_fuer_benachrichtigungen_optiona": "SMTP-Konfiguration für Benachrichtigungen (optional)",
+    "verschluesselung": "Verschlüsselung",
+    "empfaenger": "Empfänger",
+    "192_168_1_100_oder_domain_com": "192.168.1.100 oder domain.com",
+    "verbindung_zu_google_kalender_und_aufgaben": "Verbindung zu Google Kalender und Aufgaben",
+    "kalender_waehlen": "Kalender wählen...",
+    "aufgabenliste_waehlen": "Aufgabenliste wählen...",
+    "google_gemini_fuer_intelligentes_tagging_und_analy": "Google Gemini für intelligentes Tagging und Analyse",
+    "ocr_fuer_dokumentenverarbeitung": "OCR für Dokumentenverarbeitung",
+    "max_dateigroesse_mb": "Max. Dateigröße (MB)",
+    "suche_nach_text_source_system_middleware_worker_od": "Suche nach Text, Source (system, middleware, worker...) oder Level (ERROR, INFO...)...",
+    "geschaetzte_kosten_monat": "Geschätzte Kosten (Monat)",
+    "ueberwachen": "Überwachen",
+    "wichtig_fuer_document_ai": "ℹ️ Wichtig für Document AI",
+    "fallback_ueberwachung_webhooks_bevorzugt": "Fallback-Überwachung (Webhooks bevorzugt)",
+    "ueberwache_consume_ordner": "Überwache /consume Ordner",
+    "pruefe_auf_action_required_tags": "Prüfe auf action_required Tags",
+    "pruefe_auf_ai_todo_tags": "Prüfe auf ai_todo Tags",
+    "token_von_paperless_ngx": "Token von Paperless-NGX",
+    "laden_sie_eine_pdf_datei_hoch_um_die_komplette_pip": "• Laden Sie eine PDF-Datei hoch um die komplette Pipeline zu testen",
+    "der_test_zeigt_jeden_schritt_der_verarbeitung_in_e": "• Der Test zeigt jeden Schritt der Verarbeitung in Echtzeit",
+    "alle_fehler_entscheidungen_und_ergebnisse_werden_a": "• Alle Fehler, Entscheidungen und Ergebnisse werden angezeigt",
+    "die_seite_kann_waehrend_des_tests_gewechselt_werde": "• Die Seite kann während des Tests gewechselt werden - der Status bleibt erhalten",
+    "verarbeitung_manuell_ausloesen": "Verarbeitung manuell auslösen"
   },
   "settings": {
     "title": "Einstellungen",
@@ -145,5 +191,11 @@
     "selectLanguage": "Sprache auswählen",
     "languageSaved": "Sprache gespeichert",
     "languageSavedDescription": "Die Seite wird neu geladen, um die neue Sprache anzuzeigen."
+  },
+  "components": {
+    "laedt": "Lädt...",
+    "polling_laeuft_weiter": "Polling läuft weiter",
+    "loeschen": "Löschen",
+    "verarbeitung_manuell_ausloesen": "Verarbeitung manuell auslösen"
   }
 }

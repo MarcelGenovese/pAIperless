@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
+import { prisma } from '@/lib/prisma';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -153,7 +154,6 @@ async function processPipeline(testId: string, filePath: string, originalFileNam
       ]);
     } else {
       addStepDetail('upload', 'Prüfe Datenbank auf Duplikate...');
-      const { prisma } = await import('@/lib/prisma');
 
       const existingDoc = await prisma.document.findUnique({
         where: { fileHash }
