@@ -111,7 +111,7 @@ COPY --from=builder /app/prisma ./prisma
 
 # Copy management scripts
 COPY --from=builder /app/scripts ./scripts
-RUN chmod +x /app/scripts/cli.js /app/scripts/cleanup-logs.js /app/scripts/init-config-defaults.js /app/scripts/clear-locks.js /app/scripts/embed-ocr-layer.py
+RUN chmod +x /app/scripts/*.js /app/scripts/*.py /app/scripts/*.sh
 
 # Create storage directories with proper permissions
 RUN mkdir -p /app/storage/consume /app/storage/processing /app/storage/error \
