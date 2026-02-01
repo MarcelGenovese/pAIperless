@@ -68,7 +68,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
   const handleAuthorize = async () => {
     if (!oauthData.clientId || !oauthData.clientSecret) {
       toast({
-        title: 'Fehler',
+        title: t('fehler'),
         description: 'Bitte Client ID und Secret angeben',
         variant: 'destructive',
       });
@@ -101,7 +101,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
       }
     } catch (error) {
       toast({
-        title: 'Fehler',
+        title: t('fehler'),
         description: 'Konnte OAuth nicht starten',
         variant: 'destructive',
       });
@@ -128,7 +128,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
       }
     } catch (error) {
       toast({
-        title: 'Fehler',
+        title: t('fehler'),
         description: 'Konnte Ressourcen nicht laden',
         variant: 'destructive',
       });
@@ -140,7 +140,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
   const testOAuth = async () => {
     if (!oauthData.calendarId || !oauthData.taskListId) {
       toast({
-        title: 'Fehler',
+        title: t('fehler'),
         description: 'Bitte Kalender und Aufgabenliste auswählen',
         variant: 'destructive',
       });
@@ -213,7 +213,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
       setOAuthData({ ...oauthData, tested: false });
     } catch (error) {
       toast({
-        title: 'Fehler',
+        title: t('fehler'),
         description: 'Konnte nicht speichern',
         variant: 'destructive',
       });

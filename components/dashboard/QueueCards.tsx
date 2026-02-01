@@ -140,10 +140,10 @@ export default function QueueCards() {
 
       if (response.ok) {
         toast({
-          title: isDuplicate ? 'Duplikat wird erneut verarbeitet' : 'Dokument wird erneut verarbeitet',
+          title: isDuplicate ? t('duplikat_wird_erneut_verarbeitet') : t('dokument_wird_erneut_verarbeitet'),
           description: isDuplicate
-            ? 'Dokument wurde mit neuem Hash zurück in den Consume-Ordner verschoben'
-            : 'Verarbeitung wurde neu gestartet',
+            ? t('dokument_wurde_mit_neuem_hash_zurueck_in_den_consu')
+            : t('verarbeitung_wurde_neu_gestartet'),
           variant: 'success',
         });
         // Refresh data

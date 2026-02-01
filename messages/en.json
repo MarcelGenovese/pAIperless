@@ -287,7 +287,8 @@
     "der_webhook_api_key_wurde_erfolgreich_neu_generier": "The webhook API key was successfully regenerated. Please update the Paperless workflows.",
     "api_key_konnte_nicht_neu_generiert_werden": "API key could not be regenerated",
     "workflows_aktualisiert": "Workflows updated",
-    "workflows_konnten_nicht_aktualisiert_werden": "Workflows could not be updated"
+    "workflows_konnten_nicht_aktualisiert_werden": "Workflows could not be updated",
+    "fehler": "Error"
   },
   "settings": {
     "title": "Settings",
@@ -303,7 +304,8 @@
     "languageDescription": "Change the application display language",
     "selectLanguage": "Select language",
     "languageSaved": "Language saved",
-    "languageSavedDescription": "The page will reload to display the new language."
+    "languageSavedDescription": "The page will reload to display the new language.",
+    "fehler": "Error"
   },
   "components": {
     "laedt": "Loading...",

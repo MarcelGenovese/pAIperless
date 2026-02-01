@@ -287,7 +287,8 @@
     "der_webhook_api_key_wurde_erfolgreich_neu_generier": "Der Webhook API Key wurde erfolgreich neu generiert. Bitte aktualisieren Sie die Paperless Workflows.",
     "api_key_konnte_nicht_neu_generiert_werden": "API Key konnte nicht neu generiert werden",
     "workflows_aktualisiert": "Workflows aktualisiert",
-    "workflows_konnten_nicht_aktualisiert_werden": "Workflows konnten nicht aktualisiert werden"
+    "workflows_konnten_nicht_aktualisiert_werden": "Workflows konnten nicht aktualisiert werden",
+    "fehler": "Fehler"
   },
   "settings": {
     "title": "Einstellungen",
@@ -303,7 +304,8 @@
     "languageDescription": "Ändern Sie die Anzeigesprache der Anwendung",
     "selectLanguage": "Sprache auswählen",
     "languageSaved": "Sprache gespeichert",
-    "languageSavedDescription": "Die Seite wird neu geladen, um die neue Sprache anzuzeigen."
+    "languageSavedDescription": "Die Seite wird neu geladen, um die neue Sprache anzuzeigen.",
+    "fehler": "Fehler"
   },
   "components": {
     "laedt": "Lädt...",
