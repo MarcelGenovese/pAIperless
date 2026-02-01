@@ -134,19 +134,29 @@ async function processPipeline(testId: string, filePath: string, originalFileNam
     const fileBuffer = await fs.readFile(filePath);
     const hash = crypto.createHash('sha256');
     hash.update(fileBuffer);
-    const fileHash = hash.digest('hex');
+    let fileHash = hash.digest('hex');
+
+    // If skipDuplicateCheck is true, append timestamp to hash to make it unique
+    if (skipDuplicateCheck) {
+      fileHash = fileHash + '-test-' + Date.now();
+      console.log(`[Pipeline Test ${testId}] Skip duplicate check: Modified hash to ensure uniqueness`);
+      console.log(`[Pipeline Test ${testId}] Original hash: ${hash.digest('hex').substring(0, 16)}...`);
+      console.log(`[Pipeline Test ${testId}] Modified hash: ${fileHash.substring(0, 32)}...`);
+    }
 
     console.log(`[Pipeline Test ${testId}] Hash calculated: ${fileHash.substring(0, 16)}...`);
     addStepDetail('upload', `Hash: ${fileHash.substring(0, 32)}...`);
 
     // Check for duplicate (unless skip flag is set)
     if (skipDuplicateCheck) {
-      console.log(`[Pipeline Test ${testId}] Skipping duplicate check (skipDuplicateCheck=true)`);
-      addStepDetail('upload', '⚠️  Duplikatsprüfung übersprungen (manuell deaktiviert)');
+      console.log(`[Pipeline Test ${testId}] Skipping duplicate check (modified hash ensures no duplicate)`);
+      addStepDetail('upload', '⚠️  Duplikatsprüfung übersprungen (Hash modifiziert)');
       updateStep('upload', 'success', [
         `Datei: ${originalFileName}`,
-        `Hash: ${fileHash.substring(0, 32)}...`,
+        `Hash: ${fileHash.substring(0, 32)}... (modifiziert)`,
         '⚠️  Duplikatsprüfung übersprungen',
+        '✓ Hash wurde mit Timestamp erweitert',
+        '✓ Datei wird als neu behandelt',
         '✓ Datei direkt in /app/storage/consume gespeichert',
         '',
         '→ Worker sollte Datei innerhalb von Sekunden erkennen...',

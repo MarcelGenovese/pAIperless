@@ -24,9 +24,14 @@ const logger = createLogger('WebhookDocumentUpdated');
  */
 export async function POST(request: NextRequest) {
   try {
+    await logger.info('========================================');
+    await logger.info('[Document Updated] WEBHOOK CALLED');
+    await logger.info('========================================');
+
     // 1. Check emergency stop first
     try {
       await checkEmergencyStop('Webhook processing');
+      await logger.info('[Document Updated] Emergency stop check passed');
     } catch (error) {
       await logger.warn('[Document Updated] Blocked by emergency stop');
       return NextResponse.json(
@@ -39,15 +44,17 @@ export async function POST(request: NextRequest) {
     const apiKey = request.headers.get('x-api-key');
     const expectedApiKey = await getConfig(CONFIG_KEYS.WEBHOOK_API_KEY);
 
+    await logger.info(`[Document Updated] API key validation: ${apiKey ? 'provided' : 'missing'}, expected: ${expectedApiKey ? 'set' : 'not set'}`);
+
     if (!apiKey || !expectedApiKey || apiKey !== expectedApiKey) {
-      await logger.error('[Document Updated] Invalid API key');
+      await logger.error('[Document Updated] Invalid API key - REJECTING REQUEST');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    await logger.info('[Document Updated] Webhook triggered');
+    await logger.info('[Document Updated] Webhook triggered - API key valid');
 
     // 3. Get Paperless client
     const paperlessClient = await getPaperlessClient();
@@ -65,14 +72,21 @@ export async function POST(request: NextRequest) {
     }
 
     // 5. Query Paperless for documents with ACTION_REQUIRED tag
+    await logger.info(`[Document Updated] Querying Paperless for documents with tag ID ${tagActionRequiredId} ("${tagActionRequiredName}")`);
     const documents = await paperlessClient.getDocumentsByTag(tagActionRequiredId);
     await logger.info(`[Document Updated] Found ${documents.length} documents with tag "${tagActionRequiredName}"`);
 
     if (documents.length === 0) {
+      await logger.info('[Document Updated] No documents to process - exiting');
       return NextResponse.json({
         message: 'No documents with ACTION_REQUIRED tag',
         processed: 0,
       });
+    }
+
+    await logger.info(`[Document Updated] Will process ${documents.length} documents:`)
+    for (const doc of documents) {
+      await logger.info(`  - Document ${doc.id}: "${doc.title}"`);
     }
 
     // 6. Get custom field names for action description and due date
