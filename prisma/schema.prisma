@@ -77,3 +77,20 @@ model CostTracking {
 
   @@unique([month])
 }
+
+// Process locks to prevent concurrent operations
+model ProcessLock {
+  id               Int      @id @default(autoincrement())
+  lockKey          String   @unique // E.g., "WORKER_CONSUME", "AI_DOCUMENT_PROCESSING"
+  isLocked         Boolean  @default(false)
+  lockedBy         String?  // Process identifier
+  lockedAt         DateTime?
+  lastAccessedAt   DateTime @default(now())
+  progressCurrent  Int?     // For progress tracking
+  progressTotal    Int?     // For progress tracking
+  progressMessage  String?  // For progress tracking
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([lockKey])
+}

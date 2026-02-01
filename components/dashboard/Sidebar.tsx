@@ -21,6 +21,7 @@ import Link from 'next/link';
 import EmergencyStopButton from './EmergencyStopButton';
 import ProcessingStatusIndicator from './ProcessingStatusIndicator';
 import { Button } from '@/components/ui/button';
+import PollingCounter from './PollingCounter';
 
 interface SidebarProps {
   activeTab: string;
@@ -143,6 +144,11 @@ export default function Sidebar({ activeTab, onTabChange, onSystemCheckOpen }: S
         {/* Processing Status */}
         <div className="p-4 border-t border-gray-200 dark:border-[hsl(0,0%,20%)]">
           <ProcessingStatusIndicator />
+        </div>
+
+        {/* Polling Counters */}
+        <div className="p-4 border-t border-gray-200 dark:border-[hsl(0,0%,20%)]">
+          <PollingCounter />
         </div>
       </nav>
     </div>

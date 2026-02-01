@@ -17,6 +17,7 @@ interface GoogleOAuthSettingsCardProps {
     clientSecret?: string;
     calendarId?: string;
     taskListId?: string;
+    taskCompletionInterval?: string;
   };
 }
 
@@ -28,6 +29,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
     clientSecret: initialData.clientSecret || '',
     calendarId: initialData.calendarId || '',
     taskListId: initialData.taskListId || '',
+    taskCompletionInterval: initialData.taskCompletionInterval || '30',
     tested: false,
   });
   const [showSecret, setShowSecret] = useState(false);
@@ -193,6 +195,7 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
             clientSecret: oauthData.clientSecret,
             calendarId: oauthData.calendarId,
             taskListId: oauthData.taskListId,
+            taskCompletionInterval: oauthData.taskCompletionInterval,
           }
         }),
       });
@@ -350,6 +353,26 @@ export default function GoogleOAuthSettingsCard({ initialData = {} }: GoogleOAut
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="task-completion-interval">
+                Erledigte Tasks synchronisieren (Minuten)
+              </Label>
+              <Input
+                id="task-completion-interval"
+                type="number"
+                min="1"
+                max="1440"
+                value={oauthData.taskCompletionInterval}
+                onChange={(e) => {
+                  setOAuthData({ ...oauthData, taskCompletionInterval: e.target.value });
+                }}
+                placeholder="30"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Wie oft soll geprüft werden, ob Tasks als erledigt markiert wurden? (Standard: 30 Minuten)
+              </p>
             </div>
           </>
         )}

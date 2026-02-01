@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getPaperlessClient } from '@/lib/paperless';
+import { getConfig, CONFIG_KEYS } from '@/lib/config';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
@@ -13,11 +16,22 @@ export async function GET() {
       where: { status: 'COMPLETED' },
     });
 
-    // Get pending actions (would come from Paperless API in real implementation)
-    // For now, use documents with ACTION_REQUIRED status
-    const pendingActions = await prisma.document.count({
-      where: { status: 'ACTION_REQUIRED' },
-    });
+    // Get pending actions from Paperless API using configured tag
+    let pendingActions = 0;
+    try {
+      const paperlessClient = await getPaperlessClient();
+      const tagActionRequiredName = await getConfig(CONFIG_KEYS.TAG_ACTION_REQUIRED) || 'action_required';
+      const tagId = await paperlessClient.getTagId(tagActionRequiredName);
+
+      if (tagId) {
+        const actionDocuments = await paperlessClient.getDocumentsByTag(tagId);
+        pendingActions = actionDocuments.length;
+      }
+    } catch (error) {
+      console.error('[Stats] Failed to get pending actions from Paperless:', error);
+      // Fall back to 0 if Paperless is not accessible
+      pendingActions = 0;
+    }
 
     // Get API calls this month (from logs or a counter table)
     // For now, estimate based on processed documents

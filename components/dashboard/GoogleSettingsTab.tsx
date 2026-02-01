@@ -86,6 +86,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
     costAmount: initialData.documentAICostAmount || '1.50',
     pageUnit: initialData.documentAIPageUnit || '1000',
     enabled: initialData.enabled || 'false',
+    skipSearchable: initialData.skipSearchable || 'true', // Default: ON (skip searchable PDFs to save costs!)
     tested: false,
   });
   const [showDocAICreds, setShowDocAICreds] = useState(false);
@@ -114,7 +115,8 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
       documentAIData.monthlyPageLimit !== initialDocumentAIData.monthlyPageLimit ||
       documentAIData.costAmount !== initialDocumentAIData.costAmount ||
       documentAIData.pageUnit !== initialDocumentAIData.pageUnit ||
-      documentAIData.enabled !== initialDocumentAIData.enabled
+      documentAIData.enabled !== initialDocumentAIData.enabled ||
+      documentAIData.skipSearchable !== initialDocumentAIData.skipSearchable
     );
   };
 
@@ -290,6 +292,7 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
         costAmount: documentAIData.costAmount,
         pageUnit: documentAIData.pageUnit,
         enabled: documentAIData.enabled,
+        skipSearchable: documentAIData.skipSearchable,
       });
       setDocumentAIData({ ...documentAIData, tested: false });
     } catch (error) {
@@ -593,6 +596,26 @@ export default function GoogleSettingsTab({ initialData = {} }: GoogleSettingsTa
           </div>
           <p className="text-xs text-muted-foreground">
             Wenn deaktiviert, werden alle Dokumente direkt an Paperless weitergeleitet
+          </p>
+
+          {/* Skip searchable PDFs option */}
+          <div className="flex items-center space-x-2 pt-2 pl-6 border-l-2 border-blue-200 ml-2">
+            <input
+              type="checkbox"
+              id="doc-ai-skip-searchable"
+              checked={documentAIData.skipSearchable === 'true'}
+              onChange={(e) => {
+                setDocumentAIData({ ...documentAIData, skipSearchable: e.target.checked ? 'true' : 'false' });
+              }}
+              className="w-4 h-4 rounded border-gray-300"
+              disabled={documentAIData.enabled !== 'true'}
+            />
+            <Label htmlFor="doc-ai-skip-searchable" className={`cursor-pointer ${documentAIData.enabled !== 'true' ? 'text-muted-foreground' : ''}`}>
+              PDFs mit Text-Layer überspringen (💰 Kosten sparen!)
+            </Label>
+          </div>
+          <p className="text-xs text-muted-foreground pl-6">
+            <strong>WICHTIG:</strong> Wenn aktiviert, werden PDFs die bereits durchsuchbar sind (Text-Layer vorhanden) NICHT an Document AI geschickt. Dies spart erhebliche API-Kosten! Paperless verwendet dann Tesseract OCR als Fallback.
           </p>
 
           <div>

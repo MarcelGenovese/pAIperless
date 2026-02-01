@@ -182,3 +182,29 @@ export async function removeOCRLayer(inputPath: string): Promise<string> {
 export function exceedsLimits(info: PDFInfo, maxPages: number, maxSizeMB: number): boolean {
   return info.pages > maxPages || info.sizeMB > maxSizeMB;
 }
+
+/**
+ * Check if PDF already has searchable text (OCR layer)
+ * Returns true if PDF contains extractable text
+ */
+export async function isSearchablePDF(filePath: string): Promise<boolean> {
+  try {
+    // Use pdftotext to extract text from first page
+    const { exec } = await import('child_process');
+    const { promisify } = await import('util');
+    const execAsync = promisify(exec);
+
+    // Extract text from first page only (faster)
+    const { stdout } = await execAsync(`pdftotext -f 1 -l 1 "${filePath}" -`);
+
+    // Check if we got meaningful text (more than just whitespace/special chars)
+    const text = stdout.trim();
+    const meaningfulText = text.replace(/[\s\n\r\t]/g, '');
+
+    // If we have at least 50 characters of text, consider it searchable
+    return meaningfulText.length > 50;
+  } catch (error) {
+    // If pdftotext fails or extraction fails, assume not searchable
+    return false;
+  }
+}

@@ -111,6 +111,7 @@ export async function processAiTodoDocuments(): Promise<{
     const results = [];
     let currentIndex = 0;
     for (const doc of documents) {
+      let prompt: string | undefined; // Define outside try block so it's available in catch
       try {
         currentIndex++;
 
@@ -186,7 +187,8 @@ export async function processAiTodoDocuments(): Promise<{
 
         // Generate prompt and schema
         await logger.info(`📝 Generating AI analysis prompt...`);
-        const { prompt, schema } = await generateAnalysisPrompt(paperlessClient, content);
+        const { prompt: generatedPrompt, schema } = await generateAnalysisPrompt(paperlessClient, content);
+        prompt = generatedPrompt; // Assign to outer scope variable for error handling
         await logger.info(`✅ Prompt generated (${prompt.length} characters)`);
         await logger.info(``);
 
@@ -216,6 +218,18 @@ export async function processAiTodoDocuments(): Promise<{
             retryCount++;
             await logger.error(`❌ Gemini request failed (attempt ${retryCount}/${maxRetries + 1})`);
             await logger.error(`   → Error: ${error.message}`);
+
+            // Log raw response if available (for JSON parse errors)
+            if (error.rawResponse) {
+              await logger.error(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+              await logger.error(`📄 COMPLETE RAW GEMINI RESPONSE:`);
+              await logger.error(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+              await logger.error(error.rawResponse); // Log COMPLETE response
+              await logger.error(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+              await logger.error(`Response Length: ${error.rawResponse.length} characters`);
+              await logger.error(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+            }
+
             if (error.stack) {
               const stackLines = error.stack.split('\n').slice(0, 3);
               for (const line of stackLines) {
@@ -296,13 +310,37 @@ export async function processAiTodoDocuments(): Promise<{
             }
           }
 
+          // Add pAIperless processed tag if configured
+          const tagPaiperlessProcessedName = await getConfig(CONFIG_KEYS.TAG_PAIPERLESS_PROCESSED);
+          if (tagPaiperlessProcessedName) {
+            await logger.info(`   → Adding pAIperless processed tag: "${tagPaiperlessProcessedName}"`);
+            const paiperlessProcessedTagId = await paperlessClient.createOrGetTag(tagPaiperlessProcessedName);
+            await logger.info(`     • pAIperless processed tag ID: ${paiperlessProcessedTagId}`);
+            if (!tagIds.includes(paiperlessProcessedTagId)) {
+              tagIds.push(paiperlessProcessedTagId);
+            }
+          }
+
           updates.tags = tagIds;
           await logger.info(`   → Final tag IDs: ${JSON.stringify(tagIds)}`);
         } else {
           // Keep existing tags but remove AI_TODO
           const existingTags = doc.tags || [];
           await logger.info(`   → No tags from Gemini, keeping existing tags except AI_TODO`);
-          updates.tags = existingTags.filter((id: number) => id !== tagAiTodoId);
+          const tagIds = existingTags.filter((id: number) => id !== tagAiTodoId);
+
+          // Add pAIperless processed tag if configured
+          const tagPaiperlessProcessedName = await getConfig(CONFIG_KEYS.TAG_PAIPERLESS_PROCESSED);
+          if (tagPaiperlessProcessedName) {
+            await logger.info(`   → Adding pAIperless processed tag: "${tagPaiperlessProcessedName}"`);
+            const paiperlessProcessedTagId = await paperlessClient.createOrGetTag(tagPaiperlessProcessedName);
+            await logger.info(`     • pAIperless processed tag ID: ${paiperlessProcessedTagId}`);
+            if (!tagIds.includes(paiperlessProcessedTagId)) {
+              tagIds.push(paiperlessProcessedTagId);
+            }
+          }
+
+          updates.tags = tagIds;
           await logger.info(`   → Final tag IDs: ${JSON.stringify(updates.tags)}`);
         }
 
@@ -403,15 +441,47 @@ export async function processAiTodoDocuments(): Promise<{
           where: { paperlessId: doc.id },
         });
 
+        // Prepare prompt/response data for storage
+        // Store sanitized prompt (remove document content to save space)
+        let promptTemplate = prompt;
+        const docContentMarker = '**Document to analyze:**';
+        if (prompt.includes(docContentMarker)) {
+          const parts = prompt.split(docContentMarker);
+          promptTemplate = parts[0].trim() + '\n\n' + docContentMarker + '\n[Dokument-Inhalt entfernt]';
+        }
+
+        // Prepare processing details with AI analysis data
+        const aiProcessingDetails = {
+          aiAnalysis: {
+            promptTemplate,
+            geminiResponse: response,
+            tokensInput: tokensUsed.input,
+            tokensOutput: tokensUsed.output,
+            timestamp: new Date().toISOString(),
+          }
+        };
+
         if (existingDoc) {
-          // Update existing document
+          // Update existing document - merge with existing processingDetails
+          let mergedDetails = aiProcessingDetails;
+          if (existingDoc.processingDetails) {
+            try {
+              const existing = JSON.parse(existingDoc.processingDetails);
+              mergedDetails = { ...existing, ...aiProcessingDetails };
+            } catch (e) {
+              await logger.warn(`Failed to parse existing processingDetails, overwriting`);
+            }
+          }
+
           await prisma.document.updateMany({
             where: { paperlessId: doc.id },
             data: {
               geminiTokensSent: tokensUsed.input,
               geminiTokensRecv: tokensUsed.output,
+              processingDetails: JSON.stringify(mergedDetails),
             },
           });
+          await logger.info(`✅ Stored prompt and response in database`);
         } else {
           // Create new record for tracking
           // Check if this is a _searchable document and try to find the original
@@ -443,8 +513,10 @@ export async function processAiTodoDocuments(): Promise<{
               geminiTokensSent: tokensUsed.input,
               geminiTokensRecv: tokensUsed.output,
               ocrPageCount: ocrPages,
+              processingDetails: JSON.stringify(aiProcessingDetails),
             },
           });
+          await logger.info(`✅ Stored prompt and response in database`);
         }
 
         // Update costTracking table for monthly usage tracking
@@ -522,6 +594,39 @@ export async function processAiTodoDocuments(): Promise<{
         await logger.error(`❌ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
         await logger.error(``);
 
+        // Update document status to ERROR in database
+        const dbDoc = await prisma.document.findFirst({
+          where: { paperlessId: doc.id }
+        });
+
+        if (dbDoc) {
+          await prisma.document.update({
+            where: { id: dbDoc.id },
+            data: {
+              status: 'ERROR',
+              errorMessage: error.message || 'Unknown error during AI analysis'
+            }
+          });
+          await logger.info(`💾 Updated document ${dbDoc.id} status to ERROR`);
+        } else {
+          // Document not in database (uploaded via Paperless UI directly), create entry
+          await logger.warn(`⚠️  Document ${doc.id} not in pAIperless database, creating ERROR entry...`);
+          try {
+            const newDoc = await prisma.document.create({
+              data: {
+                paperlessId: doc.id,
+                originalFilename: doc.title || `document-${doc.id}`,
+                fileHash: `paperless-${doc.id}-error-${Date.now()}`, // Unique hash for Paperless-uploaded docs
+                status: 'ERROR',
+                errorMessage: error.message || 'Unknown error during AI analysis',
+              },
+            });
+            await logger.info(`💾 Created new ERROR document entry: ID ${newDoc.id}`);
+          } catch (createError: any) {
+            await logger.error(`❌ Failed to create ERROR document entry:`, createError);
+          }
+        }
+
         // Send email notification for error
         await sendDocumentErrorEmail(
           doc.title || `Dokument ${doc.id}`,
@@ -529,15 +634,40 @@ export async function processAiTodoDocuments(): Promise<{
           doc.id
         );
 
+        // Log with prompt and response for debugging
+        const logMeta: any = {
+          documentId: doc.id,
+          paperlessId: doc.id,
+          error: error.message,
+          stack: error.stack,
+        };
+
+        // Include raw response if available (for JSON parse errors)
+        if (error.rawResponse) {
+          logMeta.geminiRawResponse = error.rawResponse; // Store COMPLETE response in database
+          await logger.error(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+          await logger.error(`📄 COMPLETE RAW GEMINI RESPONSE:`);
+          await logger.error(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+          await logger.error(error.rawResponse); // Log COMPLETE response without truncation
+          await logger.error(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+          await logger.error(`Response Length: ${error.rawResponse.length} characters`);
+          await logger.error(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+        }
+
+        // Include prompt if we generated it
+        if (prompt) {
+          // Remove document content from prompt for logging
+          const promptParts = prompt.split('**Document to analyze:**');
+          if (promptParts.length > 0) {
+            logMeta.promptTemplate = promptParts[0].trim() + '\n\n**Document to analyze:**\n[Content removed for logging]';
+          }
+        }
+
         await prisma.log.create({
           data: {
             level: 'ERROR',
-            message: `Failed to analyze document ${doc.id}`,
-            meta: JSON.stringify({
-              documentId: doc.id,
-              error: error.message,
-              stack: error.stack,
-            }),
+            message: `Failed to analyze document ${doc.id}: ${error.message}`,
+            meta: JSON.stringify(logMeta),
           },
         });
 

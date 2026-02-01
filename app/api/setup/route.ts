@@ -101,6 +101,9 @@ export async function POST(request: NextRequest) {
         if (data.enabled !== undefined) {
           await setConfig(CONFIG_KEYS.DOCUMENT_AI_ENABLED, data.enabled);
         }
+        if (data.skipSearchable !== undefined) {
+          await setConfig(CONFIG_KEYS.DOCUMENT_AI_SKIP_SEARCHABLE, data.skipSearchable);
+        }
         break;
 
       case 4: // Google OAuth
@@ -117,6 +120,9 @@ export async function POST(request: NextRequest) {
         }
         if (data.taskListId) {
           await setConfig(CONFIG_KEYS.GOOGLE_TASK_LIST_ID, data.taskListId);
+        }
+        if (data.taskCompletionInterval) {
+          await setConfig(CONFIG_KEYS.POLL_TASK_COMPLETION_INTERVAL, data.taskCompletionInterval);
         }
         break;
 
@@ -143,6 +149,7 @@ export async function POST(request: NextRequest) {
       case 6: // Paperless Integration
         await setConfig(CONFIG_KEYS.TAG_AI_TODO, data.tagAiTodo);
         await setConfig(CONFIG_KEYS.TAG_ACTION_REQUIRED, data.tagActionRequired);
+        await setConfig(CONFIG_KEYS.TAG_PAIPERLESS_PROCESSED, data.tagPaiperlessProcessed || 'paiperless_processed');
         await setConfig(CONFIG_KEYS.FIELD_ACTION_DESCRIPTION, data.fieldActionDescription);
         await setConfig(CONFIG_KEYS.FIELD_DUE_DATE, data.fieldDueDate);
         break;

@@ -19,6 +19,7 @@ export default function Step6PaperlessIntegration({ onNext, onBack, data }: Step
 
   const [tagAiTodo, setTagAiTodo] = useState('ai_todo');
   const [tagActionRequired, setTagActionRequired] = useState('action_required');
+  const [tagPaiperlessProcessed, setTagPaiperlessProcessed] = useState('paiperless_processed');
   const [fieldActionDescription, setFieldActionDescription] = useState('action_description');
   const [fieldDueDate, setFieldDueDate] = useState('due_date');
   const [loading, setLoading] = useState(true);
@@ -32,6 +33,7 @@ export default function Step6PaperlessIntegration({ onNext, onBack, data }: Step
           const savedData = await response.json();
           if (savedData.tagAiTodo) setTagAiTodo(savedData.tagAiTodo);
           if (savedData.tagActionRequired) setTagActionRequired(savedData.tagActionRequired);
+          if (savedData.tagPaiperlessProcessed) setTagPaiperlessProcessed(savedData.tagPaiperlessProcessed);
           if (savedData.fieldActionDescription) setFieldActionDescription(savedData.fieldActionDescription);
           if (savedData.fieldDueDate) setFieldDueDate(savedData.fieldDueDate);
         }
@@ -45,7 +47,7 @@ export default function Step6PaperlessIntegration({ onNext, onBack, data }: Step
     loadConfig();
   }, []);
 
-  const canProceed = tagAiTodo && tagActionRequired && fieldActionDescription && fieldDueDate;
+  const canProceed = tagAiTodo && tagActionRequired && tagPaiperlessProcessed && fieldActionDescription && fieldDueDate;
 
   const handleNext = async () => {
     if (!canProceed) return;
@@ -59,6 +61,7 @@ export default function Step6PaperlessIntegration({ onNext, onBack, data }: Step
           data: {
             tagAiTodo,
             tagActionRequired,
+            tagPaiperlessProcessed,
             fieldActionDescription,
             fieldDueDate,
           }
@@ -138,6 +141,21 @@ export default function Step6PaperlessIntegration({ onNext, onBack, data }: Step
               />
               <p className="text-xs text-muted-foreground">
                 Tag für Dokumente, die eine Handlung erfordern (z.B. Zahlung, Kündigung). Wird automatisch gesetzt, wenn die AI eine Aktion erkennt.
+              </p>
+            </div>
+
+            {/* pAIperless Processed Tag */}
+            <div className="space-y-2">
+              <Label htmlFor="tagPaiperlessProcessed">pAIperless Processed Tag</Label>
+              <Input
+                id="tagPaiperlessProcessed"
+                type="text"
+                placeholder="paiperless_processed"
+                value={tagPaiperlessProcessed}
+                onChange={(e) => setTagPaiperlessProcessed(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Tag um Dokumente zu markieren, die von pAIperless AI-analysiert wurden. Wird nach erfolgreicher Analyse automatisch gesetzt.
               </p>
             </div>
           </div>

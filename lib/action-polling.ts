@@ -182,10 +182,13 @@ export async function startActionPolling() {
   }
 
   // Get polling interval (in minutes)
-  const intervalMinutes = parseInt(await getConfig(CONFIG_KEYS.POLL_ACTION_INTERVAL) || '30');
+  // Use POLL_TASK_COMPLETION_INTERVAL if available, otherwise fall back to POLL_ACTION_INTERVAL
+  const taskCompletionInterval = await getConfig(CONFIG_KEYS.POLL_TASK_COMPLETION_INTERVAL);
+  const actionInterval = await getConfig(CONFIG_KEYS.POLL_ACTION_INTERVAL);
+  const intervalMinutes = parseInt(taskCompletionInterval || actionInterval || '30');
   const intervalMs = intervalMinutes * 60 * 1000;
 
-  await logger.info(`[Action Polling] Starting action polling (interval: ${intervalMinutes} minutes)`);
+  await logger.info(`[Action Polling] Starting task completion polling (interval: ${intervalMinutes} minutes)`);
 
   // Run immediately on startup (will check emergency stop internally)
   await processCompletedTasks();

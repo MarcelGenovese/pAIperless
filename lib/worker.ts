@@ -7,13 +7,13 @@ import { processWithDocumentAI, createSearchablePDF } from './google';
 import { getPaperlessClient } from './paperless';
 import { createLogger } from './logger';
 import { getConfig, CONFIG_KEYS } from './config';
-import { getPDFInfo, detectAndRotatePDF, removeOCRLayer, exceedsLimits } from './pdf-processor';
+import { getPDFInfo, detectAndRotatePDF, removeOCRLayer, exceedsLimits, isSearchablePDF } from './pdf-processor';
 import { canProcessWithDocumentAI, reserveDocumentAIPages } from './cost-tracking';
 import { startAiTodoPolling, stopAiTodoPolling } from './polling';
 import { startActionPolling, stopActionPolling } from './action-polling';
 import { acquireLock, releaseLock, updateLockActivity } from './process-lock';
 import { checkEmergencyStop } from './emergency-stop';
-import { sendDocumentProcessedEmail, sendDocumentErrorEmail } from './email';
+import { sendDocumentProcessedEmail, sendDocumentErrorEmail, sendDuplicateDocumentEmail } from './email';
 
 const logger = createLogger('Worker');
 
@@ -160,6 +160,46 @@ async function processFile(filePath: string) {
       const errorPath = join(ERROR_DIR, fileName);
       copyFileSync(filePath, errorPath);
       unlinkSync(filePath);
+
+      // Create database entry for this duplicate attempt
+      // IMPORTANT: fileHash is UNIQUE, so we add a suffix to make it unique
+      await logger.info(`💾 Creating database record for duplicate...`);
+      const uploadDate = new Date(existing.createdAt).toLocaleDateString('de-DE');
+      let errorMsg = `Duplikat: Datei wurde bereits am ${uploadDate} hochgeladen (Original: ${existing.originalFilename}`;
+      if (existing.paperlessId) {
+        errorMsg += `, Paperless ID: ${existing.paperlessId}`;
+      }
+      errorMsg += `)`;
+
+      // Make hash unique by adding timestamp suffix for duplicate
+      const duplicateHash = `${fileHash}_duplicate_${Date.now()}`;
+
+      const duplicateDoc = await prisma.document.create({
+        data: {
+          originalFilename: fileName,
+          fileHash: duplicateHash,
+          filePath: errorPath,
+          status: 'ERROR',
+          errorMessage: errorMsg,
+        },
+      });
+      await logger.info(`✅ Duplicate logged in database: ID ${duplicateDoc.id}`);
+      await logger.info(`   → Status: ERROR (Duplicate)`);
+      await logger.info(``);
+
+      // Send duplicate notification email
+      await logger.info(`📧 Sending duplicate notification email...`);
+      try {
+        await sendDuplicateDocumentEmail(
+          fileName,
+          existing.id,
+          existing.paperlessId || undefined
+        );
+        await logger.info(`✅ Duplicate notification email sent`);
+      } catch (emailError: any) {
+        await logger.error(`❌ Failed to send duplicate notification email:`, emailError);
+      }
+
       return;
     }
 
@@ -201,11 +241,13 @@ async function processFile(filePath: string) {
     // Get configuration
     await logger.info(`⚙️  Loading configuration...`);
     const docAIEnabled = (await getConfig(CONFIG_KEYS.DOCUMENT_AI_ENABLED)) === 'true';
+    const skipSearchable = (await getConfig(CONFIG_KEYS.DOCUMENT_AI_SKIP_SEARCHABLE)) === 'true';
     const maxPages = parseInt(await getConfig(CONFIG_KEYS.DOCUMENT_AI_MAX_PAGES) || '15');
     const maxSizeMB = parseInt(await getConfig(CONFIG_KEYS.DOCUMENT_AI_MAX_SIZE_MB) || '20');
     const aiTodoTag = await getConfig(CONFIG_KEYS.TAG_AI_TODO) || 'ai_todo';
     await logger.info(`✅ Configuration loaded:`);
     await logger.info(`   → Document AI enabled: ${docAIEnabled}`);
+    await logger.info(`   → Skip searchable PDFs: ${skipSearchable}`);
     await logger.info(`   → Max pages: ${maxPages}`);
     await logger.info(`   → Max size: ${maxSizeMB} MB`);
     await logger.info(`   → AI Todo tag: ${aiTodoTag}`);
@@ -218,6 +260,11 @@ async function processFile(filePath: string) {
     if (!docAIEnabled) {
       await logger.info(`⏩ Decision: Skip Document AI (disabled in configuration)`);
       await logger.info(`   → Paperless will handle OCR with Tesseract`);
+      await logger.info(``);
+    } else if (skipSearchable && await isSearchablePDF(processingPath)) {
+      await logger.info(`⏩ Decision: Skip Document AI (PDF already searchable)`);
+      await logger.info(`   → PDF contains text layer - no OCR needed`);
+      await logger.info(`   → Paperless will use existing OCR layer`);
       await logger.info(``);
     } else if (exceedsLimits(pdfInfo, maxPages, maxSizeMB)) {
       await logger.info(`⏩ Decision: Skip Document AI (exceeds configured limits)`);

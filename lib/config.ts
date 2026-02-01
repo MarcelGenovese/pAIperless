@@ -36,6 +36,7 @@ export const CONFIG_KEYS = {
   DOCUMENT_AI_MAX_PAGES: 'DOCUMENT_AI_MAX_PAGES', // Max pages to send to Document AI
   DOCUMENT_AI_MAX_SIZE_MB: 'DOCUMENT_AI_MAX_SIZE_MB', // Max file size in MB
   DOCUMENT_AI_ENABLED: 'DOCUMENT_AI_ENABLED', // Enable/disable Document AI processing
+  DOCUMENT_AI_SKIP_SEARCHABLE: 'DOCUMENT_AI_SKIP_SEARCHABLE', // Skip OCR if PDF already has text layer
   DOCUMENT_AI_MONTHLY_PAGE_LIMIT: 'DOCUMENT_AI_MONTHLY_PAGE_LIMIT', // Monthly page limit for cost control
   DOCUMENT_AI_COST_AMOUNT: 'DOCUMENT_AI_COST_AMOUNT', // Cost amount for pricing calculation
   DOCUMENT_AI_PAGE_UNIT: 'DOCUMENT_AI_PAGE_UNIT', // Page unit for pricing (e.g., 1000 for cost per 1000 pages)
@@ -76,6 +77,7 @@ export const CONFIG_KEYS = {
   // Paperless Config
   TAG_AI_TODO: 'TAG_AI_TODO',
   TAG_ACTION_REQUIRED: 'TAG_ACTION_REQUIRED',
+  TAG_PAIPERLESS_PROCESSED: 'TAG_PAIPERLESS_PROCESSED', // Tag to mark documents processed by pAIperless
   FIELD_ACTION_DESCRIPTION: 'FIELD_ACTION_DESCRIPTION',
   FIELD_DUE_DATE: 'FIELD_DUE_DATE',
   PAPERLESS_OCR_MODE: 'PAPERLESS_OCR_MODE', // OCR mode: skip, redo, skip_noarchive, force
@@ -87,6 +89,7 @@ export const CONFIG_KEYS = {
   POLL_ACTION_INTERVAL: 'POLL_ACTION_INTERVAL',
   POLL_AI_TODO_ENABLED: 'POLL_AI_TODO_ENABLED',
   POLL_AI_TODO_INTERVAL: 'POLL_AI_TODO_INTERVAL',
+  POLL_TASK_COMPLETION_INTERVAL: 'POLL_TASK_COMPLETION_INTERVAL', // How often to check Google Tasks for completion (minutes)
 } as const;
 
 // Encryption functions for sensitive data

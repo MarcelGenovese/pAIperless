@@ -32,6 +32,7 @@ interface Document {
   ocrPageCount?: number;
   geminiTokensSent?: number;
   geminiTokensRecv?: number;
+  processingDetails?: string; // JSON string with prompt/response data
 }
 
 interface AIAnalysis {
@@ -541,16 +542,101 @@ export default function DocumentsTab() {
                                 ))}
                               </div>
                             ) : doc.geminiTokensSent && doc.geminiTokensSent > 0 ? (
-                              <div className="p-3 rounded-lg bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <FontAwesomeIcon icon={faCheckCircle} className="text-purple-600" />
-                                  <span className="font-semibold text-sm text-purple-900 dark:text-purple-100">
-                                    Gemini AI Analyse
-                                  </span>
+                              <div className="space-y-3">
+                                <div className="p-3 rounded-lg bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <FontAwesomeIcon icon={faCheckCircle} className="text-purple-600" />
+                                    <span className="font-semibold text-sm text-purple-900 dark:text-purple-100">
+                                      Gemini AI Analyse
+                                    </span>
+                                  </div>
+                                  <p className="text-xs text-purple-800 dark:text-purple-200">
+                                    Dokument analysiert mit {doc.geminiTokensSent.toLocaleString('de-DE')} Tokens
+                                  </p>
+                                  {doc.geminiTokensRecv && (
+                                    <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">
+                                      Input: {doc.geminiTokensSent.toLocaleString('de-DE')}, Output: {doc.geminiTokensRecv.toLocaleString('de-DE')}
+                                    </p>
+                                  )}
                                 </div>
-                                <p className="text-xs text-purple-800 dark:text-purple-200">
-                                  Dokument analysiert mit {doc.geminiTokensSent.toLocaleString('de-DE')} Tokens
-                                </p>
+
+                                {/* Prompt & Response Buttons */}
+                                {doc.processingDetails && (() => {
+                                  try {
+                                    const details = JSON.parse(doc.processingDetails);
+                                    if (details.aiAnalysis) {
+                                      return (
+                                        <div className="flex gap-2">
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                              const promptWindow = window.open('', '_blank');
+                                              if (promptWindow) {
+                                                promptWindow.document.write(`
+                                                  <html>
+                                                    <head>
+                                                      <title>Eingabe-Prompt - ${doc.filename}</title>
+                                                      <style>
+                                                        body { font-family: monospace; padding: 20px; background: #f5f5f5; }
+                                                        pre { background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; white-space: pre-wrap; word-wrap: break-word; }
+                                                      </style>
+                                                    </head>
+                                                    <body>
+                                                      <h2>Eingabe-Prompt für: ${doc.filename}</h2>
+                                                      <pre>${details.aiAnalysis.promptTemplate || 'Nicht verfügbar'}</pre>
+                                                    </body>
+                                                  </html>
+                                                `);
+                                                promptWindow.document.close();
+                                              }
+                                            }}
+                                            className="flex-1"
+                                          >
+                                            <FontAwesomeIcon icon={faFileAlt} className="mr-2" />
+                                            Eingabe-Prompt anzeigen
+                                          </Button>
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                              const responseWindow = window.open('', '_blank');
+                                              if (responseWindow) {
+                                                const responseData = details.aiAnalysis.geminiResponse;
+                                                const formattedResponse = typeof responseData === 'string'
+                                                  ? responseData
+                                                  : JSON.stringify(responseData, null, 2);
+                                                responseWindow.document.write(`
+                                                  <html>
+                                                    <head>
+                                                      <title>Ausgabe-Response - ${doc.filename}</title>
+                                                      <style>
+                                                        body { font-family: monospace; padding: 20px; background: #f5f5f5; }
+                                                        pre { background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; white-space: pre-wrap; word-wrap: break-word; }
+                                                      </style>
+                                                    </head>
+                                                    <body>
+                                                      <h2>Ausgabe-Response für: ${doc.filename}</h2>
+                                                      <pre>${formattedResponse}</pre>
+                                                    </body>
+                                                  </html>
+                                                `);
+                                                responseWindow.document.close();
+                                              }
+                                            }}
+                                            className="flex-1"
+                                          >
+                                            <FontAwesomeIcon icon={faRobot} className="mr-2" />
+                                            Ausgabe-Response anzeigen
+                                          </Button>
+                                        </div>
+                                      );
+                                    }
+                                  } catch (e) {
+                                    console.error('Failed to parse processingDetails:', e);
+                                  }
+                                  return null;
+                                })()}
                               </div>
                             ) : (
                               <div className="p-3 rounded-lg bg-gray-100 dark:bg-gray-800">

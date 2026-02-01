@@ -13,6 +13,9 @@ import {
   faSave,
   faRotateLeft,
   faSpinner,
+  faTrash,
+  faBroom,
+  faExclamationCircle,
 } from '@fortawesome/free-solid-svg-icons';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -24,6 +27,14 @@ export default function AdvancedSettingsTab() {
 
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isResettingSetup, setIsResettingSetup] = useState(false);
+
+  // Maintenance State
+  const [showClearFoldersConfirm, setShowClearFoldersConfirm] = useState(false);
+  const [showClearPendingConfirm, setShowClearPendingConfirm] = useState(false);
+  const [showFullResetConfirm, setShowFullResetConfirm] = useState(false);
+  const [isClearingFolders, setIsClearingFolders] = useState(false);
+  const [isClearingPending, setIsClearingPending] = useState(false);
+  const [isFullReset, setIsFullReset] = useState(false);
 
   // Language State
   const [currentLanguage, setCurrentLanguage] = useState('de');
@@ -284,6 +295,103 @@ export default function AdvancedSettingsTab() {
     }
   };
 
+  const handleClearFolders = async () => {
+    setIsClearingFolders(true);
+    try {
+      const response = await fetch('/api/maintenance/clear-folders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ folders: ['consume', 'processing', 'error', 'completed'] }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: 'Ordner bereinigt',
+          description: data.message,
+          variant: 'success',
+        });
+        setShowClearFoldersConfirm(false);
+      } else {
+        throw new Error(data.error || 'Failed to clear folders');
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Fehler',
+        description: error.message || 'Ordner konnten nicht bereinigt werden',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsClearingFolders(false);
+    }
+  };
+
+  const handleClearPending = async () => {
+    setIsClearingPending(true);
+    try {
+      const response = await fetch('/api/maintenance/clear-pending', {
+        method: 'POST',
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: 'Ausstehende Dokumente bereinigt',
+          description: data.message,
+          variant: 'success',
+        });
+        setShowClearPendingConfirm(false);
+      } else {
+        throw new Error(data.error || 'Failed to clear pending');
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Fehler',
+        description: error.message || 'Bereinigung fehlgeschlagen',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsClearingPending(false);
+    }
+  };
+
+  const handleFullReset = async () => {
+    setIsFullReset(true);
+    try {
+      const response = await fetch('/api/maintenance/full-reset', {
+        method: 'POST',
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: 'Komplette Bereinigung abgeschlossen',
+          description: data.message,
+          variant: 'success',
+        });
+        setShowFullResetConfirm(false);
+
+        // Reload page after short delay
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } else {
+        throw new Error(data.error || 'Failed to reset');
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Fehler',
+        description: error.message || 'Komplette Bereinigung fehlgeschlagen',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsFullReset(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Setup Wizard Reset */}
@@ -533,6 +641,177 @@ export default function AdvancedSettingsTab() {
                   Große Dateien (über Limit) werden automatisch übersprungen und verwenden Tesseract OCR.
                 </p>
               </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Data Maintenance */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Datenbereinigung</CardTitle>
+          <CardDescription>Bereinigen Sie Ordner und Datenbank von alten/ausstehenden Daten</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Clear Folders */}
+            <div className="p-4 border rounded-lg">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h3 className="font-semibold mb-1">Ordner bereinigen</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Löscht alle Dateien aus Consume, Processing, Error und Completed Ordnern
+                  </p>
+                </div>
+              </div>
+              {!showClearFoldersConfirm ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowClearFoldersConfirm(true)}
+                  disabled={isClearingFolders}
+                >
+                  <FontAwesomeIcon icon={faBroom} className="mr-2" />
+                  Ordner bereinigen
+                </Button>
+              ) : (
+                <div className="p-3 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded">
+                  <div className="flex items-start gap-2 mb-3">
+                    <FontAwesomeIcon icon={faExclamationTriangle} className="text-yellow-600 mt-0.5" />
+                    <p className="text-sm text-yellow-900 dark:text-yellow-100">
+                      Alle Dateien in den Ordnern werden gelöscht. Diese Aktion kann nicht rückgängig gemacht werden!
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={handleClearFolders}
+                      disabled={isClearingFolders}
+                    >
+                      {isClearingFolders ? 'Bereinige...' : 'Ja, bereinigen'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowClearFoldersConfirm(false)}
+                      disabled={isClearingFolders}
+                    >
+                      Abbrechen
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Clear Pending Documents */}
+            <div className="p-4 border rounded-lg">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h3 className="font-semibold mb-1">Ausstehende Dokumente bereinigen</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Löscht Dokumente aus der Datenbank mit Status PENDING, PREPROCESSING, OCR_IN_PROGRESS, etc.
+                  </p>
+                </div>
+              </div>
+              {!showClearPendingConfirm ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowClearPendingConfirm(true)}
+                  disabled={isClearingPending}
+                >
+                  <FontAwesomeIcon icon={faTrash} className="mr-2" />
+                  Ausstehende bereinigen
+                </Button>
+              ) : (
+                <div className="p-3 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded">
+                  <div className="flex items-start gap-2 mb-3">
+                    <FontAwesomeIcon icon={faExclamationTriangle} className="text-yellow-600 mt-0.5" />
+                    <p className="text-sm text-yellow-900 dark:text-yellow-100">
+                      Alle ausstehenden Dokumente werden aus der Datenbank gelöscht.
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={handleClearPending}
+                      disabled={isClearingPending}
+                    >
+                      {isClearingPending ? 'Bereinige...' : 'Ja, bereinigen'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowClearPendingConfirm(false)}
+                      disabled={isClearingPending}
+                    >
+                      Abbrechen
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Full Reset */}
+            <div className="p-4 border-2 border-red-200 dark:border-red-900 rounded-lg bg-red-50 dark:bg-red-950/20">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h3 className="font-semibold text-red-900 dark:text-red-100 mb-1">
+                    <FontAwesomeIcon icon={faExclamationCircle} className="mr-2" />
+                    Komplette Bereinigung
+                  </h3>
+                  <p className="text-sm text-red-800 dark:text-red-200">
+                    <strong>ACHTUNG:</strong> Löscht ALLE Dokumenten-Historie, Hashes und Dateien aus allen Ordnern.
+                    Die Dokumentenverarbeitung wird komplett auf Null gesetzt.
+                  </p>
+                </div>
+              </div>
+              {!showFullResetConfirm ? (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowFullResetConfirm(true)}
+                  disabled={isFullReset}
+                >
+                  <FontAwesomeIcon icon={faExclamationCircle} className="mr-2" />
+                  Alles zurücksetzen
+                </Button>
+              ) : (
+                <div className="p-3 bg-red-100 dark:bg-red-950/40 border border-red-300 dark:border-red-800 rounded">
+                  <div className="flex items-start gap-2 mb-3">
+                    <FontAwesomeIcon icon={faExclamationCircle} className="text-red-600 mt-0.5" />
+                    <div className="text-sm text-red-900 dark:text-red-100">
+                      <p className="font-semibold mb-1">Sind Sie ABSOLUT sicher?</p>
+                      <p>Dies wird löschen:</p>
+                      <ul className="list-disc list-inside mt-1">
+                        <li>Alle Dokumente aus der Datenbank</li>
+                        <li>Alle Hashes (Duplikatschutz wird zurückgesetzt)</li>
+                        <li>Alle Dateien aus allen Ordnern</li>
+                        <li>Alle dokumentbezogenen Logs</li>
+                      </ul>
+                      <p className="mt-2 font-semibold">Diese Aktion kann NICHT rückgängig gemacht werden!</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleFullReset}
+                      disabled={isFullReset}
+                    >
+                      {isFullReset ? 'Bereinige...' : 'Ja, ALLES löschen'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowFullResetConfirm(false)}
+                      disabled={isFullReset}
+                    >
+                      Abbrechen
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>

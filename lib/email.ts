@@ -111,9 +111,10 @@ export async function sendDocumentErrorEmail(
   errorMessage: string,
   documentId?: number
 ) {
-  // Check if error notifications are enabled
+  // Check if error notifications are enabled (default: true if not set)
   const notifyError = await getConfig(CONFIG_KEYS.EMAIL_NOTIFY_ERROR);
-  if (notifyError !== 'true') {
+  if (notifyError === 'false') {
+    await logger.info(`📧 Error email skipped: EMAIL_NOTIFY_ERROR='false'`);
     return;
   }
 
@@ -129,6 +130,50 @@ export async function sendDocumentErrorEmail(
     <pre style="background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto;">${errorMessage}</pre>
     <p>Das Dokument wurde in den Fehler-Status verschoben und kann über das Dashboard erneut verarbeitet werden.</p>
     ${dashboardUrl ? `<p><a href="${dashboardUrl}" style="display: inline-block; padding: 10px 20px; background: #DC2626; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">Dashboard öffnen und Problem beheben</a></p>` : ''}
+    <hr>
+    <p style="color: #666; font-size: 12px;">Diese Nachricht wurde automatisch von pAIperless gesendet.</p>
+  `;
+
+  await sendEmail(subject, html);
+}
+
+/**
+ * Send notification for duplicate document
+ */
+export async function sendDuplicateDocumentEmail(
+  newFileName: string,
+  existingDocumentId: number,
+  existingPaperlessId?: number
+) {
+  // Check if error notifications are enabled (default: true if not set)
+  const notifyError = await getConfig(CONFIG_KEYS.EMAIL_NOTIFY_ERROR);
+  if (notifyError === 'false') {
+    await logger.info(`📧 Duplicate email skipped: EMAIL_NOTIFY_ERROR='false'`);
+    return;
+  }
+
+  const paperlessUrl = await getConfig(CONFIG_KEYS.PAPERLESS_URL);
+  const baseUrl = await getConfig(CONFIG_KEYS.BASE_URL);
+  const dashboardUrl = baseUrl ? `${baseUrl}/dashboard?tab=documents` : null;
+
+  const paperlessDocUrl = existingPaperlessId && paperlessUrl
+    ? `${paperlessUrl}/documents/${existingPaperlessId}`
+    : null;
+
+  const subject = `🔁 Duplikat erkannt: ${newFileName}`;
+  const html = `
+    <h2 style="color: #F59E0B;">🔁 Duplikat-Dokument erkannt</h2>
+    <p><strong>Datei:</strong> ${newFileName}</p>
+    <p><strong>Status:</strong> <span style="color: #F59E0B;">Abgelehnt (Duplikat)</span></p>
+    <p>Dieses Dokument wurde bereits hochgeladen und verarbeitet.</p>
+    <hr>
+    <h3>Bereits vorhandenes Dokument:</h3>
+    <p><strong>pAIperless Document ID:</strong> ${existingDocumentId}</p>
+    ${existingPaperlessId ? `<p><strong>Paperless-NGX ID:</strong> ${existingPaperlessId}</p>` : ''}
+    ${paperlessDocUrl ? `<p><a href="${paperlessDocUrl}" style="display: inline-block; padding: 10px 20px; background: #0066CC; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">📄 Dokument in Paperless öffnen</a></p>` : ''}
+    ${dashboardUrl ? `<p><a href="${dashboardUrl}" style="display: inline-block; padding: 10px 20px; background: #6B7280; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">📊 Dashboard öffnen</a></p>` : ''}
+    <hr>
+    <p><strong>ℹ️ Hinweis:</strong> Das Duplikat wurde in den Fehler-Ordner verschoben und nicht erneut verarbeitet, um Kosten zu vermeiden.</p>
     <hr>
     <p style="color: #666; font-size: 12px;">Diese Nachricht wurde automatisch von pAIperless gesendet.</p>
   `;
@@ -217,9 +262,10 @@ export async function sendAPILimitReachedEmail(
   limit: number,
   month: string
 ) {
-  // Check if API limit notifications are enabled
+  // Check if API limit notifications are enabled (default: true if not set)
   const notifyLimit = await getConfig(CONFIG_KEYS.EMAIL_NOTIFY_API_LIMIT);
-  if (notifyLimit !== 'true') {
+  if (notifyLimit === 'false') {
+    await logger.info(`📧 API limit email skipped: EMAIL_NOTIFY_API_LIMIT='false'`);
     return;
   }
 
@@ -256,9 +302,10 @@ export async function sendAPILimitWarningEmail(
   percentage: number,
   month: string
 ) {
-  // Check if API warning notifications are enabled
+  // Check if API warning notifications are enabled (default: true if not set)
   const notifyWarning = await getConfig(CONFIG_KEYS.EMAIL_NOTIFY_API_WARNING);
-  if (notifyWarning !== 'true') {
+  if (notifyWarning === 'false') {
+    await logger.info(`📧 API warning email skipped: EMAIL_NOTIFY_API_WARNING='false'`);
     return;
   }
 

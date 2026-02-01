@@ -4,6 +4,7 @@ import { existsSync } from 'fs';
 import { createHash } from 'crypto';
 import path from 'path';
 import { prisma } from '@/lib/prisma';
+import { sendDuplicateDocumentEmail } from '@/lib/email';
 
 export const runtime = 'nodejs';
 
@@ -154,6 +155,43 @@ export async function POST(request: NextRequest) {
           if (existingDoc.paperlessId) {
             console.log(`[Upload]    Paperless ID: ${existingDoc.paperlessId}`);
           }
+
+          // Create database entry for this duplicate attempt (so it appears in history)
+          // IMPORTANT: fileHash is UNIQUE, so we add a suffix to make it unique
+          console.log(`[Upload] 💾 Logging duplicate attempt to database...`);
+          const fullErrorMsg = `Duplikat: Datei wurde bereits am ${uploadDate} hochgeladen (Original: ${existingDoc.originalFilename}`;
+          const dbErrorMsg = fullErrorMsg + (existingDoc.paperlessId ? `, Paperless ID: ${existingDoc.paperlessId})` : ')');
+
+          try {
+            // Make hash unique by adding timestamp suffix for duplicate
+            const duplicateHash = `${fileHash}_duplicate_${Date.now()}`;
+
+            const duplicateDoc = await prisma.document.create({
+              data: {
+                originalFilename: file.name,
+                fileHash: duplicateHash,
+                filePath: null, // File was never written
+                status: 'ERROR',
+                errorMessage: dbErrorMsg,
+              },
+            });
+            console.log(`[Upload] ✅ Duplicate logged in database: ID ${duplicateDoc.id}`);
+          } catch (dbError: any) {
+            console.error(`[Upload] ❌ Failed to log duplicate to database:`, dbError.message);
+          }
+
+          // Send duplicate notification email (fire-and-forget to avoid body disturbed errors)
+          console.log(`[Upload] 📧 Sending duplicate notification email...`);
+          sendDuplicateDocumentEmail(
+            file.name,
+            existingDoc.id,
+            existingDoc.paperlessId || undefined
+          ).then(() => {
+            console.log(`[Upload] ✅ Duplicate notification email sent`);
+          }).catch((emailError: any) => {
+            console.error(`[Upload] ❌ Failed to send duplicate email:`, emailError);
+          });
+
           continue;
         }
 

@@ -3,6 +3,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faUpload,
@@ -15,6 +22,7 @@ import {
   faRobot,
   faCalendar,
   faListCheck,
+  faEye,
 } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -38,6 +46,23 @@ interface TestStatus {
   duplicateDocId?: number;
   duplicatePaperlessId?: number;
   steps: PipelineStep[];
+  aiTaggingData?: {
+    tags: string[];
+    correspondent?: string;
+    documentType?: string;
+    customFields?: any[];
+    tokensInput: number;
+    tokensOutput: number;
+    prompt?: string;
+    response?: string;
+  };
+  actionRequired?: boolean;
+  actionRequiredTag?: string;
+}
+
+interface ModalContent {
+  title: string;
+  content: string;
 }
 
 export default function PipelineTestTab() {
@@ -45,10 +70,13 @@ export default function PipelineTestTab() {
   const [testing, setTesting] = useState(false);
   const [testId, setTestId] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [skipDuplicateCheck, setSkipDuplicateCheck] = useState(false);
   const [steps, setSteps] = useState<PipelineStep[]>([]);
   const [testStatus, setTestStatus] = useState<TestStatus | null>(null);
   const [configInfo, setConfigInfo] = useState<ConfigInfo | null>(null);
   const [showConfig, setShowConfig] = useState(false);
+  const [modalContent, setModalContent] = useState<ModalContent | null>(null);
+  const [showModal, setShowModal] = useState(false);
   const pollInterval = useRef<NodeJS.Timeout | null>(null);
 
   // Load config info on mount
@@ -140,16 +168,16 @@ export default function PipelineTestTab() {
           // Store full test status for duplicate info
           setTestStatus(data);
 
-          // Check if test is complete (either by overall status or by any step having final status)
+          // Check if test is complete (either by overall status or by any step having error)
           if (data.status === 'completed' || data.status === 'error') {
             setTesting(false);
             if (pollInterval.current) {
               clearInterval(pollInterval.current);
             }
           } else {
-            // Also check last step for backwards compatibility
-            const lastStep = data.steps?.[data.steps.length - 1];
-            if (lastStep && (lastStep.status === 'success' || lastStep.status === 'error')) {
+            // Also check if any step has error status - means test failed
+            const hasError = data.steps?.some((s: any) => s.status === 'error');
+            if (hasError) {
               setTesting(false);
               if (pollInterval.current) {
                 clearInterval(pollInterval.current);
@@ -200,6 +228,7 @@ export default function PipelineTestTab() {
     try {
       const formData = new FormData();
       formData.append('file', selectedFile);
+      formData.append('skipDuplicateCheck', skipDuplicateCheck.toString());
 
       const response = await fetch('/api/pipeline-test/start', {
         method: 'POST',
@@ -255,6 +284,61 @@ export default function PipelineTestTab() {
     }
   };
 
+  const showAIDetails = () => {
+    if (!testStatus?.aiTaggingData) return;
+
+    const { tags, correspondent, documentType, customFields, tokensInput, tokensOutput } = testStatus.aiTaggingData;
+
+    let content = `**Tags erstellt:**\n${tags.join(', ')}\n\n`;
+
+    if (correspondent) {
+      content += `**Korrespondent:**\n${correspondent}\n\n`;
+    }
+
+    if (documentType) {
+      content += `**Dokumenttyp:**\n${documentType}\n\n`;
+    }
+
+    if (customFields && customFields.length > 0) {
+      content += `**Benutzerdefinierte Felder:**\n`;
+      customFields.forEach((field: any) => {
+        content += `• ${field.field?.name || 'Unknown'}: ${JSON.stringify(field.value)}\n`;
+      });
+      content += '\n';
+    }
+
+    content += `**Token-Verbrauch:**\n`;
+    content += `• Input: ${tokensInput}\n`;
+    content += `• Output: ${tokensOutput}\n`;
+    content += `• Gesamt: ${tokensInput + tokensOutput}`;
+
+    setModalContent({
+      title: 'AI Tagging Details',
+      content
+    });
+    setShowModal(true);
+  };
+
+  const showPrompt = () => {
+    if (!testStatus?.aiTaggingData?.prompt) return;
+
+    setModalContent({
+      title: 'Generierter Prompt (ohne Dokument)',
+      content: testStatus.aiTaggingData.prompt
+    });
+    setShowModal(true);
+  };
+
+  const showResponse = () => {
+    if (!testStatus?.aiTaggingData?.response) return;
+
+    setModalContent({
+      title: 'Gemini KI-Antwort',
+      content: testStatus.aiTaggingData.response
+    });
+    setShowModal(true);
+  };
+
   return (
     <div className="space-y-6">
       {/* Upload Section */}
@@ -282,6 +366,23 @@ export default function PipelineTestTab() {
               <FontAwesomeIcon icon={testing ? faSpinner : faUpload} className={cn("mr-2", testing && "animate-spin")} />
               {testing ? 'Test läuft...' : 'Test starten'}
             </Button>
+          </div>
+
+          <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+            <input
+              type="checkbox"
+              id="skip-duplicate-check"
+              checked={skipDuplicateCheck}
+              onChange={(e) => setSkipDuplicateCheck(e.target.checked)}
+              disabled={testing}
+              className="w-4 h-4 rounded border-gray-300 cursor-pointer"
+            />
+            <label
+              htmlFor="skip-duplicate-check"
+              className="text-sm text-yellow-900 dark:text-yellow-100 cursor-pointer"
+            >
+              Duplikatsprüfung überspringen (Dokument verarbeiten auch wenn es bereits existiert)
+            </label>
           </div>
 
           {selectedFile && (
@@ -324,6 +425,43 @@ export default function PipelineTestTab() {
                           </li>
                         ))}
                       </ul>
+                    )}
+                    {/* Show details button for AI tagging */}
+                    {step.id === 'ai_tagging' && (step.status === 'success' || step.status === 'error') && testStatus?.aiTaggingData && (
+                      <div className="flex gap-2 mt-2">
+                        {step.status === 'success' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={showAIDetails}
+                          >
+                            <FontAwesomeIcon icon={faEye} className="mr-2" />
+                            Details
+                          </Button>
+                        )}
+                        {testStatus.aiTaggingData.prompt && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={showPrompt}
+                            className={step.status === 'error' ? 'border-red-500 text-red-600 hover:bg-red-50' : ''}
+                          >
+                            <FontAwesomeIcon icon={faEye} className="mr-2" />
+                            Prompt {step.status === 'error' && '(Debug)'}
+                          </Button>
+                        )}
+                        {testStatus.aiTaggingData.response && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={showResponse}
+                            className={step.status === 'error' ? 'border-red-500 text-red-600 hover:bg-red-50' : ''}
+                          >
+                            <FontAwesomeIcon icon={faEye} className="mr-2" />
+                            {step.status === 'error' ? 'Rohe Response (Debug)' : 'KI-Antwort'}
+                          </Button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -382,6 +520,20 @@ export default function PipelineTestTab() {
           </CardContent>
         </Card>
       )}
+
+      {/* Details Modal */}
+      <Dialog open={showModal} onOpenChange={setShowModal}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{modalContent?.title}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <pre className="text-sm whitespace-pre-wrap bg-gray-100 dark:bg-gray-800 p-4 rounded">
+              {modalContent?.content}
+            </pre>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Configuration Parameters */}
       {configInfo && (

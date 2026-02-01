@@ -58,53 +58,47 @@ export async function generateResponseSchema(
     required: ["title", "tags"]
   };
 
-  // Add custom fields to schema (always include action_description and due_date, others only if enabled)
+  // Add custom fields to schema - ALWAYS include ALL fields so AI knows they exist
+  // (Schema must match the JSON structure shown in the prompt!)
   if (customFields.length > 0) {
-    const filteredFields = customFields.filter(field => {
-      const isActionField = field.name === fieldActionDescription || field.name === fieldDueDate;
-      return isActionField || fillCustomFields;
+    schema.properties.custom_fields = {
+      type: "OBJECT",
+      properties: {},
+      description: "Custom field values",
+      nullable: true
+    };
+
+    customFields.forEach(field => {
+      let fieldSchema: any = { nullable: true };
+
+      switch (field.data_type) {
+        case 'string':
+        case 'text':
+        case 'url':
+        case 'select':
+          fieldSchema.type = "STRING";
+          break;
+        case 'integer':
+        case 'documentlink':
+          fieldSchema.type = "INTEGER";
+          break;
+        case 'float':
+          fieldSchema.type = "NUMBER";
+          break;
+        case 'boolean':
+          fieldSchema.type = "BOOLEAN";
+          break;
+        case 'date':
+          fieldSchema.type = "STRING";
+          fieldSchema.format = "date";
+          fieldSchema.description = "Date in YYYY-MM-DD format";
+          break;
+        default:
+          fieldSchema.type = "STRING";
+      }
+
+      schema.properties.custom_fields.properties[field.name] = fieldSchema;
     });
-
-    if (filteredFields.length > 0) {
-      schema.properties.custom_fields = {
-        type: "OBJECT",
-        properties: {},
-        description: "Custom field values",
-        nullable: true
-      };
-
-      filteredFields.forEach(field => {
-        let fieldSchema: any = { nullable: true };
-
-        switch (field.data_type) {
-          case 'string':
-          case 'text':
-          case 'url':
-          case 'select':
-            fieldSchema.type = "STRING";
-            break;
-          case 'integer':
-          case 'documentlink':
-            fieldSchema.type = "INTEGER";
-            break;
-          case 'float':
-            fieldSchema.type = "NUMBER";
-            break;
-          case 'boolean':
-            fieldSchema.type = "BOOLEAN";
-            break;
-          case 'date':
-            fieldSchema.type = "STRING";
-            fieldSchema.format = "date";
-            fieldSchema.description = "Date in YYYY-MM-DD format";
-            break;
-          default:
-            fieldSchema.type = "STRING";
-        }
-
-        schema.properties.custom_fields.properties[field.name] = fieldSchema;
-      });
-    }
   }
 
   return schema;
@@ -150,16 +144,10 @@ export async function generateAnalysisPrompt(
     storage_path: "storage path name or null",
   };
 
-  // Add custom fields (always include action_description and due_date, others only if enabled)
+  // Add custom fields - ALWAYS show ALL fields in the structure so AI knows what's available
   if (customFields.length > 0) {
     structure.custom_fields = {};
     customFields.forEach(field => {
-      // Always include action tracking fields, or include all if custom fields are enabled
-      const isActionField = field.name === fieldActionDescription || field.name === fieldDueDate;
-      if (!isActionField && !fillCustomFields) {
-        return; // Skip this field
-      }
-
       let exampleValue: any;
       switch (field.data_type) {
         case 'string':
@@ -221,7 +209,6 @@ export async function generateAnalysisPrompt(
   } else { // free
     prompt += `- You can create any tags that describe the document (max ${maxTags} tags)\n`;
   }
-  prompt += `- **NEVER include the tag "${tagAiTodoName}" in your response** - it is a system tag\n`;
   prompt += '\n';
 
   // Correspondents (only show list if strict mode is enabled)
@@ -302,15 +289,15 @@ export async function generateAnalysisPrompt(
   }
 
   prompt += '**Final Instructions:**\n';
-  prompt += '- Your response MUST be valid JSON only\n';
-  prompt += '- Do NOT include markdown code blocks (```json), explanations, or any text outside the JSON\n';
-  prompt += '- Do NOT truncate the JSON - ensure it is complete and valid\n';
+  prompt += '- Respond ONLY with valid JSON. Do not include any other text or markdown.\n';
   prompt += '- Ensure all text is in the specified language\n';
-  prompt += '- All fields are optional except "title" and "tags"\n';
   if (fillCustomFields) {
-    prompt += '- Fill custom_fields where relevant information is available in the document\n';
+    prompt += '- Extract and fill ALL custom_fields where information is found in the document\n';
+    prompt += `- ALWAYS fill "${fieldActionDescription}" and "${fieldDueDate}" when action is detected\n`;
+  } else {
+    prompt += `- For custom_fields: ONLY fill "${fieldActionDescription}" and "${fieldDueDate}" when action is detected\n`;
+    prompt += '- Leave other custom_fields empty (do not include in response)\n';
   }
-  prompt += `- ALWAYS fill "${fieldActionDescription}" and "${fieldDueDate}" if action is detected\n`;
   prompt += '\n';
 
   prompt += '**Document to analyze:**\n\n';

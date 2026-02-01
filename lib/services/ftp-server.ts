@@ -204,8 +204,12 @@ class FTPServerService {
       // Create server instance
       this.server = new FtpSrv(serverOptions);
 
-      // Handle login
-      this.server.on('login', ({ connection, username, password }, resolve, reject) => {
+      // Handle login - IMPORTANT: Don't use closure over this.config!
+      // Load config fresh on each login to ensure we have the latest credentials
+      this.server.on('login', async ({ connection, username, password }, resolve, reject) => {
+        // Reload config to get latest credentials
+        await this.loadConfig();
+
         if (this.config && username === this.config.username && password === this.config.password) {
           // Access commandSocket (exists in runtime but not in types)
           const commandSocket = (connection as any).commandSocket;
@@ -215,7 +219,7 @@ class FTPServerService {
           this.log('INFO', `User logged in: ${username} from ${clientIp} to ${serverIp}`);
           resolve({ root: consumeDir });
         } else {
-          console.log(`[FTP] Login failed for user: ${username}`);
+          console.log(`[FTP] Login failed for user: ${username} (expected: ${this.config?.username})`);
           this.log('WARN', `Login failed for user: ${username}`);
           reject(new Error('Invalid username or password'));
         }
@@ -304,26 +308,85 @@ class FTPServerService {
   }
 
   /**
+   * Wait for port to be released
+   */
+  private async waitForPortRelease(port: number, maxWaitMs: number = 10000): Promise<boolean> {
+    const startTime = Date.now();
+    while (Date.now() - startTime < maxWaitMs) {
+      const inUse = await this.isPortInUse(port);
+      if (!inUse) {
+        console.log(`[FTP] Port ${port} is now free`);
+        return true;
+      }
+      console.log(`[FTP] Waiting for port ${port} to be released...`);
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    console.warn(`[FTP] Port ${port} still in use after ${maxWaitMs}ms`);
+    return false;
+  }
+
+  /**
+   * Force kill any process using the FTP port
+   */
+  private async forceKillPort(port: number): Promise<void> {
+    try {
+      const { exec } = require('child_process');
+      const { promisify } = require('util');
+      const execAsync = promisify(exec);
+
+      // Find and kill process using the port
+      await execAsync(`lsof -ti:${port} | xargs kill -9 2>/dev/null || true`);
+      console.log(`[FTP] Forcefully killed processes on port ${port}`);
+      await new Promise(resolve => setTimeout(resolve, 500));
+    } catch (error) {
+      console.warn(`[FTP] Could not force kill port ${port}:`, error);
+    }
+  }
+
+  /**
    * Restart the FTP server
    */
   async restart(): Promise<{ success: boolean; message: string }> {
     console.log('[FTP] Restarting server...');
     await this.log('INFO', 'Restarting server');
 
-    // Always try to stop first, even if we think it's not running
-    try {
-      const stopResult = await this.stop();
-      if (!stopResult.success && stopResult.message.includes('Failed')) {
-        console.warn('[FTP] Stop failed during restart, continuing anyway...');
+    const port = this.config?.port || 21;
+
+    // Force stop - destroy server instance completely
+    if (this.server) {
+      try {
+        console.log('[FTP] Closing existing server instance...');
+
+        // Remove all event listeners to prevent memory leaks and stale closures
+        this.server.removeAllListeners('login');
+        this.server.removeAllListeners('client-error');
+        this.server.removeAllListeners('disconnect');
+
+        await this.server.close();
+        console.log('[FTP] Server closed successfully');
+      } catch (error) {
+        console.warn('[FTP] Error closing server:', error);
       }
-    } catch (error) {
-      console.warn('[FTP] Error during stop, continuing with start...', error);
     }
 
-    // Wait for port to be fully released
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Null out the server reference
+    this.server = null;
+    this.isRunning = false;
 
-    // Start again
+    // Force kill any lingering processes on the port
+    await this.forceKillPort(port);
+
+    // Wait for port to be released
+    const portReleased = await this.waitForPortRelease(port, 10000);
+
+    if (!portReleased) {
+      console.warn('[FTP] Port still in use, attempting start anyway...');
+    }
+
+    // Reload config to get fresh credentials
+    await this.loadConfig();
+
+    // Start again with new configuration
     return await this.start();
   }
 

@@ -113,7 +113,14 @@ export default function DashboardPage() {
       case 'google':
         return <GoogleSettingsTab initialData={settingsData} />;
       case 'ftp':
-        return <FTPSettingsCard initialData={{ ...settingsData, enabled: (settingsData as any).ftpEnabled }} onServiceRestart={restartServices} />;
+        return <FTPSettingsCard initialData={{
+          enabled: (settingsData as any).ftpEnabled,
+          username: (settingsData as any).ftpUsername,
+          password: (settingsData as any).ftpPassword,
+          port: (settingsData as any).ftpPort,
+          enableTls: (settingsData as any).ftpEnableTls,
+          pasvUrl: (settingsData as any).ftpPasvUrl,
+        }} onServiceRestart={restartServices} />;
       case 'email':
         return <EmailSettingsCard initialData={{ ...settingsData, enabled: (settingsData as any).emailEnabled }} />;
       case 'advanced':

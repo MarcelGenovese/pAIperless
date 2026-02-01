@@ -89,6 +89,7 @@ export async function acquireLock(type: ProcessType, details?: string): Promise<
 
 /**
  * Release a lock for a process
+ * IMPORTANT: Keep lastActivity timestamp so we know when the process last completed!
  */
 export async function releaseLock(type: ProcessType): Promise<void> {
   try {
@@ -96,7 +97,7 @@ export async function releaseLock(type: ProcessType): Promise<void> {
       type,
       status: 'idle',
       startedAt: null,
-      lastActivity: null,
+      lastActivity: new Date(), // Keep timestamp of when process completed!
     };
 
     await prisma.config.upsert({

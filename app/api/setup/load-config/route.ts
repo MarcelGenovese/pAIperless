@@ -52,6 +52,7 @@ export async function GET(request: NextRequest) {
         data.maxSizeMB = await getConfig(CONFIG_KEYS.DOCUMENT_AI_MAX_SIZE_MB) || '20';
         data.documentAIMonthlyPageLimit = await getConfig(CONFIG_KEYS.DOCUMENT_AI_MONTHLY_PAGE_LIMIT) || '5000';
         data.enabled = await getConfig(CONFIG_KEYS.DOCUMENT_AI_ENABLED) || 'false';
+        data.skipSearchable = await getConfig(CONFIG_KEYS.DOCUMENT_AI_SKIP_SEARCHABLE) || 'true'; // Default: ON (skip searchable to save costs!)
         data.costAmount = await getConfig(CONFIG_KEYS.DOCUMENT_AI_COST_AMOUNT) || '1.50';
         data.pageUnit = await getConfig(CONFIG_KEYS.DOCUMENT_AI_PAGE_UNIT) || '1000';
         break;
@@ -61,6 +62,7 @@ export async function GET(request: NextRequest) {
         data.clientSecret = await getConfigSecure(CONFIG_KEYS.GOOGLE_OAUTH_CLIENT_SECRET) || '';
         data.calendarId = await getConfig(CONFIG_KEYS.GOOGLE_CALENDAR_ID) || '';
         data.taskListId = await getConfig(CONFIG_KEYS.GOOGLE_TASK_LIST_ID) || '';
+        data.taskCompletionInterval = await getConfig(CONFIG_KEYS.POLL_TASK_COMPLETION_INTERVAL) || '30';
         break;
 
       case 5: // Email
@@ -85,6 +87,7 @@ export async function GET(request: NextRequest) {
       case 6: // Paperless Integration
         data.tagAiTodo = await getConfig(CONFIG_KEYS.TAG_AI_TODO) || 'ai_todo';
         data.tagActionRequired = await getConfig(CONFIG_KEYS.TAG_ACTION_REQUIRED) || 'action_required';
+        data.tagPaiperlessProcessed = await getConfig(CONFIG_KEYS.TAG_PAIPERLESS_PROCESSED) || 'paiperless_processed';
         data.fieldActionDescription = await getConfig(CONFIG_KEYS.FIELD_ACTION_DESCRIPTION) || 'action_description';
         data.fieldDueDate = await getConfig(CONFIG_KEYS.FIELD_DUE_DATE) || 'due_date';
         break;

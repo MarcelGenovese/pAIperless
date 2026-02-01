@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faFileAlt,
@@ -17,7 +19,8 @@ import {
   faBolt,
   faChartBar,
   faCoins,
-  faFileCircleCheck
+  faFileCircleCheck,
+  faSync
 } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
@@ -46,6 +49,7 @@ interface MonthlyUsage {
 }
 
 export default function OverviewTab() {
+  const { toast } = useToast();
   const [stats, setStats] = useState({
     totalDocuments: 0,
     pendingActions: 0,
@@ -174,6 +178,46 @@ export default function OverviewTab() {
             <p className="text-xs text-muted-foreground mt-1">
               Dokumente mit action_required Tag
             </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-3 w-full"
+              onClick={async () => {
+                try {
+                  const response = await fetch('/api/action-polling/trigger', {
+                    method: 'POST',
+                  });
+                  const data = await response.json();
+
+                  if (data.success) {
+                    toast({
+                      title: 'Task-Sync abgeschlossen',
+                      description: data.message,
+                      variant: 'success',
+                    });
+                    // Refresh stats
+                    const statsRes = await fetch('/api/dashboard/stats');
+                    const statsData = await statsRes.json();
+                    setStats(statsData);
+                  } else {
+                    toast({
+                      title: 'Fehler',
+                      description: data.error || 'Unbekannter Fehler',
+                      variant: 'destructive',
+                    });
+                  }
+                } catch (error) {
+                  toast({
+                    title: 'Fehler',
+                    description: 'Netzwerkfehler',
+                    variant: 'destructive',
+                  });
+                }
+              }}
+            >
+              <FontAwesomeIcon icon={faSync} className="mr-2" />
+              Erledigte Tasks synchronisieren
+            </Button>
           </CardContent>
         </Card>
 

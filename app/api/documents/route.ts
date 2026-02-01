@@ -17,6 +17,7 @@ export async function GET() {
         ocrPageCount: true,
         geminiTokensSent: true,
         geminiTokensRecv: true,
+        processingDetails: true,
         createdAt: true,
       },
     });
