@@ -1,9 +1,10 @@
 import { getRequestConfig } from 'next-intl/server';
-import { getLocale } from '@/lib/config';
+import { cookies } from 'next/headers';
 
 export default getRequestConfig(async () => {
-  // Get locale from database config
-  const locale = await getLocale();
+  // Get locale from cookie with fallback
+  const cookieStore = cookies();
+  const locale = cookieStore.get('NEXT_LOCALE')?.value || 'en';
 
   return {
     locale,

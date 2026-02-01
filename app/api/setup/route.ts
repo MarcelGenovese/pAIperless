@@ -11,6 +11,13 @@ export async function POST(request: NextRequest) {
       case 0: // Welcome Screen / General Settings
         if (data.locale !== undefined) {
           await setConfig(CONFIG_KEYS.SETUP_LOCALE, data.locale || 'en');
+          // Set locale cookie for next-intl
+          const response = NextResponse.json({ success: true });
+          response.cookies.set('NEXT_LOCALE', data.locale || 'en', {
+            path: '/',
+            maxAge: 60 * 60 * 24 * 365 // 1 year
+          });
+          return response;
         }
         if (data.baseUrl !== undefined) {
           await setConfig(CONFIG_KEYS.BASE_URL, data.baseUrl);
