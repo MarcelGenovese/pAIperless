@@ -317,7 +317,14 @@
     "task_completion_simulation": "8. Task-Abhaken (Simulation)",
     "ai_tagging_details": "AI Tagging Details",
     "generated_prompt_without_document": "Generierter Prompt (ohne Dokument)",
-    "gemini_ai_response": "Gemini KI-Antwort"
+    "gemini_ai_response": "Gemini KI-Antwort",
+    "queue": "Warteschlange",
+    "in_processing": "In Bearbeitung",
+    "error_documents": "Fehlerhafte Dokumente",
+    "documents_waiting_for_processing": "Dokumente warten auf Verarbeitung",
+    "documents_being_processed": "Dokumente werden verarbeitet",
+    "pending_documents": "Wartende Dokumente",
+    "documents_in_processing": "Dokumente in Bearbeitung"
   },
   "settings": {
     "title": "Einstellungen",

@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
 
         // Build description with notes if available
         let fullDescription = actionDescription;
-        if (doc.notes && doc.notes.trim()) {
+        if (doc.notes && typeof doc.notes === 'string' && doc.notes.trim().length > 0) {
           fullDescription = `${actionDescription}\n\n📝 Zusammenfassung:\n${doc.notes}`;
         }
 

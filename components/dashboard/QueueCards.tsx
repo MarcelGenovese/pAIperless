@@ -247,7 +247,7 @@ export default function QueueCards() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Warteschlange
+              {t('queue')}
             </CardTitle>
             <div className="flex items-center gap-2">
               <Button
@@ -266,7 +266,7 @@ export default function QueueCards() {
           <CardContent>
             <div className="text-2xl font-bold">{queueData.counts.pending}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Dokumente warten auf Verarbeitung
+              {t('documents_waiting_for_processing')}
             </p>
           </CardContent>
         </Card>
@@ -275,14 +275,14 @@ export default function QueueCards() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              In Bearbeitung
+              {t('in_processing')}
             </CardTitle>
             <FontAwesomeIcon icon={faSpinner} spin className="text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{queueData.counts.processing}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Dokumente werden verarbeitet
+              {t('documents_being_processed')}
             </p>
           </CardContent>
         </Card>
@@ -296,7 +296,7 @@ export default function QueueCards() {
           <CardContent>
             <div className="text-2xl font-bold">{queueData.counts.error}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Fehlerhafte Dokumente
+              {t('error_documents')}
             </p>
           </CardContent>
         </Card>
@@ -308,7 +308,7 @@ export default function QueueCards() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FontAwesomeIcon icon={faExclamationTriangle} className="text-red-600" />
-              Fehlerhafte Dokumente
+              {t('error_documents')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -365,7 +365,7 @@ export default function QueueCards() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FontAwesomeIcon icon={faClock} className="text-yellow-600" />
-              Wartende Dokumente
+              {t('pending_documents')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -395,7 +395,7 @@ export default function QueueCards() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FontAwesomeIcon icon={faSpinner} spin className="text-blue-600" />
-              Dokumente in Bearbeitung
+              {t('documents_in_processing')}
             </CardTitle>
           </CardHeader>
           <CardContent>

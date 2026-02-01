@@ -317,7 +317,14 @@
     "task_completion_simulation": "8. Task Completion (Simulation)",
     "ai_tagging_details": "AI Tagging Details",
     "generated_prompt_without_document": "Generated Prompt (without document)",
-    "gemini_ai_response": "Gemini AI Response"
+    "gemini_ai_response": "Gemini AI Response",
+    "queue": "Queue",
+    "in_processing": "In Processing",
+    "error_documents": "Error Documents",
+    "documents_waiting_for_processing": "Documents waiting for processing",
+    "documents_being_processed": "Documents being processed",
+    "pending_documents": "Pending Documents",
+    "documents_in_processing": "Documents in Processing"
   },
   "settings": {
     "title": "Settings",
