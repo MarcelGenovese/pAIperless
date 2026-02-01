@@ -492,6 +492,8 @@ export class PaperlessClient {
     correspondent?: number | null;
     document_type?: number | null;
     storage_path?: number | null;
+    created?: string; // Document creation/issue date in YYYY-MM-DD format
+    notes?: string; // Brief summary or notes about the document
     custom_fields?: Array<{ field: number; value: any }>;
   }): Promise<void> {
     try {

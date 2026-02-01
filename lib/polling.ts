@@ -185,16 +185,16 @@ export async function processAiTodoDocuments(): Promise<{
         await logger.info(`✅ Monthly budget check passed: ${limitCheck.reason}`);
         await logger.info(``);
 
-        // Generate prompt and schema
+        // Generate prompt (schema no longer used - text-prompt is sufficient)
         await logger.info(`📝 Generating AI analysis prompt...`);
-        const { prompt: generatedPrompt, schema } = await generateAnalysisPrompt(paperlessClient, content);
+        const { prompt: generatedPrompt } = await generateAnalysisPrompt(paperlessClient, content);
         prompt = generatedPrompt; // Assign to outer scope variable for error handling
         await logger.info(`✅ Prompt generated (${prompt.length} characters)`);
         await logger.info(``);
 
         // Call Gemini AI with retry logic
         await logger.info(`🤖 Sending document to Gemini for analysis...`);
-        await logger.info(`   → Using JSON schema validation`);
+        await logger.info(`   → Using optimized text-prompt (no schema enforcement)`);
         await logger.info(`   → Max retries: 2`);
 
         let response;
@@ -207,7 +207,7 @@ export async function processAiTodoDocuments(): Promise<{
           try {
             const attemptNum = retryCount + 1;
             await logger.info(`   → Attempt ${attemptNum}/${maxRetries + 1}...`);
-            const result = await geminiClient.analyzeDocument(prompt, schema);
+            const result = await geminiClient.analyzeDocument(prompt);
             response = result.response;
             tokensUsed = result.tokensUsed;
             const geminiDuration = ((Date.now() - geminiStartTime) / 1000).toFixed(2);
@@ -366,6 +366,20 @@ export async function processAiTodoDocuments(): Promise<{
           const storagePathId = await paperlessClient.createOrGetStoragePath(response.storage_path);
           updates.storage_path = storagePathId;
           await logger.info(`     • Storage path ID: ${storagePathId}`);
+        }
+
+        // Created Date (Ausstellungsdatum)
+        if (response.created_date) {
+          await logger.info(`   → Setting document date: "${response.created_date}"`);
+          updates.created = response.created_date;
+          await logger.info(`     • Document date: ${response.created_date}`);
+        }
+
+        // Notes (Summary)
+        if (response.notes) {
+          await logger.info(`   → Setting notes/summary`);
+          updates.notes = response.notes;
+          await logger.info(`     • Notes length: ${response.notes.length} characters`);
         }
 
         // Custom Fields

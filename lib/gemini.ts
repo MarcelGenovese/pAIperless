@@ -9,6 +9,8 @@ export interface GeminiResponse {
   correspondent?: string | null;
   document_type?: string | null;
   storage_path?: string | null;
+  created_date?: string | null;
+  notes?: string | null;
   custom_fields?: Record<string, any>;
 }
 
@@ -34,10 +36,12 @@ export class GeminiClient {
         responseMimeType: "application/json",  // Force JSON output
       };
 
-      // Add schema if provided
-      if (schema) {
-        generationConfig.responseSchema = schema;
-      }
+      // Schema deaktiviert - der optimierte Text-Prompt ist klar genug und verhindert,
+      // dass Gemini Felder aufgrund restriktiver Schema-Regeln weglässt.
+      // Der Text-Prompt mit STEP 1-3 Struktur liefert bessere Ergebnisse ohne Schema-Zwang.
+      // if (schema) {
+      //   generationConfig.responseSchema = schema;
+      // }
 
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`,

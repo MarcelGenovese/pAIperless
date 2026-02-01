@@ -121,13 +121,19 @@ export async function POST(request: NextRequest) {
           }
         }
 
+        // Build description with notes if available
+        let fullDescription = actionDescription;
+        if (doc.notes && doc.notes.trim()) {
+          fullDescription = `${actionDescription}\n\n📝 Zusammenfassung:\n${doc.notes}`;
+        }
+
         await logger.info(`[Document Updated] Creating calendar event and task for document ${doc.id}`);
         await logger.info(`[Document Updated] Action: "${actionDescription}", Due date: ${dueDate || 'none'}`);
 
         // Create calendar event
         const eventId = await createCalendarEvent(
           doc.title || `Dokument ${doc.id}`,
-          actionDescription,
+          fullDescription,
           dueDate,
           doc.id
         );
@@ -135,7 +141,7 @@ export async function POST(request: NextRequest) {
         // Create task
         const taskId = await createTask(
           doc.title || `Dokument ${doc.id}`,
-          actionDescription,
+          fullDescription,
           dueDate,
           doc.id
         );

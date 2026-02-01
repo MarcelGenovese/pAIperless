@@ -53,9 +53,20 @@ export async function generateResponseSchema(
         type: "STRING",
         description: "Storage path name",
         nullable: true
+      },
+      created_date: {
+        type: "STRING",
+        format: "date",
+        description: "Document date (creation/issue date) in YYYY-MM-DD format - use null if not found",
+        nullable: true
+      },
+      notes: {
+        type: "STRING",
+        description: "Brief summary or important notes about the document content - use null if not applicable",
+        nullable: true
       }
     },
-    required: ["title", "tags"]
+    required: ["title", "tags", "created_date", "notes"]  // These fields must always be present (can be null)
   };
 
   // Add custom fields to schema - ALWAYS include ALL fields so AI knows they exist
@@ -64,8 +75,8 @@ export async function generateResponseSchema(
     schema.properties.custom_fields = {
       type: "OBJECT",
       properties: {},
-      description: "Custom field values",
-      nullable: true
+      description: "Custom field values - MUST ALWAYS be included with all fields",
+      nullable: false  // CRITICAL: custom_fields object itself must always be present
     };
 
     customFields.forEach(field => {
@@ -99,6 +110,9 @@ export async function generateResponseSchema(
 
       schema.properties.custom_fields.properties[field.name] = fieldSchema;
     });
+
+    // Add custom_fields to required array if we have any fields
+    schema.required.push("custom_fields");
   }
 
   return schema;
@@ -142,127 +156,69 @@ export async function generateAnalysisPrompt(
     correspondent: "correspondent name or null",
     document_type: "document type name or null",
     storage_path: "storage path name or null",
+    created_date: "YYYY-MM-DD (document issue/creation date) or null",
+    notes: "string (brief summary/notes about the document) or null",
   };
 
   // Add custom fields - ALWAYS show ALL fields in the structure so AI knows what's available
   if (customFields.length > 0) {
     structure.custom_fields = {};
     customFields.forEach(field => {
-      let exampleValue: any;
+      let displayValue: string;
       switch (field.data_type) {
-        case 'string':
-        case 'text':
-          exampleValue = 'string value';
-          break;
-        case 'integer':
-          exampleValue = 123;
+        case 'date':
+          displayValue = 'YYYY-MM-DD or null';
           break;
         case 'float':
-          exampleValue = 123.45;
+          displayValue = '123.45 (number) or null';
+          break;
+        case 'integer':
+          displayValue = '123 (integer) or null';
           break;
         case 'boolean':
-          exampleValue = true;
+          displayValue = 'true or false or null';
           break;
-        case 'date':
-          exampleValue = 'YYYY-MM-DD';
+        case 'string':
+        case 'text':
+          displayValue = 'string value or null';
           break;
         case 'url':
-          exampleValue = 'https://example.com';
+          displayValue = 'https://example.com or null';
           break;
         case 'documentlink':
-          exampleValue = 123;
+          displayValue = '123 (document ID) or null';
           break;
         case 'select':
-          exampleValue = 'option value';
+          displayValue = 'option value or null';
           break;
         default:
-          exampleValue = 'string value';
+          displayValue = 'string value or null';
       }
-      structure.custom_fields[field.name] = `${field.data_type}: ${JSON.stringify(exampleValue)}`;
+      structure.custom_fields[field.name] = displayValue;
     });
   }
 
   const jsonStructure = JSON.stringify(structure, null, 2);
 
-  // Build prompt
+  // Build prompt with new optimized structure
   let prompt = `You are a document analysis AI. Analyze the provided document and extract metadata in the following JSON format:\n\n`;
   prompt += jsonStructure;
   prompt += '\n\n';
 
   // Language instruction
-  prompt += `**IMPORTANT - Response Language:**\n`;
+  prompt += `**IMPORTANT - Language:**\n`;
   prompt += `- All text fields in your JSON response (title, tags, correspondent, document_type, storage_path, custom field values) MUST be in ${languageName}\n`;
   prompt += `- Use ${languageName} for all generated text, descriptions, and metadata\n\n`;
 
-  // Get AI_TODO tag name from config to exclude it
+  // Get AI_TODO and Action_Required tag names from config
   const tagAiTodoName = await getConfig(CONFIG_KEYS.TAG_AI_TODO) || 'ai_todo';
+  const tagActionRequiredName = await getConfig(CONFIG_KEYS.TAG_ACTION_REQUIRED) || 'action_required';
 
-  // Tag instructions based on mode
-  prompt += '**Tag Generation Rules:**\n';
-  if (tagMode === 'strict') {
-    prompt += `- You MUST ONLY use tags from the following list (max ${maxTags} tags): [${tags.map(t => t.name).join(', ')}]\n`;
-    prompt += '- Do NOT create new tags\n';
-  } else if (tagMode === 'flexible') {
-    prompt += `- You should prefer using existing tags from this list (max ${maxTags} tags): [${tags.map(t => t.name).join(', ')}]\n`;
-    prompt += '- You MAY create new tags if existing ones do not fit well\n';
-    prompt += '- Only create new tags when truly necessary\n';
-  } else { // free
-    prompt += `- You can create any tags that describe the document (max ${maxTags} tags)\n`;
-  }
-  prompt += '\n';
+  // === STEP 1: Action Detection Logic (CRITICAL) ===
+  prompt += '**STEP 1: Action Detection Logic (CRITICAL)**\n\n';
+  prompt += 'First, analyze if the document requires MANDATORY user action with deadlines or consequences.\n\n';
 
-  // Correspondents (only show list if strict mode is enabled)
-  if (strictCorrespondents && correspondents.length > 0) {
-    prompt += `**Available Correspondents (you MUST choose one from this list or use null):** [${correspondents.map(c => c.name).join(', ')}]\n`;
-    prompt += '- Do NOT create new correspondents\n';
-    prompt += '\n';
-  }
-
-  // Document Types (only show list if strict mode is enabled)
-  if (strictDocumentTypes && documentTypes.length > 0) {
-    prompt += `**Available Document Types (you MUST choose one from this list or use null):** [${documentTypes.map(t => t.name).join(', ')}]\n`;
-    prompt += '- Do NOT create new document types\n';
-    prompt += '\n';
-  }
-
-  // Storage Paths (only show list if strict mode is enabled)
-  if (strictStoragePaths && storagePaths.length > 0) {
-    prompt += `**Available Storage Paths (you MUST choose one from this list or use null):** [${storagePaths.map(p => p.name).join(', ')}]\n`;
-    prompt += '- Do NOT create new storage paths\n';
-    prompt += '\n';
-  }
-
-  // Custom fields instruction (only if auto-fill is enabled)
-  if (fillCustomFields && customFields.length > 0) {
-    const nonActionFields = customFields.filter(field =>
-      field.name !== fieldActionDescription && field.name !== fieldDueDate
-    );
-
-    if (nonActionFields.length > 0) {
-      prompt += '**Custom Fields - Auto-Fill Enabled:**\n';
-      prompt += '- You should fill as many custom fields as possible based on the document content\n';
-      prompt += '- Available custom fields:\n';
-      nonActionFields.forEach(field => {
-        let typeInfo = field.data_type;
-        if (field.data_type === 'date') {
-          typeInfo = 'date (YYYY-MM-DD format)';
-        } else if (field.data_type === 'select' && field.extra_data?.select_options) {
-          const options = field.extra_data.select_options;
-          typeInfo = `select (options: ${options.join(', ')})`;
-        }
-        prompt += `  • ${field.name} (${typeInfo}): Extract relevant information from the document\n`;
-      });
-      prompt += '- Leave fields empty (null) if no relevant information is found in the document\n';
-      prompt += '\n';
-    }
-  }
-
-  // Action description field instruction
-  prompt += '**Action Detection - CRITICAL:**\n';
-  prompt += `- Carefully analyze if the document requires MANDATORY user action with deadlines or consequences\n`;
-  prompt += `- If action is required, you MUST fill the custom field "${fieldActionDescription}" with a SHORT description\n`;
-  prompt += '\n';
-  prompt += '**Examples of MANDATORY actions that require the action field:**\n';
+  prompt += '**Examples of MANDATORY actions:**\n';
   prompt += '  • Payment deadlines (invoice must be paid by date, late fees apply)\n';
   prompt += '  • Cancellation deadlines (contract/subscription must be cancelled before renewal)\n';
   prompt += '  • Response deadlines (must respond to inquiry, appeal, or request by date)\n';
@@ -273,13 +229,121 @@ export async function generateAnalysisPrompt(
   prompt += '  • Renewal reminders (license, membership, subscription expiring)\n';
   prompt += '  • Compliance actions (regulatory requirements, tax filings, legal obligations)\n';
   prompt += '\n';
-  prompt += '**Action description format:**\n';
-  prompt += `  • Keep it SHORT and actionable (max 100 characters)\n`;
-  prompt += `  • Examples: "Pay invoice by 2024-03-15", "Cancel before renewal on 2024-04-01", "Submit application by 2024-05-10"\n`;
+
+  prompt += '**IF action is detected, you MUST do ALL of the following:**\n';
+  prompt += `  1. Add the tag "${tagActionRequiredName}" to the tags array\n`;
+  prompt += `  2. Fill the custom field "${fieldActionDescription}" with a SHORT actionable description (max 100 characters)\n`;
+  prompt += `     Examples: "Pay invoice by 2024-03-15", "Cancel before renewal on 2024-04-01"\n`;
+  prompt += `  3. If there is a specific deadline, fill the custom field "${fieldDueDate}" with the date in YYYY-MM-DD format\n`;
   prompt += '\n';
-  prompt += '**Due date field:**\n';
-  prompt += `  • If there is a specific deadline, set the custom field "${fieldDueDate}" with the date in YYYY-MM-DD format\n`;
-  prompt += `  • Extract the date from the document (payment due date, cancellation deadline, response deadline, etc.)\n\n`;
+  prompt += '**IF NO action is detected:**\n';
+  prompt += `  - Do NOT add "${tagActionRequiredName}" to tags\n`;
+  prompt += `  - Set custom_fields.${fieldActionDescription} to null\n`;
+  prompt += `  - Set custom_fields.${fieldDueDate} to null\n`;
+  prompt += '\n\n';
+
+  // === STEP 2: Tag Generation ===
+  prompt += '**STEP 2: Tag Generation**\n\n';
+  prompt += 'Generate descriptive tags for the document.\n\n';
+
+  if (tagMode === 'strict') {
+    prompt += `- You MUST ONLY use tags from the following list (max ${maxTags} tags): [${tags.map(t => t.name).join(', ')}]\n`;
+    prompt += '- Do NOT create new tags\n';
+  } else if (tagMode === 'flexible') {
+    prompt += `- You should prefer using existing tags from this list (max ${maxTags} tags): [${tags.map(t => t.name).join(', ')}]\n`;
+    prompt += '- You MAY create new tags if existing ones do not fit well\n';
+    prompt += '- Only create new tags when truly necessary\n';
+  } else { // free
+    prompt += `- You can create any tags that describe the document (max ${maxTags} tags)\n`;
+  }
+  prompt += `- IMPORTANT: If you detected an action in STEP 1, ensure "${tagActionRequiredName}" is included in the tags array\n`;
+  prompt += '\n\n';
+
+  // === STEP 3: Metadata & Custom Fields Extraction ===
+  prompt += '**STEP 3: Metadata & Custom Fields Extraction**\n\n';
+  prompt += 'Extract the following metadata from the document:\n\n';
+
+  prompt += '**Title:**\n';
+  prompt += '- Generate a descriptive document title\n';
+  prompt += '\n';
+
+  prompt += '**Correspondent:**\n';
+  if (strictCorrespondents && correspondents.length > 0) {
+    prompt += `- You MUST choose one from this list or use null: [${correspondents.map(c => c.name).join(', ')}]\n`;
+    prompt += '- Do NOT create new correspondents\n';
+  } else {
+    prompt += '- Extract the sender/organization name from the document\n';
+    prompt += '- If NOT found: Set to null\n';
+  }
+  prompt += '\n';
+
+  prompt += '**Document Type:**\n';
+  if (strictDocumentTypes && documentTypes.length > 0) {
+    prompt += `- You MUST choose one from this list or use null: [${documentTypes.map(t => t.name).join(', ')}]\n`;
+    prompt += '- Do NOT create new document types\n';
+  } else {
+    prompt += '- Determine the document type (invoice, contract, letter, etc.)\n';
+    prompt += '- If NOT found: Set to null\n';
+  }
+  prompt += '\n';
+
+  prompt += '**Storage Path:**\n';
+  if (strictStoragePaths && storagePaths.length > 0) {
+    prompt += `- You MUST choose one from this list or use null: [${storagePaths.map(p => p.name).join(', ')}]\n`;
+    prompt += '- Do NOT create new storage paths\n';
+  } else {
+    prompt += '- Suggest an appropriate storage path if applicable\n';
+    prompt += '- If NOT found: Set to null\n';
+  }
+  prompt += '\n';
+
+  prompt += '**Document Date (created_date):**\n';
+  prompt += '- Extract the document creation/issue date (Ausstellungsdatum, Rechnungsdatum, etc.)\n';
+  prompt += '- Format: YYYY-MM-DD\n';
+  prompt += '- Examples: Invoice date, contract date, letter date\n';
+  prompt += '- If NOT found: Set to null\n';
+  prompt += '\n';
+
+  prompt += '**Notes:**\n';
+  prompt += '- Generate a brief summary of the document content (2-3 sentences)\n';
+  prompt += '- Include key information: amounts, dates, important details\n';
+  prompt += '- Keep it concise and informative\n';
+  prompt += '- If document is very simple: Set to null\n';
+  prompt += '\n';
+
+  prompt += '**Custom Fields:**\n';
+  if (customFields.length > 0) {
+    prompt += 'Extract information for the following custom fields:\n';
+    customFields.forEach(field => {
+      let typeInfo = field.data_type;
+      if (field.data_type === 'date') {
+        typeInfo = 'date (YYYY-MM-DD format)';
+      } else if (field.data_type === 'select' && field.extra_data?.select_options) {
+        const options = field.extra_data.select_options;
+        typeInfo = `select (options: ${options.join(', ')})`;
+      } else if (field.data_type === 'float') {
+        typeInfo = 'number (float)';
+      }
+
+      if (field.name === fieldActionDescription || field.name === fieldDueDate) {
+        prompt += `  • ${field.name} (${typeInfo}): Filled in STEP 1 if action detected\n`;
+      } else {
+        prompt += `  • ${field.name} (${typeInfo}): Extract from document content\n`;
+      }
+    });
+    prompt += '\n';
+    if (fillCustomFields) {
+      prompt += '**IMPORTANT for custom_fields:**\n';
+      prompt += '- You MUST always return the complete custom_fields object with ALL fields\n';
+      prompt += '- If data is NOT found: Set the value to null\n';
+      prompt += '- Never omit fields from the response\n';
+    } else {
+      prompt += '**IMPORTANT for custom_fields:**\n';
+      prompt += `- ONLY fill "${fieldActionDescription}" and "${fieldDueDate}" (if action detected in STEP 1)\n`;
+      prompt += '- Set all other custom fields to null\n';
+    }
+  }
+  prompt += '\n\n';
 
   // Add custom prompt
   if (customPrompt.trim()) {
@@ -288,19 +352,16 @@ export async function generateAnalysisPrompt(
     prompt += '\n\n';
   }
 
-  prompt += '**Final Instructions:**\n';
-  prompt += '- Respond ONLY with valid JSON. Do not include any other text or markdown.\n';
-  prompt += '- Ensure all text is in the specified language\n';
-  if (fillCustomFields) {
-    prompt += '- Extract and fill ALL custom_fields where information is found in the document\n';
-    prompt += `- ALWAYS fill "${fieldActionDescription}" and "${fieldDueDate}" when action is detected\n`;
-  } else {
-    prompt += `- For custom_fields: ONLY fill "${fieldActionDescription}" and "${fieldDueDate}" when action is detected\n`;
-    prompt += '- Leave other custom_fields empty (do not include in response)\n';
-  }
-  prompt += '\n';
+  // === Final Response Rules ===
+  prompt += '**Final Response Rules:**\n';
+  prompt += '- Respond ONLY with valid JSON. Do not include any other text, markdown, or code blocks.\n';
+  prompt += '- Ensure all text fields are in the specified language\n';
+  prompt += '- Always return the complete JSON structure with all fields\n';
+  prompt += '- Use null for missing or not-applicable values\n';
+  prompt += '- Follow the exact JSON schema structure shown above\n';
+  prompt += '\n\n';
 
-  prompt += '**Document to analyze:**\n\n';
+  prompt += '**Document Content:**\n\n';
   prompt += documentContent;
 
   // Generate response schema for strict validation
