@@ -6,8 +6,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHandPaper, faPlay, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/hooks/use-toast';
 import {
-import { useTranslations } from 'next-intl';
-
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -17,6 +15,7 @@ import { useTranslations } from 'next-intl';
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useTranslations } from 'next-intl';
 
 export default function EmergencyStopButton() {
   const t = useTranslations('dashboard');
