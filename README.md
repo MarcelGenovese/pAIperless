@@ -14,6 +14,9 @@ AI-powered extension for Paperless-NGX that adds intelligent document processing
 🔄 **Seamless Integration** - Works with your existing Paperless-NGX instance
 🐳 **Single Container** - Everything runs in one Docker container
 
+![Vorschau 1](images/Screenshot%202026-03-20%20080356.png)
+![Vorschau 2](images/Screenshot%202026-03-20%20080405.png)
+
 ## Quick Start
 
 ### Prerequisites
